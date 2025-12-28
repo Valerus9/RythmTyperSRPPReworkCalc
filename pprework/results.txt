@@ -1,0 +1,30 @@
+Map	Difficulty	BPM	DrainTime	NoteCount	TSCount	Star
+Overmomochi	Advanced	204	00:33	67	1	0.91
+Overmomochi	Hyper	204	00:33	113	0	1.1
+Overmomochi	Another	204	00:33	125	0	1.15
+Overmomochi	Beginner	204	00:33	32	1	0.81
+Overmomochi	Leggendaria	204	00:33	156	2	1.29
+Danzai no Soriteyudo (Cut Ver.)	Normal.	210	01:34	130	0	0.59
+Danzai no Soriteyudo (Cut Ver.)	Hard.	210	01:34	175	0	0.79
+Danzai no Soriteyudo (Cut Ver.)	Insane.	210	01:34	347	0	0.85
+Danzai no Soriteyudo (Cut Ver.)	Destroy the World.	210	01:36	514	1	0.99
+I got it! (Slax Remix)	do you got it?	210	01:45	285	2	0.81
+PADORU / PADORU	Easy	190	00:30	19	0	0.83
+PADORU / PADORU	Normal	190	00:31	38	1	0.89
+PADORU / PADORU	Hard	190	00:31	63	0	0.95
+PADORU / PADORU	Insane	190	00:32	134	1	1.25
+PADORU / PADORU	Expert	190	00:31	211	0	1.46
+AugoEidEs	Freezing Advanced	207	06:38	337	2	0.34
+AugoEidEs	The Abyss	207	01:42	241	3	0.79
+Time to Say Goodbye (TV Size)	andrew's normal	250	00:37	30	1	0.76
+Time to Say Goodbye (TV Size)	andrew's aimslop	250	00:37	71	1	0.91
+FAKE PROMISE	DECEPTION	191	07:00	869	0	0.52
+Stella (Game Menu Ver.)	Insane	197	00:31	106	1	1.1
+Stella (Game Menu Ver.)	Normal	197	00:31	27	0	0.84
+Koigokoro	Easy	140	01:12	68	0	0.59
+Koigokoro	Advanced	140	01:12	120	0	0.73
+Koigokoro	Hyper	140	01:10	157	0	0.85
+Koigokoro	Another	140	01:12	225	0	1.01
+Koigokoro	Love	140	01:10	347	0	1.46
+Shin Takarajima	New Treasure Island	158	05:00	1236	0	0.95
+Caramelldansen (Speedycake Remix)	andrew's normal	164	01:41	81	5	0.49
