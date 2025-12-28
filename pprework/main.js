@@ -100,6 +100,8 @@ document.getElementById("zipInput").addEventListener("change", async (event) => 
   tableText += "<th>TSCount</th>";
   tableText += "<th>OldStar</th>";
   tableText += "<th>NewStar</th>";
+  tableText += "<th>NewStar (NC/DT)</th>";
+  tableText += "<th>NewStar (DC/HT)</th>";
   //tableText += "<th>Star without ts bonus</th>";
   tableText += "</tr>";
 
@@ -193,23 +195,61 @@ document.getElementById("zipInput").addEventListener("change", async (event) => 
     tableText += "<td>" + difficulty.notes.length + "</td>";
     tableText += "<td>" + difficulty.typingSections.length + "</td>";
     //let star = starFormulas["originalCalculate"](difficulty);
-    /*const difficultySeconds = {...difficulty};
-    for (let i = 0; i < difficultySeconds.notes.length; ++i)
+    let difficultyHT = {notes: [], typingSections: []};
+    let difficultyDT = {notes: [], typingSections: []};
+    for (let i = 0; i < difficulty.notes.length; ++i)
     {
-      if (difficultySeconds.notes[i].type == "tap")
+      if (difficulty.notes[i].type == "tap")
       {
-        difficultySeconds.notes[i].time = difficultySeconds.notes[i].time / 1000;
+        let tempNoteHT = {type: "", time: 0};
+        tempNoteHT.type = difficulty.notes[i].type;
+        difficultyHT.notes.push(tempNoteHT);
+        let tempNoteDT = {type: "", time: 0};
+        tempNoteDT.type = difficulty.notes[i].type;
+        difficultyDT.notes.push(tempNoteDT);
+        difficultyHT.notes[i].time = difficulty.notes[i].time / 0.75;
+        difficultyDT.notes[i].time = difficulty.notes[i].time / 1.5;
       }
       else
       {
-        difficultySeconds.notes[i].startTime = difficultySeconds.notes[i].startTime / 1000;
-        difficultySeconds.notes[i].endTime = difficultySeconds.notes[i].endTime / 1000;
+        let tempNoteHT = {type: "", startTime: 0, endTime: 0};
+        tempNoteHT.type = difficulty.notes[i].type;
+        difficultyHT.notes.push(tempNoteHT);
+        let tempNoteDT = {type: "", startTime: 0, endTime: 0};
+        tempNoteDT.type = difficulty.notes[i].type;
+        difficultyDT.notes.push(tempNoteDT);
+        difficultyHT.notes[i].startTime = difficulty.notes[i].startTime / 0.75;
+        difficultyHT.notes[i].endTime = difficulty.notes[i].endTime / 0.75;
+        difficultyDT.notes[i].startTime = difficulty.notes[i].startTime / 1.5;
+        difficultyDT.notes[i].endTime = difficulty.notes[i].endTime / 1.5;
       }
       
-    }*/
+    }
+    for (let i = 0; i < difficulty.typingSections.length; ++i)
+    {
+      let tempTypingSectionHT = {text: "", startTime: 0, endTime: 0};
+      tempTypingSectionHT.text = difficulty.typingSections[i].text;
+      difficultyHT.typingSections.push(tempTypingSectionHT);
+      let tempTypingSectionDT = {text: "", startTime: 0, endTime: 0};
+      tempTypingSectionDT.text = difficulty.typingSections[i].text;
+      difficultyDT.typingSections.push(tempTypingSectionDT);
+      difficultyHT.typingSections[i].startTime = difficulty.typingSections[i].startTime / 0.75;
+      difficultyHT.typingSections[i].endTime = difficulty.typingSections[i].endTime / 0.75;
+      difficultyDT.typingSections[i].startTime = difficulty.typingSections[i].startTime / 1.5;
+      difficultyDT.typingSections[i].endTime = difficulty.typingSections[i].endTime / 1.5;
+      
+    }
     //let star = starFormulas["originalCalculate"](difficultySeconds);
     let star = starFormulas["valerusRework"](difficulty);
     star = Math.round(star * 100) / 100
+    let starHT = starFormulas["valerusRework"](difficultyHT);
+    starHT = Math.round(starHT * 100) / 100
+    let starDT = starFormulas["valerusRework"](difficultyDT);
+    starDT = Math.round(starDT * 100) / 100
+    console.log(difficulty);
+    console.log(difficultyDT);
+    console.log(difficultyHT);
+    
     if (currentSr == -1)
     {
       if (diffSrId.includes(difficulty.diffId))
@@ -236,6 +276,8 @@ document.getElementById("zipInput").addEventListener("change", async (event) => 
       colorR = Math.round(0 + 250*changeSize);
     }
     tableText += "<td style=\"color:rgb("+colorR+","+colorG+","+colorB+");\">"+ star +"</td>";
+    tableText += "<td>" + starDT + "</td>";
+    tableText += "<td>" + starHT + "</td>";
     difficulty.accuracy = 100;
     //let pp = ppFormulas["originalCalculate"](difficulty);
     //pp = Math.round(pp);

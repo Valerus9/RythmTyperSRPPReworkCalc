@@ -503,13 +503,12 @@ starFormulas = {
     }
     let densityBonus =1 + (startTimes.length / drainTime) / 10;
     let core = Math.sqrt(noteDiffs / Math.sqrt(drainTime));
-    let coreDecay = 1 - (Math.max(core / 38, 1) - 1);
+    //let coreDecay = 1 - (Math.max(core / 38, 1) - 1);
+    let coreDecay = Math.pow(1/Math.max(core / 38, 1),1.2);
     if (coreDecay == 0)
       coreDecay = 1;
     core = core * coreDecay;
     let result = Math.pow(core * STAR_SCALE * densityBonus, 1.34);
-    console.log(result);
-    console.log(core);
     return result; 
   },
 };

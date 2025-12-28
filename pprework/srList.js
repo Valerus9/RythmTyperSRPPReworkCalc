@@ -40,6 +40,8 @@ diffSrValues = [
     9.38,// DuckTales (TV Size) WIP map Expert
 
     0.00,// Whopper Whopper (Extended) Lyrics
+
+    7.65,// ETA bunnies
 ];
 diffSrId = [
     "nesu_3_3", //PADORU / PADORU Easy
@@ -83,4 +85,6 @@ diffSrId = [
     "4d03", // DuckTales (TV Size) WIP map Expert
 
     "82eo_0_0", // Whopper Whopper (Extended) Lyrics
+
+    "yq7u_0_0_0_0_0_0", // ETA bunnies
 ];
