@@ -57,6 +57,18 @@ text:
 document.getElementById("zipInput").addEventListener("change", async (event) => {
   const files = [...event.target.files].filter(f => f.name.endsWith(".rtm"));
   if (!files) return;
+  const getStartTime = x => {
+    if (x.type == "tap")
+      return x.time;
+    if (x.type == "hold")
+      return x.startTime;
+  }
+  const getEndTime = x => {
+    if (x.type == "tap")
+      return x.time;
+    if (x.type == "hold")
+      return x.endTime;
+  }
   for (const file of files)
   {
 
@@ -94,16 +106,22 @@ document.getElementById("zipInput").addEventListener("change", async (event) => 
   tableText += "<tr>";
   tableText += "<th style=\"width:5%;\">Map</th>";
   tableText += "<th style=\"width:5%;\">Difficulty</th>";
-  tableText += "<th>BPM</th>";
-  tableText += "<th>DrainTime</th>";
-  tableText += "<th>NoteCount</th>";
-  tableText += "<th>TSCount</th>";
+  tableText += "<th style=\"width:2%;\">BPM</th>";
+  tableText += "<th style=\"width:3%;\">DrainTime</th>";
+  tableText += "<th style=\"width:3%;\">NoteCount</th>";
+  tableText += "<th style=\"width:2%;\">TSCount</th>";
   tableText += "<th>OldStar</th>";
   tableText += "<th>NewStar</th>";
   tableText += "<th>OldPP</th>";
   tableText += "<th>NewPP</th>";
+  //tableText += "<th>timeDurationBonus</th>";
+  //tableText += "<th>heldNoteBonus</th>";
+  //tableText += "<th>repeatingFactor</th>";
   tableText += "</tr>";
 
+
+  let ppDifferenceSum = 0;
+  let srDifferenceSum = 0;
   for (const difficulty of difficultyList)
   {
     tableText += "<tr>";
@@ -120,48 +138,22 @@ document.getElementById("zipInput").addEventListener("change", async (event) => 
     }
     tableText += "<td style=\"width:5%;\">"+ mapSongName +"</td>";
     tableText += "<td style=\"width:5%;\">"+ difficulty.name +"</td>";
-    tableText += "<td>"+ mapBpm +"</td>";
-    let minTime = -1;
+    tableText += "<td style=\"width:2%;\">"+ mapBpm +"</td>";
+    let minTime = Infinity;
     let maxTime = 0;
     for (const note of difficulty.notes)
     {
-      if (note.type == "tap")
+      if (minTime > getStartTime(note))
       {
-        if (minTime == -1)
-        {
-          minTime = note.time;
-        }
-        if (minTime > note.time)
-        {
-          minTime = note.time;
-        }
-        if (maxTime < note.time)
-        {
-          maxTime = note.time;
-        }
+        minTime = getStartTime(note);
       }
-      else if (note.type == "hold")
+      if (maxTime < getEndTime(note))
       {
-        if (minTime == -1)
-        {
-          minTime = note.startTime;          
-        }
-        if (minTime > note.startTime)
-        {
-          minTime = note.startTime;
-        }
-        if (maxTime < note.endTime)
-        {
-          maxTime = note.endTime;
-        }
+        maxTime = getEndTime(note);
       }
     }
     for (const typingSection of difficulty.typingSections)
     {
-      if (minTime == -1)
-      {
-        minTime = typingSection.startTime;
-      }
       if (minTime > typingSection.startTime)
       {
         minTime = typingSection.startTime;
@@ -180,9 +172,9 @@ document.getElementById("zipInput").addEventListener("change", async (event) => 
     if (drainTimeMinute < 10)
       drainTimeMinute = "0"+drainTimeMinute;
     
-    tableText += "<td>"+drainTimeMinute+":"+ drainTimeSecond +"</td>";
-    tableText += "<td>" + difficulty.notes.length + "</td>";
-    tableText += "<td>" + difficulty.typingSections.length + "</td>";
+    tableText += "<td style=\"width:3%;\">"+drainTimeMinute+":"+ drainTimeSecond +"</td>";
+    tableText += "<td style=\"width:3%;\">" + difficulty.notes.length + "</td>";
+    tableText += "<td style=\"width:2%;\">" + difficulty.typingSections.length + "</td>";
     
     let star = starFormulas["valerusReworkV2"](difficulty);
     star = Math.round(star * 100) / 100
@@ -197,12 +189,12 @@ document.getElementById("zipInput").addEventListener("change", async (event) => 
     if (currentSr > star)
     {
       let changeSize = Math.min(currentSr/star, 2) / 2;
-      colorG = Math.round(0 + 250*changeSize);
+      colorR = Math.round(0 + 250*changeSize);
     }
     else if (currentSr < star)
     {
       let changeSize = Math.min(star/currentSr, 2) / 2;
-      colorR = Math.round(0 + 250*changeSize);
+      colorG = Math.round(0 + 250*changeSize);
     }
     tableText += "<td style=\"color:rgb("+colorR+","+colorG+","+colorB+");\">"+ String(star).replace(".",",") +"</td>";
     
@@ -220,16 +212,29 @@ document.getElementById("zipInput").addEventListener("change", async (event) => 
     if (currentPP > pp)
     {
       let changeSize = Math.min(currentPP/pp, 2) / 2;
-      colorG = Math.round(0 + 250*changeSize);
+      colorR = Math.round(0 + 250*changeSize);
     }
     else if (currentPP < pp)
     {
       let changeSize = Math.min(pp/currentPP, 2) / 2;
-      colorR = Math.round(0 + 250*changeSize);
+      colorG = Math.round(0 + 250*changeSize);
     }
     tableText += "<td style=\"color:rgb("+colorR+","+colorG+","+colorB+");\">"+ String(pp).replace(".",",") +"</td>";
+    //let splitSR = starFormulas["valerusReworkV2Split"](difficulty);
+    //tableText += "<td>"+ String(Math.round(splitSR[0] * 100) / 100).replace(".",",") +"</td>";
+    //tableText += "<td>"+ String(Math.round(splitSR[1] * 100) / 100).replace(".",",") +"</td>";
+    //tableText += "<td>"+ String(Math.round(splitSR[2] * 100) / 100).replace(".",",") +"</td>";
     tableText += "</tr>";
+
+    srDifferenceSum += star - currentSr;
+    ppDifferenceSum += pp - currentPP;
   }
-  
+  let srAvgParagraph = document.getElementById("avgSRChange");
+  let ppAvgParagraph = document.getElementById("avgPPChange");
+  let srAverageDifference = Math.round(srDifferenceSum / difficultyList.length*100)/100;
+  let ppAverageDifference = Math.round(ppDifferenceSum / difficultyList.length);
+  srAvgParagraph.innerHTML = "Average sr difference: "+ srAverageDifference;
+  ppAvgParagraph.innerHTML = "Average pp difference: "+ ppAverageDifference;
+
   table.innerHTML = tableText;
 });
