@@ -1,6 +1,34 @@
 starFormulas = {
   originalCalculate(scoreData) {
-    const notes = scoreData.notes;
+    let convertedNotes = [];
+    for (const note of scoreData.notes)
+    {
+      if (note.type == "hold")
+      {
+        let convertedNote = 
+        { 
+          startTime: note.startTime / 1000,
+          endTime: note.endTime / 1000,
+          type: note.type,
+          key: note.key,
+        };
+        convertedNotes.push(convertedNote);
+      }
+      if (note.type == "tap")
+      {
+        let convertedNote = 
+        { 
+          time: note.time / 1000,
+          startTime: note.time / 1000,
+          type: note.type,
+          key: note.key,
+        };
+        convertedNotes.push(convertedNote);
+      }
+      
+    }
+
+    const notes = convertedNotes;
     const od = scoreData.overallDifficulty;
   
     const MIN_DT = 0.04;

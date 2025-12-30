@@ -1,6 +1,34 @@
 ppFormulas = {
   originalCalculate(scoreData) {
-    const notes = scoreData.notes;
+    let convertedNotes = [];
+    for (const note of scoreData.notes)
+    {
+      if (note.type == "hold")
+      {
+        let convertedNote = 
+        { 
+          startTime: note.startTime / 1000,
+          endTime: note.endTime / 1000,
+          type: note.type,
+          key: note.key,
+        };
+        convertedNotes.push(convertedNote);
+      }
+      if (note.type == "tap")
+      {
+        let convertedNote = 
+        { 
+          time: note.time / 1000,
+          startTime: note.time / 1000,
+          type: note.type,
+          key: note.key,
+        };
+        convertedNotes.push(convertedNote);
+      }
+      
+    }
+
+    const notes = convertedNotes;
     const od = scoreData.overallDifficulty;
     const acc = scoreData.accuracy / 100;
   
@@ -96,7 +124,7 @@ ppFormulas = {
       "z","x","c","v","b", "n","m",",",".","/",
     ];
     const TOTALOBJECTS = notes.length + typingSections.length; 
-    const OBJECTTIMEDIFFERENCE = 200;
+    const OBJECTTIMEDIFFERENCE = 500;
     const REWARDTIMEDIFFERENCE = OBJECTTIMEDIFFERENCE / 2;
     const OBJECTOVERWEIGHTLIMIT = 20;
     const getKeyboardRow = x => {
@@ -127,7 +155,7 @@ ppFormulas = {
         minTime = typingSections[i].startTime;
       if (typingSections[i].endTime > maxTime)
         maxTime = typingSections[i].endTime;
-      typingSectionDifficulties.push(1);
+      typingSectionDifficulties.push(1000);
     }
     let sortedTimeNotes = [];
     let noteDifficulties = [];
@@ -139,12 +167,12 @@ ppFormulas = {
       if (getEndTime(notes[i]) > maxTime)
         maxTime = getEndTime(notes[i]);
       sortedTimeNotes.push(i);
-      noteDifficulties.push(1);
+      noteDifficulties.push(1000);
       heldNoteCounts.push(0);
     }
     const drainTime = maxTime - minTime;
     const drainTimeSecond = drainTime / 1000;
-  
+
     for (let i = 0; i < sortedTimeNotes.length - 1; ++i)
     {
       for (let j = i + 1; j < sortedTimeNotes.length; ++j)
@@ -157,7 +185,7 @@ ppFormulas = {
         }
       }
     }
-  
+
     /*let keyboardNotes = [
       [],[],[],[],[], [],[],[],[],[],
       [],[],[],[],[], [],[],[],[],[],
@@ -189,18 +217,14 @@ ppFormulas = {
         else if (selectedEndTime < nextStartTime)
           break;
       }
-  
+
       let timeDurationBonus = 1;      
       let previousEndTime = getEndTime(notes[previousNoteIndex]);
       let selectedStartTime = getStartTime(notes[selectedNoteIndex]);
       if (selectedStartTime > previousEndTime)
         timeDurationBonus = OBJECTTIMEDIFFERENCE / (selectedStartTime - previousEndTime + REWARDTIMEDIFFERENCE)
-      if (timeDurationBonus > 1)
-        timeDurationBonus = Math.pow(timeDurationBonus, 4);
-      //timeDurationBonus = Math.pow(timeDurationBonus, 1.5);
+      let heldNoteBonus = Math.pow(heldNoteCounts[selectedNoteIndex] + 1, 1/1.12);
 
-      let heldNoteBonus = Math.pow(heldNoteCounts[selectedNoteIndex] + 1, 2);
-  
       objectDifficultySum += noteDifficulties[selectedNoteIndex] * timeDurationBonus * heldNoteBonus;
     }
     for (let i = 0; i < typingSectionDifficulties.length; ++i)
@@ -209,18 +233,15 @@ ppFormulas = {
       let letterLackNerf = Math.min((uniqueLetters.size / typingSections[i].text.length) + 0.5, 1);
       objectDifficultySum += typingSectionDifficulties[i] * letterLackNerf;
     }
-
-    //let objectDensity = TOTALOBJECTS/drainTimeSecond;
-    //let highObjectDensityPower = Math.pow(objectDensity, 0.54);
-    //let tooHighObjectCountNerf = Math.pow(Math.min(1/(objectDensity)+(1-1/OBJECTOVERWEIGHTLIMIT),1),highObjectDensityPower);
-    let difficultyDensity = Math.pow(objectDifficultySum / Math.pow(drainTimeSecond,1/2) ,2);
-    if (difficultyDensity > 4000)
+    let objectDensity = TOTALOBJECTS/drainTimeSecond;
+    let highObjectDensityPower = Math.pow(objectDensity, 0.54);
+    let tooHighObjectCountNerf = Math.pow(Math.min(1/(objectDensity)+(1-1/OBJECTOVERWEIGHTLIMIT),1),highObjectDensityPower);
+    let difficultyDensity = objectDifficultySum * tooHighObjectCountNerf / drainTime;
+    if (difficultyDensity > 8)
     {
-      difficultyDensity =4000*Math.pow(difficultyDensity/4000,0.4);
+      difficultyDensity =8*Math.pow(difficultyDensity/8,0.4);
     }
     
-    difficultyDensity = Math.pow(difficultyDensity, 1/Math.min(Math.max(difficultyDensity / 100, 1),1.5))
-    return difficultyDensity * accuracy;
-  
+    return Math.pow(difficultyDensity,2);
   }
 };
