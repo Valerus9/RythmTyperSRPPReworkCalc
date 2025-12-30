@@ -65,6 +65,9 @@ let sortByNewStar = 0;
 let sortByOldPP = 0;
 let sortByNewPP = 0;
 
+let LoadedBeatmapIds = [];
+let LoadedDifficultyIds = [];
+
 let songNames = [];
 let difficultyNames = [];
 let BPMs = [];
@@ -77,7 +80,139 @@ let OldPPs = [];
 let NewPPs = [];
 
 let diffIds = [];
+LoadRankedBeatmaps();
+CreateTable();
 
+function ChangeMenu()
+{
+  let changeMenuButton = document.getElementById("changemenubutton");
+  if (changeMenuButton.value == "View profile pp change")
+  {
+    document.body.innerHTML = "<h1 class=\"title\">Rhythm typer SR/PP Rework</h1>\n"
+    +"<h5 class=\"author\">By Valerus9</h5>\n"
+    +"<input type=\"button\" id=\"changemenubutton\" value=\"View map sr/pp change\">\n"
+    +"<input type=\"button\" id=\"calculatepp\" value=\"Calculate pp\">\n"
+    +"<p>Input replay data from your profila page top play section</p>\n"
+    +"<p id=\"totalPPOld\"></p>\n"
+    +"<p id=\"totalPPNew\"></p>\n"
+    +"<textarea name=\"replayTextArea\" style=\"height:500px;\" id=\"replayInput\"></textarea>"
+    +"<table id=\"topplayList\">\n"
+    +"</table>\n\n"
+    +"<script src=\"main.js\"></script> ";
+    document.getElementById("calculatepp").addEventListener("click", async (event) => { 
+      CalculateTopPlayScores();
+    });
+  }
+    
+  else
+  {
+    document.body.innerHTML = "<h1 class=\"title\">Rhythm typer SR/PP Rework</h1>\n"
+    +"<h5 class=\"author\">By Valerus9</h5>\n"
+    +"<input type=\"button\" id=\"changemenubutton\" value=\"View profile pp change\">\n"
+    +"<input type=\"file\" id=\"zipInput\" multiple accept=\".rtm\"/>\n"
+    +"<!--<input type=\"file\" id=\"zipInputConverting\" multiple accept=\".rtm\"/>-->\n"
+    +"<p id=\"avgSRChange\"></p>\n"
+    +"<p id=\"avgPPChange\"></p>\n"
+    +"<table id=\"diffList\">\n"
+    +"</table>\n\n"
+    +"<script src=\"main.js\"></script> ";
+    CreateTable();
+  }
+    
+  document.getElementById("changemenubutton").addEventListener("click", async (event) => { 
+    ChangeMenu();
+  });
+}
+
+function CalculateTopPlayScores()
+{
+  let replays = String(document.getElementById("replayInput").value).split("\n");
+  let cleanedUpReplay = [];
+  let modList = ["NC", "DC", "HT", "DT", "AT", "NF"];
+  for (const replay of replays)
+  {
+    if (modList.includes(replay))
+      continue;
+    if (replay.startsWith("weighted") || replay.startsWith("#"))
+      continue;
+    cleanedUpReplay.push(replay);
+  }
+  let replayBeatmapName = [];
+  let replayDiffIds = [];
+  let replayAccuracy = [];
+  for (let i = 0; i < cleanedUpReplay.length; ++i)
+  {
+    if (songNames.includes(cleanedUpReplay[i]))
+    {
+      replayBeatmapName.push(cleanedUpReplay[i]);
+    }
+    if (cleanedUpReplay[i].includes(" • "))
+    {
+      let diffName = cleanedUpReplay[i].split(" • ")[1];
+      if (difficultyNames.includes(diffName))
+      {
+        let index = -2;
+        let foundDiff = false;
+        while(!foundDiff)
+        {
+          index = difficultyNames.indexOf(diffName, Math.max(0,index));
+          if (replayBeatmapName[replayBeatmapName.length - 1] == songNames[index])
+          {
+            foundDiff = true;
+            break;
+          }
+          if (index == -1)
+            break;
+          index++;
+        }
+        if (index != -1)
+          replayDiffIds.push(index);        
+      }
+      
+    }
+    if (cleanedUpReplay[i].includes("%"))
+    {
+      replayAccuracy.push(parseFloat(cleanedUpReplay[i].replace("%","")));
+    }
+  }
+  let oldPP = 0;
+  let newPP = 0;
+  let topPlayTable = document.getElementById("topplayList");
+  let topPlayText = "";
+  topPlayText += "<th>Map</th>";
+  topPlayText += "<th>Diff</th>";
+  topPlayText += "<th>Acc</th>";
+  topPlayText += "<th>Old pp</th>";
+  topPlayText += "<th>New pp</th>";
+  for (let i = 0; i < replayDiffIds.length; ++i)
+  {
+    topPlayText += "<tr>";
+    oldPP += ActualPP(OldPPs[i], i + 1);
+    newPP += ActualPP(NewPPs[i], i + 1);
+    topPlayText += "<td>"+songNames[replayDiffIds[i]]+"</td>";
+    topPlayText += "<td>"+difficultyNames[replayDiffIds[i]]+"</td>";
+    topPlayText += "<td>"+replayAccuracy[i]+"</td>";
+    topPlayText += "<td>"+OldPPs[replayDiffIds[i]] + " ("+Math.round(ActualPP(OldPPs[i], i + 1))+")"+"</td>";
+    topPlayText += "<td>"+NewPPs[replayDiffIds[i]] + " ("+Math.round(ActualPP(NewPPs[i], i + 1))+")"+"</td>";
+    topPlayText += "</tr>";
+  }
+  document.getElementById("totalPPOld").innerHTML = "Total old PP: " + oldPP;
+  document.getElementById("totalPPNew").innerHTML = "Total new PP: " + newPP;
+  topPlayTable.innerHTML = topPlayText;
+}
+
+function ActualPP(pp, n)
+{
+  return pp * Math.pow(0.95,(n - 1));
+}
+function PercentagePP(n)
+{
+  return Math.pow(0.95,(n - 1));
+}
+
+document.getElementById("changemenubutton").addEventListener("click", async (event) => { 
+  ChangeMenu();
+});
 document.getElementById("zipInput").addEventListener("change", async (event) => {
   const files = [...event.target.files].filter(f => f.name.endsWith(".rtm"));
   if (!files) return;
@@ -114,6 +249,8 @@ document.getElementById("zipInput").addEventListener("change", async (event) => 
             break;
           }          
         }
+        if (LoadedBeatmapIds.includes(data.mapsetId))
+          continue;
         if (hasKey)
         {
           difficultyList.push(data);
@@ -126,7 +263,6 @@ document.getElementById("zipInput").addEventListener("change", async (event) => 
     }        
   }
 
-  let counter = 0;
   for (const difficulty of difficultyList)
   {
     let mapSongName = "";
@@ -140,6 +276,8 @@ document.getElementById("zipInput").addEventListener("change", async (event) => 
         break;
       }      
     }
+    LoadedBeatmapIds.push(difficulty.mapsetId);
+    LoadedDifficultyIds.push(difficulty.diffId);
     songNames.push(mapSongName);
     difficultyNames.push(difficulty.name);
     BPMs.push(mapBpm);
@@ -189,8 +327,7 @@ document.getElementById("zipInput").addEventListener("change", async (event) => 
     let currentPP = ppFormulas["originalCalculate"](difficulty);
     currentPP = Math.round(currentPP);
     OldPPs.push(currentPP);
-    diffIds.push(counter);
-    counter++;
+    diffIds.push(diffIds.length);
 
   }
   CreateTable();
@@ -382,8 +519,8 @@ function CreateTable()
   }
   let srAvgParagraph = document.getElementById("avgSRChange");
   let ppAvgParagraph = document.getElementById("avgPPChange");
-  let srAverageDifference = Math.round(srDifferenceSum / difficultyList.length*100)/100;
-  let ppAverageDifference = Math.round(ppDifferenceSum / difficultyList.length);
+  let srAverageDifference = Math.round(srDifferenceSum / diffIds.length*100)/100;
+  let ppAverageDifference = Math.round(ppDifferenceSum / diffIds.length);
   srAvgParagraph.innerHTML = "Average sr difference: "+ srAverageDifference;
   ppAvgParagraph.innerHTML = "Average pp difference: "+ ppAverageDifference;
 
@@ -662,3 +799,201 @@ function DoSort()
     }
   }
 }
+
+function LoadRankedBeatmaps()
+{
+  for (let i = 0; i < RankedSongNames.length; ++i)
+  {
+    LoadedBeatmapIds.push(RankedBeatmapIds[i]);
+    LoadedDifficultyIds.push(RankedDifficultyIds[i]);
+    songNames.push(RankedSongNames[i]);
+    difficultyNames.push(RankedDifficultyNames[i]);
+    BPMs.push(RankedBPMs[i]);
+    DrainTimes.push(RankedDrainTimes[i]);
+    NoteCounts.push(RankedNoteCounts[i]);
+    TypingSectionCounts.push(RankedTypingSectionCounts[i]);
+    OldStars.push(RankedOldStars[i]);
+    NewStars.push(RankedNewStars[i]);
+    OldPPs.push(RankedOldPPs[i]);
+    NewPPs.push(RankedNewPPs[i]);
+    diffIds.push(diffIds.length);
+  }
+}
+
+/*let convertedBeatmapIds = [];
+let convertedDifficultyIds = [];
+
+let convertedSongNames = [];
+let convertedDifficultyNames = [];
+let convertedBPMs = [];
+let convertedDrainTimes = [];
+let convertedNoteCounts = [];
+let convertedTypingSectionCounts = [];
+let convertedOldStars = [];
+let convertedNewStars = [];
+let convertedOldPPs = [];
+let convertedNewPPs = [];
+
+let convertedDifficulties = [];
+let convertedBeatmaps = [];
+
+document.getElementById("zipInputConverting").addEventListener("change", async (event) => {
+  const files = [...event.target.files].filter(f => f.name.endsWith(".rtm"));
+  if (!files) return;
+  const getStartTime = x => {
+    if (x.type == "tap")
+      return x.time;
+    if (x.type == "hold")
+      return x.startTime;
+  }
+  const getEndTime = x => {
+    if (x.type == "tap")
+      return x.time;
+    if (x.type == "hold")
+      return x.endTime;
+  }
+  for (const file of files)
+  {
+
+    const zip = await JSZip.loadAsync(file);
+
+    for (const [filename, zipEntry] of Object.entries(zip.files)) {
+      if (!zipEntry.dir) {
+        if (!filename.includes(".json"))
+          continue;
+        const content = await zipEntry.async("string");
+        const data = JSON.parse(content);
+        const keys = Object.keys(data);
+        let hasKey = false;
+        for (const key of keys)
+        {
+          if (key.includes("diffId"))
+          {
+            hasKey = true;
+            break;
+          }          
+        }
+        if (hasKey)
+        {
+          convertedDifficulties.push(data);
+        }
+        else
+        {
+          convertedBeatmaps.push(data);
+        }
+      }
+    }        
+  }
+
+  for (const difficulty of convertedDifficulties)
+  {
+    let mapSongName = "";
+    let mapBpm = 0;
+    for (const beatmap of convertedBeatmaps)
+    {
+      if (beatmap.mapsetId == difficulty.mapsetId)
+      {
+        mapSongName = beatmap.songName;
+        mapBpm = Math.round(beatmap.bpm);
+        break;
+      }      
+    }
+    convertedDifficultyIds.push(difficulty.diffId);
+    convertedBeatmapIds.push(difficulty.mapsetId);
+    convertedSongNames.push(mapSongName);
+    convertedDifficultyNames.push(difficulty.name);
+    convertedBPMs.push(mapBpm);
+    let minTime = Infinity;
+    let maxTime = 0;
+    for (const note of difficulty.notes)
+    {
+      if (minTime > getStartTime(note))
+      {
+        minTime = getStartTime(note);
+      }
+      if (maxTime < getEndTime(note))
+      {
+        maxTime = getEndTime(note);
+      }
+    }
+    for (const typingSection of difficulty.typingSections)
+    {
+      if (minTime > typingSection.startTime)
+      {
+        minTime = typingSection.startTime;
+      }
+      if (maxTime < typingSection.endTime)
+      {
+        maxTime = typingSection.endTime;
+      }
+    }
+    let drainTime = maxTime - minTime;
+    convertedDrainTimes.push(drainTime);
+
+    convertedNoteCounts.push(difficulty.notes.length);
+    convertedTypingSectionCounts.push(difficulty.typingSections.length);
+    
+    let star = starFormulas["valerusReworkV2"](difficulty);
+    star = Math.round(star * 100) / 100;
+    convertedNewStars.push(star);
+
+    let currentSr = starFormulas["originalCalculate"](difficulty);
+    currentSr = Math.round(currentSr * 100) / 100;
+    convertedOldStars.push(currentSr);
+    
+    difficulty.accuracy = 100;    
+    let pp = ppFormulas["valerusRework"](difficulty);
+    pp = Math.round(pp);
+    convertedNewPPs.push(pp);
+
+    let currentPP = ppFormulas["originalCalculate"](difficulty);
+    currentPP = Math.round(currentPP);
+    convertedOldPPs.push(currentPP);
+    
+  }
+  let textBeatmapIds = "let RankedBeatmapIds = ["
+  let textDifficultyIds = "let RankedDifficultyIds = ["
+  let textSongNames = "let RankedSongNames = [";
+  let textDifficultyNames = "let RankedDifficultyNames = [";
+  let textBPMs = "let RankedBPMs = [";
+  let textDrainTimes = "let RankedDrainTimes = [";
+  let textNoteCounts = "let RankedNoteCounts = [";
+  let textTypingSectionCounts = "let RankedTypingSectionCounts = [";
+  let textOldStars = "let RankedOldStars = [";
+  let textNewStars = "let RankedNewStars = [";
+  let textOldPPs = "let RankedOldPPs = [";
+  let textNewPPs = "let RankedNewPPs = [";
+  for (let i = 0; i < convertedBeatmapIds.length; ++i)
+  {
+    textBeatmapIds += "\n    \""+convertedBeatmapIds[i]+"\",";
+    textDifficultyIds += "\n    \""+convertedDifficultyIds[i]+"\",";
+    textSongNames += "\n    \""+convertedSongNames[i] + "\",";
+    textDifficultyNames += "\n    \""+convertedDifficultyNames[i] + "\",";
+    textBPMs += "\n    "+convertedBPMs[i] + ",";
+    textDrainTimes += "\n    "+convertedDrainTimes[i] + ",";
+    textNoteCounts += "\n    "+convertedNoteCounts[i] + ",";
+    textTypingSectionCounts += "\n    "+convertedTypingSectionCounts[i] + ",";
+    textOldStars += "\n    "+convertedOldStars[i] + ",";
+    textNewStars += "\n    "+convertedNewStars[i] + ",";
+    textOldPPs += "\n    "+convertedOldPPs[i] + ",";
+    textNewPPs += "\n    "+convertedNewPPs[i] + ",";
+  }
+  textBeatmapIds += "\n];";
+  textDifficultyIds += "\n];";
+  textSongNames += "\n];";
+  textDifficultyNames += "\n];";
+  textBPMs += "\n];";
+  textDrainTimes += "\n];";
+  textNoteCounts += "\n];";
+  textTypingSectionCounts += "\n];";
+  textOldStars += "\n];";
+  textNewStars += "\n];";
+  textOldPPs += "\n];";
+  textNewPPs += "\n];";
+  let rankedText = textSongNames + "\n" + textDifficultyNames + "\n" 
+  + textBPMs + "\n" + textDrainTimes + "\n" + textNoteCounts + "\n" 
+  + textTypingSectionCounts + "\n" + textOldStars + "\n" + textNewStars 
+  + "\n" + textOldPPs + "\n" + textNewPPs + "\n" 
+  + textBeatmapIds + "\n" + textDifficultyIds;
+  console.log(rankedText);
+});*/
