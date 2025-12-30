@@ -282,7 +282,7 @@ ppFormulas = {
     {
       let uniqueLetters = new Set(typingSections[i].text);
       let letterLackNerf = Math.min((uniqueLetters.size / typingSections[i].text.length) + 0.5, 1);
-      objectDifficultySum += typingSectionDifficulties[i] * letterLackNerf;
+      objectDifficultySum += typingSectionDifficulties[i] * letterLackNerf *8;
     }
     let objectDensity = TOTALOBJECTS/drainTimeSecond;
     let highObjectDensityPower = Math.pow(objectDensity, 0.54);

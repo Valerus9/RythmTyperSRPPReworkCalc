@@ -1,5 +1,9 @@
 body{
-    font-size: 1em;
+    font-size: 1.3em;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
 }
 td, th{
     padding: 10px;
@@ -9,4 +13,42 @@ td, th, table, tr
 {
     border: 2px solid black;
     border-collapse: collapse;
+}
+th
+{
+    color: white;
+    background-color: green;
+}
+tr
+{
+    background-color: rgb(245, 245, 250);
+}
+p, input, table
+{
+    margin: auto;
+}
+
+tbody tr:nth-child(odd) {
+    background-color: rgb(230, 230, 235);
+}
+
+.title
+{
+    margin-top: 0px;
+    margin-bottom: 6px;
+    font-size: 3em;
+}
+.author
+{
+    margin-top: 0px;
+    font-size: 1.2em;
+}
+p
+{
+    margin-bottom: 10px;
+}
+
+input
+{
+    font-size: 1em;
 }
