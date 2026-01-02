@@ -230,6 +230,7 @@ function CreateSelectContentUser()
     ppReworkSecond = event.target.value - 1;
     CalculateTopPlayScores();
   });
+  
 }
 document.getElementById("srcalcselectfirst").addEventListener("change", async (event) => {
   srReworkFirst = event.target.value - 1;
@@ -297,6 +298,10 @@ function ChangeMenu(elementId)
     });
     CreateSelectContentBeatmap();
     CreateTable();
+    document.getElementById("clearrtms").addEventListener("click", async (event) => {
+      ClearLoadedRTMS();
+      CreateTable();
+    });
   }
   RefreshSelectedButton();
 }
@@ -862,16 +867,19 @@ function CreateTable()
 
   table.innerHTML = tableText;
 
-  document.getElementById("map").addEventListener("click", async (event) => { ChangeSort(0); });
-  document.getElementById("difficulty").addEventListener("click", async (event) => { ChangeSort(1); });
-  document.getElementById("bpm").addEventListener("click", async (event) => { ChangeSort(2); });
-  document.getElementById("draintime").addEventListener("click", async (event) => { ChangeSort(3); });
-  document.getElementById("notecount").addEventListener("click", async (event) => { ChangeSort(4); });
-  document.getElementById("tscount").addEventListener("click", async (event) => { ChangeSort(5); });
-  document.getElementById("oldstar").addEventListener("click", async (event) => { ChangeSort(6); });
-  document.getElementById("newstar").addEventListener("click", async (event) => { ChangeSort(7); });
-  document.getElementById("oldpp").addEventListener("click", async (event) => { ChangeSort(8); });
-  document.getElementById("newpp").addEventListener("click", async (event) => { ChangeSort(9); });
+  if (diffIds.length > 0)
+  {
+    document.getElementById("map").addEventListener("click", async (event) => { ChangeSort(0); });
+    document.getElementById("difficulty").addEventListener("click", async (event) => { ChangeSort(1); });
+    document.getElementById("bpm").addEventListener("click", async (event) => { ChangeSort(2); });
+    document.getElementById("draintime").addEventListener("click", async (event) => { ChangeSort(3); });
+    document.getElementById("notecount").addEventListener("click", async (event) => { ChangeSort(4); });
+    document.getElementById("tscount").addEventListener("click", async (event) => { ChangeSort(5); });
+    document.getElementById("oldstar").addEventListener("click", async (event) => { ChangeSort(6); });
+    document.getElementById("newstar").addEventListener("click", async (event) => { ChangeSort(7); });
+    document.getElementById("oldpp").addEventListener("click", async (event) => { ChangeSort(8); });
+    document.getElementById("newpp").addEventListener("click", async (event) => { ChangeSort(9); });
+  }
 }
 
 function ChangeSort(sortId)
