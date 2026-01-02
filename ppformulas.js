@@ -438,8 +438,14 @@ ppFormulas = {
       }
     }
 
-    let objectDifficultySum = 0;
     const overallDifficulty = scoreData.overallDifficulty;
+    let ms = 80 - 6 * Math.min(overallDifficulty, 11);
+    let od5ms = 80 - 6 * 5;
+    const ODSCALE = 0.12;
+    let odnerf = 1/(Math.pow(Math.max(5-overallDifficulty,0),2)/100 + 1);
+    let odbonus = ((ODSCALE*(1/ms))/(1/od5ms))-ODSCALE+1;
+    odbonus = odbonus * odnerf
+    let objectDifficultySum = 0;
     for (let i = 1; i < sortedTimeNotes.length; ++i)
     {
       let selectedNoteIndex = sortedTimeNotes[i];
@@ -465,7 +471,6 @@ ppFormulas = {
         timeDurationBonus = OBJECTTIMEDIFFERENCE / (selectedStartTime - previousEndTime + REWARDTIMEDIFFERENCE);
       
       let heldNoteBonus = Math.pow(heldNoteCounts[selectedNoteIndex] + 1, 1/1.12);
-      let odbonus = Math.pow(overallDifficulty / 5, 2) / 10 + 0.9;
 
       objectDifficultySum += noteDifficulties[selectedNoteIndex] * timeDurationBonus * heldNoteBonus * odbonus;
     }
