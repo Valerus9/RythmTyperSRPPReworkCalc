@@ -79,3 +79,8 @@ input
     margin-top: 0.2em;
     margin-bottom: 0.2em;
 }
+#replayInput
+{
+    height:30em;
+    width:80%
+}

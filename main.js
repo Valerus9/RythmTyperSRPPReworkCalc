@@ -54,6 +54,8 @@ startTime:
 text:
 */
 
+let modList = [ "No mods", "DT/NC", "HT/DC"];
+
 let sortBySongName = 0;
 let sortByDifficultyName = 0;
 let sortByBPM = 0;
@@ -92,6 +94,7 @@ let ppFormulaKeys = Object.keys(ppFormulas);
 let diffIds = [];
 let containerBody = document.getElementById("container").innerHTML;
 let selectedId = "changemenumaps";
+let selectedMod = "";
 LoadRankedBeatmaps();
 CreateTable();
 
@@ -186,6 +189,21 @@ function CreateSelectContentBeatmap()
     
   }
   selectppSecond.innerHTML = selectpptextSecond;
+  let modSelect = document.getElementById("modselect");
+  let modSelectText = "";
+  for (let i = 0; i < modList.length; ++i)
+  {
+    if (i == 0)
+    {
+      modSelectText += "<option value=\""+(i+1)+"\" selected>"+modList[i]+"</option>\n";
+    }
+    else
+    {
+      modSelectText += "<option value=\""+(i+1)+"\">"+modList[i]+"</option>\n";
+    }
+    
+  }
+  modSelect.innerHTML = modSelectText;
 
 }
 
@@ -248,6 +266,10 @@ document.getElementById("ppcalcselectsecond").addEventListener("change", async (
   ppReworkSecond = event.target.value - 1;
   CreateTable();
 });
+document.getElementById("modselect").addEventListener("change", async (event) => {
+  selectedMod = modList[event.target.value - 1];
+  CreateTable();
+});
 
 CreateSelectContentBeatmap();
 
@@ -267,7 +289,7 @@ function ChangeMenu(elementId)
     +"<p id=\"totalPPOld\"></p>\n"
     +"<p id=\"totalPPNew\"></p>\n"
     +"<p>Go to your top play section of your profile and ctrl + a, ctrl + c, ctrl+v them.</p>\n"
-    +"<textarea name=\"replayTextArea\" style=\"height:500px;width:100%\" id=\"replayInput\"></textarea>"
+    +"<textarea name=\"replayTextArea\" id=\"replayInput\"></textarea>"
     +"<table id=\"topplayList\">\n"
     +"</table>\n\n";
     CreateSelectContentUser();
@@ -811,41 +833,45 @@ function CreateTable()
     tableText += "<td style=\"width:3%;\">" + NoteCounts[diffIds[i]] + "</td>";
     tableText += "<td style=\"width:2%;\">" + TypingSectionCounts[diffIds[i]] + "</td>";
     
-    tableText += "<td style=\"width:20%;\">"+ String(Stars[srReworkFirst][diffIds[i]]).replace(".",",") +"</td>";
+    let oldStar = GetModdedStar(diffIds[i],srReworkFirst,selectedMod);
+    let newStar = GetModdedStar(diffIds[i],srReworkSecond,selectedMod);
+    tableText += "<td style=\"width:20%;\">"+ String(oldStar).replace(".",",") +"</td>";
     let colorR = 0;
     let colorG = 0;
     let colorB = 0;
-    if (Stars[srReworkFirst][diffIds[i]] > Stars[srReworkSecond][diffIds[i]])
+    if (oldStar > newStar)
     {
-      let changeSize = Math.min(Stars[srReworkFirst][diffIds[i]]/Stars[srReworkSecond][diffIds[i]], 2) / 2;
+      let changeSize = Math.min(oldStar/newStar, 2) / 2;
       colorR = Math.round(0 + 250*changeSize);
     }
-    else if (Stars[srReworkFirst][diffIds[i]] < Stars[srReworkSecond][diffIds[i]])
+    else if (oldStar < newStar)
     {
-      let changeSize = Math.min(Stars[srReworkSecond][diffIds[i]]/Stars[srReworkFirst][diffIds[i]], 2) / 2;
+      let changeSize = Math.min(newStar/oldStar, 2) / 2;
       colorG = Math.round(0 + 250*changeSize);
     }
-    tableText += "<td style=\"color:rgb("+colorR+","+colorG+","+colorB+"); width:20%;\">"+ String(Stars[srReworkSecond][diffIds[i]]).replace(".",",") +"</td>";
+    tableText += "<td style=\"color:rgb("+colorR+","+colorG+","+colorB+"); width:20%;\">"+ String(newStar).replace(".",",") +"</td>";
     
-    tableText += "<td style=\"width:20%;\">"+ String(PPs[ppReworkFirst][diffIds[i]]).replace(".",",") +"</td>";
+    let oldPP = GetModdedPP(diffIds[i], ppReworkFirst, selectedMod);
+    let newPP = GetModdedPP(diffIds[i], ppReworkSecond, selectedMod);
+    tableText += "<td style=\"width:20%;\">"+ String(Math.round(oldPP)).replace(".",",") +"</td>";
     colorR = 0;
     colorG = 0;
     colorB = 0;
-    if (PPs[ppReworkFirst][diffIds[i]] > PPs[ppReworkSecond][diffIds[i]])
+    if (oldPP > newPP)
     {
-      let changeSize = Math.min(PPs[ppReworkFirst][diffIds[i]]/PPs[ppReworkSecond][diffIds[i]], 2) / 2;
+      let changeSize = Math.min(oldPP/newPP, 2) / 2;
       colorR = Math.round(0 + 250*changeSize);
     }
-    else if (PPs[ppReworkFirst][diffIds[i]] < PPs[ppReworkSecond][diffIds[i]])
+    else if (oldPP < newPP)
     {
-      let changeSize = Math.min(PPs[ppReworkSecond][diffIds[i]]/PPs[ppReworkFirst][diffIds[i]], 2) / 2;
+      let changeSize = Math.min(newPP/oldPP, 2) / 2;
       colorG = Math.round(0 + 250*changeSize);
     }
-    tableText += "<td style=\"color:rgb("+colorR+","+colorG+","+colorB+"); width:20%;\">"+ String(PPs[ppReworkSecond][diffIds[i]]).replace(".",",") +"</td>";
+    tableText += "<td style=\"color:rgb("+colorR+","+colorG+","+colorB+"); width:20%;\">"+ String(Math.round(newPP)).replace(".",",") +"</td>";
     tableText += "</tr>";
 
-    srDifferenceSum += Stars[ppReworkSecond][diffIds[i]] - Stars[ppReworkFirst][diffIds[i]];
-    ppDifferenceSum += PPs[ppReworkSecond][diffIds[i]] - PPs[ppReworkFirst][diffIds[i]];
+    srDifferenceSum += newStar - oldStar;
+    ppDifferenceSum += newPP - oldPP;
   }
   let srAvgParagraph = document.getElementById("avgSRChange");
   let ppAvgParagraph = document.getElementById("avgPPChange");
