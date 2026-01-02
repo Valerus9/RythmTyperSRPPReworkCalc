@@ -324,7 +324,7 @@ starFormulas = {
     return Math.pow(Math.sqrt(noteDiffs / Math.sqrt(drainTime)) * STAR_SCALE * densityBonus, 1.34); 
   },*/
 
-  valerusRework(scoreData) {
+  /*valerusRework(scoreData) {
     const notes = [...scoreData.notes];
     const typingSections = scoreData.typingSections;        
     //const od = scoreData.overallDifficulty;
@@ -675,7 +675,7 @@ starFormulas = {
     
     
     return result; 
-  },
+  },*/
 
   valerusReworkV2(scoreData)
   {
@@ -865,10 +865,10 @@ starFormulas = {
 
   },
 
-  /*valerusReworkV2Split(scoreData)
+  valerusReworkV2withOD(scoreData)
   {
     const notes = scoreData.notes;
-    const typingSections = scoreData.typingSections;
+    const typingSections = scoreData.typingSections;    
     const KEYBOARDLAYOUT = [
       "q","w","e","r","t", "y","u","i","o","p",
       "a","s","d","f","g", "h","j","k","l",";",
@@ -910,9 +910,6 @@ starFormulas = {
     }
     let sortedTimeNotes = [];
     let noteDifficulties = [];
-    let repeatingFactors = [];
-    let timeDurationBonuses = [];
-    let heldNoteBonuses = [];
     let heldNoteCounts = [];
     for (let i = 0; i < notes.length; ++i)
     {
@@ -999,12 +996,12 @@ starFormulas = {
           }          
         }
         let distanceFactor = Math.min(Math.pow((100+maxCountDistance/2)/200, 1.5),1);
-        repeatingFactors.push(Math.pow(Math.min(3/(maxCount+1),1), distanceFactor));
         noteDifficulties[keyboardSortedIds[i][j]] *= Math.pow(Math.min(3/(maxCount+1),1), distanceFactor);
       }
     }
 
     let objectDifficultySum = 0;
+    const overallDifficulty = scoreData.overallDifficulty;
     for (let i = 1; i < sortedTimeNotes.length; ++i)
     {
       let selectedNoteIndex = sortedTimeNotes[i];
@@ -1029,40 +1026,15 @@ starFormulas = {
       if (selectedStartTime > previousEndTime)
         timeDurationBonus = OBJECTTIMEDIFFERENCE / (selectedStartTime - previousEndTime + REWARDTIMEDIFFERENCE)
       let heldNoteBonus = Math.pow(heldNoteCounts[selectedNoteIndex] + 1, 1/1.12);
+      let odbonus = Math.pow(overallDifficulty / 5, 2) / 10 + 0.9;
 
-      timeDurationBonuses.push(timeDurationBonus);
-      heldNoteBonuses.push(heldNoteBonus);
-      noteDifficulties[selectedNoteIndex] *= timeDurationBonus * heldNoteBonus
-      objectDifficultySum += noteDifficulties[selectedNoteIndex];
+      objectDifficultySum += noteDifficulties[selectedNoteIndex] * timeDurationBonus * heldNoteBonus * odbonus;
     }
-    let sumOfFactors = [];
-    let timeDurationBonusAmounts = [];    
-    let timeDurationBonusSum = 0;
-    let heldNoteBonusAmounts = [];
-    let heldNoteBonusSum = 0;
-    let repeatingFactorAmounts = [];
-    let repeatingFactorSum = 0;
-    for (let i = 0; i < notes.length; ++i)
-    {
-      if (timeDurationBonuses[i] == null || heldNoteBonuses[i] == null || repeatingFactors[i] == null)
-        continue;
-      sumOfFactors.push(timeDurationBonuses[i] + heldNoteBonuses[i] + repeatingFactors[i]);
-
-      timeDurationBonusAmounts.push((noteDifficulties[i]/sumOfFactors[i])*timeDurationBonuses[i]);
-      timeDurationBonusSum += timeDurationBonusAmounts[i];
-      heldNoteBonusAmounts.push((noteDifficulties[i]/sumOfFactors[i])*heldNoteBonuses[i]);
-      heldNoteBonusSum += heldNoteBonusAmounts[i];
-      repeatingFactorAmounts.push((noteDifficulties[i]/sumOfFactors[i])*repeatingFactors[i]);
-      repeatingFactorSum += repeatingFactorAmounts[i];
-    }
-    let timeDurationBonusPercentage = timeDurationBonusSum / objectDifficultySum;
-    let heldNoteBonusPercentage = heldNoteBonusSum / objectDifficultySum;
-    let repeatingFactorPercentage = repeatingFactorSum / objectDifficultySum;
     for (let i = 0; i < typingSectionDifficulties.length; ++i)
     {
       let uniqueLetters = new Set(typingSections[i].text);
       let letterLackNerf = Math.min((uniqueLetters.size / typingSections[i].text.length) + 0.5, 1);
-      objectDifficultySum += typingSectionDifficulties[i] * letterLackNerf;
+      objectDifficultySum += typingSectionDifficulties[i] * letterLackNerf * 7;
     }
     let objectDensity = TOTALOBJECTS/drainTimeSecond;
     let highObjectDensityPower = Math.pow(objectDensity, 0.54);
@@ -1079,10 +1051,7 @@ starFormulas = {
     {
       difficultyDensity = difficultyDensity / 2 + 1
     }
-    return [
-      difficultyDensity * timeDurationBonusPercentage,
-      difficultyDensity * heldNoteBonusPercentage,
-      difficultyDensity * repeatingFactorPercentage];
+    return difficultyDensity;
 
-  }*/
+  },
 };

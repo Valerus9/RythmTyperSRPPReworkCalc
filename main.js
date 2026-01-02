@@ -74,54 +74,244 @@ let BPMs = [];
 let DrainTimes = [];
 let NoteCounts = [];
 let TypingSectionCounts = [];
-let OldStars = [];
-let NewStars = [];
-let OldPPs = [];
-let NewPPs = [];
+let Stars = [];
+let PPs = [];
+let StarDTNCs = [];
+let PPDTNCs = [];
+let StarHTDCs = [];
+let PPHTDCs = [];
+
+let ppReworkFirst = 0;
+let ppReworkSecond = 1;
+let srReworkFirst = 0;
+let srReworkSecond = 1;
+
+let starFormulaKeys = Object.keys(starFormulas);
+let ppFormulaKeys = Object.keys(ppFormulas);
 
 let diffIds = [];
+let containerBody = document.getElementById("container").innerHTML;
+let selectedId = "changemenumaps";
 LoadRankedBeatmaps();
 CreateTable();
 
-function ChangeMenu()
+let visualMode = "light";
+
+function ApplyVisualMode()
 {
-  let changeMenuButton = document.getElementById("changemenubutton");
-  if (changeMenuButton.value == "View profile pp change")
+  document.documentElement.className = "";
+  if (visualMode == "light")
   {
-    document.body.innerHTML = "<h1 class=\"title\">Rhythm typer SR/PP Rework</h1>\n"
+    document.documentElement.classList.add("lightmode");
+    document.getElementById("visualmodeswitch").value="Dark mode";
+  }
+  if (visualMode == "dark")
+  {
+    document.documentElement.classList.add("darkmode");
+    document.getElementById("visualmodeswitch").value="Light mode";
+  }
+}
+document.getElementById("visualmodeswitch").addEventListener("click", async (event) => {
+  if (visualMode == "light")
+  {
+    visualMode = "dark";
+  }
+  else if (visualMode == "dark")
+  {
+    visualMode = "light";
+  }
+  ApplyVisualMode();
+});
+
+ApplyVisualMode();
+
+function CreateSelectContentBeatmap()
+{
+  let selectsrFirst = document.getElementById("srcalcselectfirst");
+  let selectsrtextFirst = "<option value=\"\" disabled selected>Select a sr rework</option>\n";
+  let srReworkKeys = Object.keys(starFormulas);
+  for (let i = 0; i < srReworkKeys.length; ++i)
+  {    
+    if (i == 0)
+    {
+      selectsrtextFirst += "<option selected value=\""+(i+1)+"\">"+srReworkKeys[i]+"</option>\n";
+    }
+    else
+    {
+      selectsrtextFirst += "<option value=\""+(i+1)+"\">"+srReworkKeys[i]+"</option>\n";
+    }
+  }
+  selectsrFirst.innerHTML = selectsrtextFirst;
+  let selectsrSecond = document.getElementById("srcalcselectsecond");
+  let selectsrtextSecond = "<option value=\"\" disabled selected>Select a sr rework</option>\n";
+  for (let i = 0; i < srReworkKeys.length; ++i)
+  {
+    if (i == 1)
+    {
+      selectsrtextSecond += "<option value=\""+(i+1)+"\" selected>"+srReworkKeys[i]+"</option>\n";
+    }
+    else
+    {
+      selectsrtextSecond += "<option value=\""+(i+1)+"\">"+srReworkKeys[i]+"</option>\n";      
+    }
+  }
+  selectsrSecond.innerHTML = selectsrtextSecond;
+  let selectppFirst = document.getElementById("ppcalcselectfirst");
+  let selectpptextFirst = "<option value=\"\" disabled selected>Select a sr rework</option>\n";
+  let ppReworkKeys = Object.keys(ppFormulas);
+  for (let i = 0; i < ppReworkKeys.length; ++i)
+  {    
+    if (i == 0)
+    {
+      selectpptextFirst += "<option selected value=\""+(i+1)+"\">"+ppReworkKeys[i]+"</option>\n";
+    }
+    else
+    {
+      selectpptextFirst += "<option value=\""+(i+1)+"\">"+ppReworkKeys[i]+"</option>\n";
+    }    
+  }
+  selectppFirst.innerHTML = selectpptextFirst;
+  let selectppSecond = document.getElementById("ppcalcselectsecond");
+  let selectpptextSecond = "<option value=\"\" disabled selected>Select a sr rework</option>\n";
+  for (let i = 0; i < ppReworkKeys.length; ++i)
+  {
+    if (i == 1)
+    {
+      selectpptextSecond += "<option value=\""+(i+1)+"\" selected>"+ppReworkKeys[i]+"</option>\n";
+    }
+    else
+    {
+      selectpptextSecond += "<option value=\""+(i+1)+"\">"+ppReworkKeys[i]+"</option>\n";
+    }
+    
+  }
+  selectppSecond.innerHTML = selectpptextSecond;
+
+}
+
+function CreateSelectContentUser()
+{
+  let selectppFirst = document.getElementById("ppcalcselectfirst");
+  let selectpptextFirst = "<option value=\"\" disabled selected>Select a sr rework</option>\n";
+  let ppReworkKeys = Object.keys(ppFormulas);
+  for (let i = 0; i < ppReworkKeys.length; ++i)
+  {
+    if (i == 0)
+    {
+      selectpptextFirst += "<option selected value=\""+(i+1)+"\">"+ppReworkKeys[i]+"</option>\n";
+    }
+    else
+    {
+      selectpptextFirst += "<option value=\""+(i+1)+"\">"+ppReworkKeys[i]+"</option>\n";
+    }
+    
+  }
+  selectppFirst.innerHTML = selectpptextFirst;
+  let selectppSecond = document.getElementById("ppcalcselectsecond");
+  let selectpptextSecond = "<option value=\"\" disabled selected>Select a sr rework</option>\n";
+  for (let i = 0; i < ppReworkKeys.length; ++i)
+  {
+    if (i == 1)
+    {
+      selectpptextSecond += "<option selected value=\""+(i+1)+"\">"+ppReworkKeys[i]+"</option>\n";
+    }
+    else
+    {
+      selectpptextSecond += "<option value=\""+(i+1)+"\">"+ppReworkKeys[i]+"</option>\n";
+    }
+    
+  }
+  selectppSecond.innerHTML = selectpptextSecond;
+  document.getElementById("ppcalcselectfirst").addEventListener("change", async (event) => {
+    ppReworkFirst = event.target.value - 1;
+    CalculateTopPlayScores();
+  });
+  document.getElementById("ppcalcselectsecond").addEventListener("change", async (event) => {
+    ppReworkSecond = event.target.value - 1;
+    CalculateTopPlayScores();
+  });
+}
+document.getElementById("srcalcselectfirst").addEventListener("change", async (event) => {
+  srReworkFirst = event.target.value - 1;
+  CreateTable();
+});
+document.getElementById("srcalcselectsecond").addEventListener("change", async (event) => {
+  srReworkSecond = event.target.value - 1;
+  CreateTable();
+});
+document.getElementById("ppcalcselectfirst").addEventListener("change", async (event) => {
+  ppReworkFirst = event.target.value - 1;
+  CreateTable();
+});
+document.getElementById("ppcalcselectsecond").addEventListener("change", async (event) => {
+  ppReworkSecond = event.target.value - 1;
+  CreateTable();
+});
+
+CreateSelectContentBeatmap();
+
+function ChangeMenu(elementId)
+{
+  let changeMenuButton = document.getElementById(elementId);  
+  selectedId = elementId;
+  if (changeMenuButton.value == "Profile pp change")
+  {
+    document.getElementById("container").innerHTML = "<h1 class=\"title\">Rhythm typer SR/PP Rework site</h1>\n"
     +"<h5 class=\"author\">By Valerus9</h5>\n"
-    +"<input type=\"button\" id=\"changemenubutton\" value=\"View map sr/pp change\">\n"
     +"<input type=\"button\" id=\"calculatepp\" value=\"Calculate pp\">\n"
-    +"<p>Input replay data from your profila page top play section</p>\n"
+    +"<select id=\"ppcalcselectfirst\">"
+    +"</select>"
+    +"<select id=\"ppcalcselectsecond\">"
+    +"</select>"
     +"<p id=\"totalPPOld\"></p>\n"
     +"<p id=\"totalPPNew\"></p>\n"
-    +"<textarea name=\"replayTextArea\" style=\"height:500px;\" id=\"replayInput\"></textarea>"
+    +"<p>Go to your top play section of your profile and ctrl + a, ctrl + c, ctrl+v them.</p>\n"
+    +"<textarea name=\"replayTextArea\" style=\"height:500px;width:100%\" id=\"replayInput\"></textarea>"
     +"<table id=\"topplayList\">\n"
-    +"</table>\n\n"
-    +"<script src=\"main.js\"></script> ";
+    +"</table>\n\n";
+    CreateSelectContentUser();
     document.getElementById("calculatepp").addEventListener("click", async (event) => { 
       CalculateTopPlayScores();
     });
   }
     
-  else
+  else if (changeMenuButton.value == "Map sr pp change")
   {
-    document.body.innerHTML = "<h1 class=\"title\">Rhythm typer SR/PP Rework</h1>\n"
-    +"<h5 class=\"author\">By Valerus9</h5>\n"
-    +"<input type=\"button\" id=\"changemenubutton\" value=\"View profile pp change\">\n"
-    +"<input type=\"file\" id=\"zipInput\" multiple accept=\".rtm\"/>\n"
-    +"<!--<input type=\"file\" id=\"zipInputConverting\" multiple accept=\".rtm\"/>-->\n"
-    +"<p id=\"avgSRChange\"></p>\n"
-    +"<p id=\"avgPPChange\"></p>\n"
-    +"<table id=\"diffList\">\n"
-    +"</table>\n\n"
-    +"<script src=\"main.js\"></script> ";
+    document.getElementById("container").innerHTML =containerBody;
+   
+    document.getElementById("srcalcselectfirst").addEventListener("change", async (event) => {
+      srReworkFirst = event.target.value - 1;
+      CreateTable();
+    });
+    document.getElementById("srcalcselectsecond").addEventListener("change", async (event) => {
+      srReworkSecond = event.target.value - 1;
+      CreateTable();
+    });
+    document.getElementById("ppcalcselectfirst").addEventListener("change", async (event) => {
+      ppReworkFirst = event.target.value - 1;
+      CreateTable();
+    });
+    document.getElementById("ppcalcselectsecond").addEventListener("change", async (event) => {
+      ppReworkSecond = event.target.value - 1;
+      CreateTable();
+    });
+    CreateSelectContentBeatmap();
     CreateTable();
   }
-    
-  document.getElementById("changemenubutton").addEventListener("click", async (event) => { 
-    ChangeMenu();
-  });
+  RefreshSelectedButton();
+}
+function RefreshSelectedButton()
+{
+  document.getElementById("changemenuprofile").className = document.getElementById("changemenuprofile").className.replace("selected","").trim(" ");
+  document.getElementById("changemenumaps").className = document.getElementById("changemenumaps").className.replace("selected","").trim(" ");
+  if (selectedId == "changemenuprofile")
+  {
+    document.getElementById("changemenuprofile").className += " selected";
+  }
+  if (selectedId == "changemenumaps")
+  {
+    document.getElementById("changemenumaps").className += " selected";
+  }
 }
 
 function CalculateTopPlayScores()
@@ -131,8 +321,6 @@ function CalculateTopPlayScores()
   let modList = ["NC", "DC", "HT", "DT", "AT", "NF"];
   for (const replay of replays)
   {
-    if (modList.includes(replay))
-      continue;
     if (replay.startsWith("weighted") || replay.startsWith("#"))
       continue;
     cleanedUpReplay.push(replay);
@@ -140,11 +328,24 @@ function CalculateTopPlayScores()
   let replayBeatmapName = [];
   let replayDiffIds = [];
   let replayAccuracy = [];
+  let replayMod = [];
+  let foundFirstTitle = false;
+
   for (let i = 0; i < cleanedUpReplay.length; ++i)
-  {
+  {    
     if (songNames.includes(cleanedUpReplay[i]))
     {
       replayBeatmapName.push(cleanedUpReplay[i]);
+      if (replayBeatmapName.length - 1 > replayMod.length)
+        replayMod.push("");
+      foundFirstTitle = true;
+    }
+    if (!foundFirstTitle)
+      continue;
+    if (modList.includes(cleanedUpReplay[i]))
+    {
+      replayMod.push(cleanedUpReplay[i]);
+      continue;
     }
     if (cleanedUpReplay[i].includes(" • "))
     {
@@ -175,8 +376,8 @@ function CalculateTopPlayScores()
       replayAccuracy.push(parseFloat(cleanedUpReplay[i].replace("%","")));
     }
   }
-  let oldPP = 0;
-  let newPP = 0;
+  let oldPPSum = 0;
+  let newPPSum = 0;
   let topPlayTable = document.getElementById("topplayList");
   let topPlayText = "";
   topPlayText += "<th>Map</th>";
@@ -184,20 +385,23 @@ function CalculateTopPlayScores()
   topPlayText += "<th>Acc</th>";
   topPlayText += "<th>Old pp</th>";
   topPlayText += "<th>New pp</th>";
+
   for (let i = 0; i < replayDiffIds.length; ++i)
   {
     topPlayText += "<tr>";
-    oldPP += ActualPP(OldPPs[i], i + 1);
-    newPP += ActualPP(NewPPs[i], i + 1);
+    let oldPP = GetModdedPP(replayDiffIds[i], ppReworkFirst, replayMod[i]) * ppaccuracies[ppFormulaKeys[ppReworkFirst]](replayAccuracy[i]);
+    let newPP = GetModdedPP(replayDiffIds[i], ppReworkSecond, replayMod[i]) * ppaccuracies[ppFormulaKeys[ppReworkSecond]](replayAccuracy[i]);
+    oldPPSum += ActualPP(oldPP, i + 1);
+    newPPSum += ActualPP(newPP, i + 1);
     topPlayText += "<td>"+songNames[replayDiffIds[i]]+"</td>";
     topPlayText += "<td>"+difficultyNames[replayDiffIds[i]]+"</td>";
     topPlayText += "<td>"+replayAccuracy[i]+"</td>";
-    topPlayText += "<td>"+OldPPs[replayDiffIds[i]] + " ("+Math.round(ActualPP(OldPPs[i], i + 1))+")"+"</td>";
-    topPlayText += "<td>"+NewPPs[replayDiffIds[i]] + " ("+Math.round(ActualPP(NewPPs[i], i + 1))+")"+"</td>";
+    topPlayText += "<td>"+Math.round(oldPP) + " ("+Math.round(ActualPP(oldPP, i + 1))+")"+"</td>";
+    topPlayText += "<td>"+Math.round(newPP) + " ("+Math.round(ActualPP(newPP, i + 1))+")"+"</td>";
     topPlayText += "</tr>";
   }
-  document.getElementById("totalPPOld").innerHTML = "Total old PP: " + oldPP;
-  document.getElementById("totalPPNew").innerHTML = "Total new PP: " + newPP;
+  document.getElementById("totalPPOld").innerHTML = "Total old PP: " + Math.round(oldPPSum);
+  document.getElementById("totalPPNew").innerHTML = "Total new PP: " + Math.round(newPPSum);
   topPlayTable.innerHTML = topPlayText;
 }
 
@@ -210,8 +414,49 @@ function PercentagePP(n)
   return Math.pow(0.95,(n - 1));
 }
 
-document.getElementById("changemenubutton").addEventListener("click", async (event) => { 
-  ChangeMenu();
+function ClearLoadedRTMS()
+{
+  LoadedBeatmapIds = [];
+  LoadedDifficultyIds = [];
+  songNames = [];
+  difficultyNames = [];
+  BPMs = [];
+  DrainTimes = [];
+  NoteCounts = [];
+  TypingSectionCounts = [];
+  Stars = [];
+  PPs = [];
+  StarDTNCs = [];
+  PPDTNCs = [];
+  StarHTDCs = [];
+  PPHTDCs = [];
+  diffIds = [];
+  difficultyList = [];
+  beatmapList = [];
+  for (let i = 0; i < ppFormulaKeys.length; ++i)
+  {
+    PPs.push([]);
+    PPDTNCs.push([]);
+    PPHTDCs.push([]);
+  }
+  for (let i = 0; i < starFormulaKeys.length; ++i)
+  {
+    Stars.push([]);
+    StarDTNCs.push([]);
+    StarHTDCs.push([]);
+  }
+}
+
+document.getElementById("clearrtms").addEventListener("click", async (event) => {
+  ClearLoadedRTMS();
+  CreateTable();
+});
+
+document.getElementById("changemenuprofile").addEventListener("click", async (event) => { 
+  ChangeMenu("changemenuprofile");
+});
+document.getElementById("changemenumaps").addEventListener("click", async (event) => { 
+  ChangeMenu("changemenumaps");
 });
 document.getElementById("zipInput").addEventListener("change", async (event) => {
   const files = [...event.target.files].filter(f => f.name.endsWith(".rtm"));
@@ -311,22 +556,98 @@ document.getElementById("zipInput").addEventListener("change", async (event) => 
     NoteCounts.push(difficulty.notes.length);
     TypingSectionCounts.push(difficulty.typingSections.length);
     
-    let star = starFormulas["valerusReworkV2"](difficulty);
-    star = Math.round(star * 100) / 100;
-    NewStars.push(star);
+    let ms = 80 - 6 * difficulty.overallDifficulty;
+    let overallDifficultyDTNC = (80-(ms / 1.5)) / 6;
+    let DifficultyDTNC = {
+      notes: [],
+      overallDifficulty: overallDifficultyDTNC,
+      typingSections: [],
+      accuracy: 100,
+    };
+    let overallDifficultyHTDC = (80-(ms / 0.75)) / 6;
+    let DifficultyHTDC = {
+      notes: [],
+      overallDifficulty: overallDifficultyHTDC,
+      typingSections: [],
+      accuracy: 100,
+    };
+    for (const note of difficulty.notes)
+    {
+      if (note.type == "tap")
+      {
+        let tempNoteDTNC = { 
+          key: note.key,
+          type: note.type,
+          time: note.time / 1.5,
+        };
+        DifficultyDTNC.notes.push(tempNoteDTNC);
+        let tempNoteHTDC = { 
+          key: note.key,
+          type: note.type,
+          time: note.time / 0.75,
+        };
+        DifficultyHTDC.notes.push(tempNoteHTDC);
+      }
+      if (note.type == "hold")
+      {
+        let tempNoteDTNC = { 
+          key: note.key,
+          type: note.type,
+          startTime: note.startTime / 1.5,
+          endTime: note.endTime / 1.5,
+        };
+        DifficultyDTNC.notes.push(tempNoteDTNC);
+        let tempNoteHTDC = { 
+          key: note.key,
+          type: note.type,
+          startTime: note.startTime /  0.75,
+          endTime: note.endTime / 0.75,
+        };
+        DifficultyHTDC.notes.push(tempNoteHTDC);
+      }
+    }
 
-    let currentSr = starFormulas["originalCalculate"](difficulty);
-    currentSr = Math.round(currentSr * 100) / 100;
-    OldStars.push(currentSr);
-    
-    difficulty.accuracy = 100;    
-    let pp = ppFormulas["valerusRework"](difficulty);
-    pp = Math.round(pp);
-    NewPPs.push(pp);
 
-    let currentPP = ppFormulas["originalCalculate"](difficulty);
-    currentPP = Math.round(currentPP);
-    OldPPs.push(currentPP);
+    difficulty.accuracy = 100;   
+    DifficultyDTNC.accuracy = 100;
+    DifficultyHTDC.accuracy = 100;
+
+    for (let i = 0; i < starFormulaKeys.length; ++i)
+    {
+      
+      let star = starFormulas[starFormulaKeys[i]](difficulty);
+      star = Math.round(star * 100) / 100;
+      Stars[i].push(star);    
+
+      let StarDTNC = starFormulas[starFormulaKeys[i]](DifficultyDTNC);
+      StarDTNC = Math.round(StarDTNC * 100) / 100;
+      StarDTNCs[i].push(StarDTNC);
+
+      let StarHTDC = starFormulas[starFormulaKeys[i]](DifficultyHTDC);
+      StarHTDC = Math.round(StarHTDC * 100) / 100;
+      StarHTDCs[i].push(StarHTDC);
+
+    }
+
+    for (let i = 0; i < ppFormulaKeys.length; ++i)
+    {
+      
+      let pp = ppFormulas[ppFormulaKeys[i]](difficulty);
+      pp = Math.round(pp);
+      PPs[i].push(pp);
+
+      let PPDTNC = ppFormulas[ppFormulaKeys[i]](DifficultyDTNC);
+      PPDTNC = Math.round(PPDTNC);
+      PPDTNCs[i].push(PPDTNC);
+
+      let PPHTDC = ppFormulas[ppFormulaKeys[i]](DifficultyHTDC);
+      PPHTDC = Math.round(PPHTDC);
+      PPHTDCs[i].push(PPHTDC);
+
+    }
+
+
+
     diffIds.push(diffIds.length);
 
   }
@@ -337,128 +658,132 @@ function CreateTable()
 {
   const table = document.getElementById("diffList");  
   let tableText = "";
-  tableText += "<tr>";
-  if (sortBySongName == 0)
+  if (diffIds.length > 0)
   {
-    tableText += "<th id=\"map\" style=\"width:5%;\">Map</th>";
+    tableText += "<tr>";
+    if (sortBySongName == 0)
+    {
+      tableText += "<th id=\"map\" style=\"width:5%;\">Map</th>";
+    }
+    else if (sortBySongName == 1)
+    {
+      tableText += "<th id=\"map\" style=\"width:5%;\">Map (desc)</th>";
+    }
+    else if (sortBySongName == -1)
+    {
+      tableText += "<th id=\"map\" style=\"width:5%;\">Map (incr)</th>";
+    }
+    if (sortByDifficultyName == 0)
+    {
+      tableText += "<th id=\"difficulty\" style=\"width:5%;\">Difficulty</th>";
+    }
+    else if (sortByDifficultyName == 1)
+    {
+      tableText += "<th id=\"difficulty\" style=\"width:5%;\">Difficulty (desc)</th>";
+    }
+    else if (sortByDifficultyName == -1)
+    {
+      tableText += "<th id=\"difficulty\" style=\"width:5%;\">Difficulty (incr)</th>";
+    }
+    if (sortByBPM == 0)
+    {
+      tableText += "<th id=\"bpm\" style=\"width:2%;\">BPM</th>";
+    }
+    else if (sortByBPM == 1)
+    {
+      tableText += "<th id=\"bpm\" style=\"width:2%;\">BPM (desc)</th>";
+    }
+    else if (sortByBPM == -1)
+    {
+      tableText += "<th id=\"bpm\" style=\"width:2%;\">BPM (incr)</th>";
+    }
+    if (sortByDrainTime == 0)
+    {
+      tableText += "<th id=\"draintime\" style=\"width:3%;\">DrainTime</th>";
+    }
+    else if (sortByDrainTime == 1)
+    {
+      tableText += "<th id=\"draintime\" style=\"width:3%;\">DrainTime (desc)</th>";
+    }
+    else if (sortByDrainTime == -1)
+    {
+      tableText += "<th id=\"draintime\" style=\"width:3%;\">DrainTime (incr)</th>";
+    }
+    if (sortByNoteCount == 0)
+    {
+      tableText += "<th id=\"notecount\" style=\"width:3%;\">NoteCount</th>";
+    }
+    else if (sortByNoteCount == 1)
+    {
+      tableText += "<th id=\"notecount\" style=\"width:3%;\">NoteCount (desc)</th>";
+    }
+    else if (sortByNoteCount == -1)
+    {
+      tableText += "<th id=\"notecount\" style=\"width:3%;\">NoteCount (incr)</th>";
+    }
+    if (sortByTypingSectionCount == 0)
+    {
+      tableText += "<th id=\"tscount\" style=\"width:2%;\">TSCount</th>";
+    }
+    else if (sortByTypingSectionCount == 1)
+    {
+      tableText += "<th id=\"tscount\" style=\"width:2%;\">TSCount (desc)</th>";
+    }
+    else if (sortByTypingSectionCount == -1)
+    {
+      tableText += "<th id=\"tscount\" style=\"width:2%;\">TSCount (incr)</th>";
+    }
+    if (sortByOldStar == 0)
+    {
+      tableText += "<th id=\"oldstar\" style=\"width:20%;\">OldStar</th>";
+    }
+    else if (sortByOldStar == 1)
+    {
+      tableText += "<th id=\"oldstar\" style=\"width:20%;\">OldStar (desc)</th>";
+    }
+    else if (sortByOldStar == -1)
+    {
+      tableText += "<th id=\"oldstar\" style=\"width:20%;\">OldStar (incr)</th>";
+    }
+    if (sortByNewStar == 0)
+    {
+      tableText += "<th id=\"newstar\" style=\"width:20%;\">NewStar</th>";
+    }
+    else if (sortByNewStar == 1)
+    {
+      tableText += "<th id=\"newstar\" style=\"width:20%;\">NewStar (desc)</th>";
+    }
+    else if (sortByNewStar == -1)
+    {
+      tableText += "<th id=\"newstar\" style=\"width:20%;\">NewStar (incr)</th>";
+    }
+    if (sortByOldPP == 0)
+    {
+      tableText += "<th id=\"oldpp\" style=\"width:20%;\">OldPP</th>";
+    }
+    else if (sortByOldPP == 1)
+    {
+      tableText += "<th id=\"oldpp\" style=\"width:20%;\">OldPP (desc)</th>";
+    }
+    else if (sortByOldPP == -1)
+    {
+      tableText += "<th id=\"oldpp\" style=\"width:20%;\">OldPP (incr)</th>";
+    }
+    if (sortByNewPP == 0)
+    {
+      tableText += "<th id=\"newpp\" style=\"width:20%;\">NewPP</th>";
+    }
+    else if (sortByNewPP == 1)
+    {
+      tableText += "<th id=\"newpp\" style=\"width:20%;\">NewPP (desc)</th>";
+    }
+    else if (sortByNewPP == -1)
+    {
+      tableText += "<th id=\"newpp\" style=\"width:20%;\">NewPP (incr)</th>";
+    }
+    tableText += "</tr>";
   }
-  else if (sortBySongName == 1)
-  {
-    tableText += "<th id=\"map\" style=\"width:5%;\">Map (desc)</th>";
-  }
-  else if (sortBySongName == -1)
-  {
-    tableText += "<th id=\"map\" style=\"width:5%;\">Map (incr)</th>";
-  }
-  if (sortByDifficultyName == 0)
-  {
-    tableText += "<th id=\"difficulty\" style=\"width:5%;\">Difficulty</th>";
-  }
-  else if (sortByDifficultyName == 1)
-  {
-    tableText += "<th id=\"difficulty\" style=\"width:5%;\">Difficulty (desc)</th>";
-  }
-  else if (sortByDifficultyName == -1)
-  {
-    tableText += "<th id=\"difficulty\" style=\"width:5%;\">Difficulty (incr)</th>";
-  }
-  if (sortByBPM == 0)
-  {
-    tableText += "<th id=\"bpm\" style=\"width:2%;\">BPM</th>";
-  }
-  else if (sortByBPM == 1)
-  {
-    tableText += "<th id=\"bpm\" style=\"width:2%;\">BPM (desc)</th>";
-  }
-  else if (sortByBPM == -1)
-  {
-    tableText += "<th id=\"bpm\" style=\"width:2%;\">BPM (incr)</th>";
-  }
-  if (sortByDrainTime == 0)
-  {
-    tableText += "<th id=\"draintime\" style=\"width:3%;\">DrainTime</th>";
-  }
-  else if (sortByDrainTime == 1)
-  {
-    tableText += "<th id=\"draintime\" style=\"width:3%;\">DrainTime (desc)</th>";
-  }
-  else if (sortByDrainTime == -1)
-  {
-    tableText += "<th id=\"draintime\" style=\"width:3%;\">DrainTime (incr)</th>";
-  }
-  if (sortByNoteCount == 0)
-  {
-    tableText += "<th id=\"notecount\" style=\"width:3%;\">NoteCount</th>";
-  }
-  else if (sortByNoteCount == 1)
-  {
-    tableText += "<th id=\"notecount\" style=\"width:3%;\">NoteCount (desc)</th>";
-  }
-  else if (sortByNoteCount == -1)
-  {
-    tableText += "<th id=\"notecount\" style=\"width:3%;\">NoteCount (incr)</th>";
-  }
-  if (sortByTypingSectionCount == 0)
-  {
-    tableText += "<th id=\"tscount\" style=\"width:2%;\">TSCount</th>";
-  }
-  else if (sortByTypingSectionCount == 1)
-  {
-    tableText += "<th id=\"tscount\" style=\"width:2%;\">TSCount (desc)</th>";
-  }
-  else if (sortByTypingSectionCount == -1)
-  {
-    tableText += "<th id=\"tscount\" style=\"width:2%;\">TSCount (incr)</th>";
-  }
-  if (sortByOldStar == 0)
-  {
-    tableText += "<th id=\"oldstar\" style=\"width:20%;\">OldStar</th>";
-  }
-  else if (sortByOldStar == 1)
-  {
-    tableText += "<th id=\"oldstar\" style=\"width:20%;\">OldStar (desc)</th>";
-  }
-  else if (sortByOldStar == -1)
-  {
-    tableText += "<th id=\"oldstar\" style=\"width:20%;\">OldStar (incr)</th>";
-  }
-  if (sortByNewStar == 0)
-  {
-    tableText += "<th id=\"newstar\" style=\"width:20%;\">NewStar</th>";
-  }
-  else if (sortByNewStar == 1)
-  {
-    tableText += "<th id=\"newstar\" style=\"width:20%;\">NewStar (desc)</th>";
-  }
-  else if (sortByNewStar == -1)
-  {
-    tableText += "<th id=\"newstar\" style=\"width:20%;\">NewStar (incr)</th>";
-  }
-  if (sortByOldPP == 0)
-  {
-    tableText += "<th id=\"oldpp\" style=\"width:20%;\">OldPP</th>";
-  }
-  else if (sortByOldPP == 1)
-  {
-    tableText += "<th id=\"oldpp\" style=\"width:20%;\">OldPP (desc)</th>";
-  }
-  else if (sortByOldPP == -1)
-  {
-    tableText += "<th id=\"oldpp\" style=\"width:20%;\">OldPP (incr)</th>";
-  }
-  if (sortByNewPP == 0)
-  {
-    tableText += "<th id=\"newpp\" style=\"width:20%;\">NewPP</th>";
-  }
-  else if (sortByNewPP == 1)
-  {
-    tableText += "<th id=\"newpp\" style=\"width:20%;\">NewPP (desc)</th>";
-  }
-  else if (sortByNewPP == -1)
-  {
-    tableText += "<th id=\"newpp\" style=\"width:20%;\">NewPP (incr)</th>";
-  }
-  tableText += "</tr>";
+  
 
 
   let ppDifferenceSum = 0;
@@ -481,48 +806,59 @@ function CreateTable()
     tableText += "<td style=\"width:3%;\">" + NoteCounts[diffIds[i]] + "</td>";
     tableText += "<td style=\"width:2%;\">" + TypingSectionCounts[diffIds[i]] + "</td>";
     
-    tableText += "<td style=\"width:20%;\">"+ String(OldStars[diffIds[i]]).replace(".",",") +"</td>";
+    tableText += "<td style=\"width:20%;\">"+ String(Stars[srReworkFirst][diffIds[i]]).replace(".",",") +"</td>";
     let colorR = 0;
     let colorG = 0;
     let colorB = 0;
-    if (OldStars[diffIds[i]] > NewStars[diffIds[i]])
+    if (Stars[srReworkFirst][diffIds[i]] > Stars[srReworkSecond][diffIds[i]])
     {
-      let changeSize = Math.min(OldStars[diffIds[i]]/NewStars[diffIds[i]], 2) / 2;
+      let changeSize = Math.min(Stars[srReworkFirst][diffIds[i]]/Stars[srReworkSecond][diffIds[i]], 2) / 2;
       colorR = Math.round(0 + 250*changeSize);
     }
-    else if (OldStars[diffIds[i]] < NewStars[diffIds[i]])
+    else if (Stars[srReworkFirst][diffIds[i]] < Stars[srReworkSecond][diffIds[i]])
     {
-      let changeSize = Math.min(NewStars[diffIds[i]]/OldStars[diffIds[i]], 2) / 2;
+      let changeSize = Math.min(Stars[srReworkSecond][diffIds[i]]/Stars[srReworkFirst][diffIds[i]], 2) / 2;
       colorG = Math.round(0 + 250*changeSize);
     }
-    tableText += "<td style=\"color:rgb("+colorR+","+colorG+","+colorB+"); width:20%;\">"+ String(NewStars[diffIds[i]]).replace(".",",") +"</td>";
+    tableText += "<td style=\"color:rgb("+colorR+","+colorG+","+colorB+"); width:20%;\">"+ String(Stars[srReworkSecond][diffIds[i]]).replace(".",",") +"</td>";
     
-    tableText += "<td style=\"width:20%;\">"+ String(OldPPs[diffIds[i]]).replace(".",",") +"</td>";
+    tableText += "<td style=\"width:20%;\">"+ String(PPs[ppReworkFirst][diffIds[i]]).replace(".",",") +"</td>";
     colorR = 0;
     colorG = 0;
     colorB = 0;
-    if (OldPPs[diffIds[i]] > NewPPs[diffIds[i]])
+    if (PPs[ppReworkFirst][diffIds[i]] > PPs[ppReworkSecond][diffIds[i]])
     {
-      let changeSize = Math.min(OldPPs[diffIds[i]]/NewPPs[diffIds[i]], 2) / 2;
+      let changeSize = Math.min(PPs[ppReworkFirst][diffIds[i]]/PPs[ppReworkSecond][diffIds[i]], 2) / 2;
       colorR = Math.round(0 + 250*changeSize);
     }
-    else if (OldPPs[diffIds[i]] < NewPPs[diffIds[i]])
+    else if (PPs[ppReworkFirst][diffIds[i]] < PPs[ppReworkSecond][diffIds[i]])
     {
-      let changeSize = Math.min(NewPPs[diffIds[i]]/OldPPs[diffIds[i]], 2) / 2;
+      let changeSize = Math.min(PPs[ppReworkSecond][diffIds[i]]/PPs[ppReworkFirst][diffIds[i]], 2) / 2;
       colorG = Math.round(0 + 250*changeSize);
     }
-    tableText += "<td style=\"color:rgb("+colorR+","+colorG+","+colorB+"); width:20%;\">"+ String(NewPPs[diffIds[i]]).replace(".",",") +"</td>";
+    tableText += "<td style=\"color:rgb("+colorR+","+colorG+","+colorB+"); width:20%;\">"+ String(PPs[ppReworkSecond][diffIds[i]]).replace(".",",") +"</td>";
     tableText += "</tr>";
 
-    srDifferenceSum += NewStars[diffIds[i]] - OldStars[diffIds[i]];
-    ppDifferenceSum += NewPPs[diffIds[i]] - OldPPs[diffIds[i]];
+    srDifferenceSum += Stars[ppReworkSecond][diffIds[i]] - Stars[ppReworkFirst][diffIds[i]];
+    ppDifferenceSum += PPs[ppReworkSecond][diffIds[i]] - PPs[ppReworkFirst][diffIds[i]];
   }
   let srAvgParagraph = document.getElementById("avgSRChange");
   let ppAvgParagraph = document.getElementById("avgPPChange");
   let srAverageDifference = Math.round(srDifferenceSum / diffIds.length*100)/100;
   let ppAverageDifference = Math.round(ppDifferenceSum / diffIds.length);
-  srAvgParagraph.innerHTML = "Average sr difference: "+ srAverageDifference;
-  ppAvgParagraph.innerHTML = "Average pp difference: "+ ppAverageDifference;
+  if (diffIds.length == 0)
+  {
+    srAvgParagraph.style.display = "none"; 
+    ppAvgParagraph.style.display = "none";
+  }
+  else
+  {
+    srAvgParagraph.style.display = "inline"; 
+    ppAvgParagraph.style.display = "inline";
+    srAvgParagraph.innerHTML = "Average sr difference: "+ srAverageDifference;
+    ppAvgParagraph.innerHTML = "Average pp difference: "+ ppAverageDifference;
+
+  }
 
   table.innerHTML = tableText;
 
@@ -767,26 +1103,26 @@ function DoSort()
       if (sortByOldStar != 0)
       {
         sortDirection = sortByOldStar;
-        valueHeld1 = OldStars[diffIds[i]];
-        valueHeld2 = OldStars[diffIds[j]];
+        valueHeld1 = Stars[srReworkFirst][diffIds[i]];
+        valueHeld2 = Stars[srReworkFirst][diffIds[j]];
       }
       if (sortByNewStar != 0)
       {
         sortDirection = sortByNewStar;
-        valueHeld1 = NewStars[diffIds[i]];
-        valueHeld2 = NewStars[diffIds[j]];
+        valueHeld1 = Stars[srReworkSecond][diffIds[i]];
+        valueHeld2 = Stars[srReworkSecond][diffIds[j]];
       }
       if (sortByOldPP != 0)
       {
         sortDirection = sortByOldPP;
-        valueHeld1 = OldPPs[diffIds[i]];
-        valueHeld2 = OldPPs[diffIds[j]];
+        valueHeld1 = PPs[ppReworkFirst][diffIds[i]];
+        valueHeld2 = PPs[ppReworkFirst][diffIds[j]];
       }
       if (sortByNewPP != 0)
       {
         sortDirection = sortByNewPP;
-        valueHeld1 = NewPPs[diffIds[i]];
-        valueHeld2 = NewPPs[diffIds[j]];
+        valueHeld1 = PPs[ppReworkSecond][diffIds[i]];
+        valueHeld2 = PPs[ppReworkSecond][diffIds[j]];
       }
       if (valueHeld1 == valueHeld2)
         continue;
@@ -802,6 +1138,18 @@ function DoSort()
 
 function LoadRankedBeatmaps()
 {
+  for (let i = 0; i < ppFormulaKeys.length; ++i)
+  {
+    PPs.push([]);
+    PPDTNCs.push([]);
+    PPHTDCs.push([]);
+  }
+  for (let i = 0; i < starFormulaKeys.length; ++i)
+  {
+    Stars.push([]);
+    StarDTNCs.push([]);
+    StarHTDCs.push([]);
+  }
   for (let i = 0; i < RankedSongNames.length; ++i)
   {
     LoadedBeatmapIds.push(RankedBeatmapIds[i]);
@@ -812,188 +1160,53 @@ function LoadRankedBeatmaps()
     DrainTimes.push(RankedDrainTimes[i]);
     NoteCounts.push(RankedNoteCounts[i]);
     TypingSectionCounts.push(RankedTypingSectionCounts[i]);
-    OldStars.push(RankedOldStars[i]);
-    NewStars.push(RankedNewStars[i]);
-    OldPPs.push(RankedOldPPs[i]);
-    NewPPs.push(RankedNewPPs[i]);
     diffIds.push(diffIds.length);
+  }
+  for (let i = 0; i < RankedStars.length; ++i)
+  {
+    for (let j = 0; j < RankedStars[i].length; ++j)
+    {
+      Stars[i].push(RankedStars[i][j])
+      StarDTNCs[i].push(RankedStarDTNCs[i][j])
+      StarHTDCs[i].push(RankedStarHTDCs[i][j])
+    }
+  }
+  
+  for (let i = 0; i < RankedPPs.length; ++i)
+  {
+    for (let j = 0; j < RankedPPs[i].length; ++j)
+    {
+      PPs[i].push(RankedPPs[i][j])
+      PPDTNCs[i].push(RankedPPDTNCs[i][j])
+      PPHTDCs[i].push(RankedPPHTDCs[i][j])
+    }
   }
 }
 
-/*let convertedBeatmapIds = [];
-let convertedDifficultyIds = [];
-
-let convertedSongNames = [];
-let convertedDifficultyNames = [];
-let convertedBPMs = [];
-let convertedDrainTimes = [];
-let convertedNoteCounts = [];
-let convertedTypingSectionCounts = [];
-let convertedOldStars = [];
-let convertedNewStars = [];
-let convertedOldPPs = [];
-let convertedNewPPs = [];
-
-let convertedDifficulties = [];
-let convertedBeatmaps = [];
-
-document.getElementById("zipInputConverting").addEventListener("change", async (event) => {
-  const files = [...event.target.files].filter(f => f.name.endsWith(".rtm"));
-  if (!files) return;
-  const getStartTime = x => {
-    if (x.type == "tap")
-      return x.time;
-    if (x.type == "hold")
-      return x.startTime;
-  }
-  const getEndTime = x => {
-    if (x.type == "tap")
-      return x.time;
-    if (x.type == "hold")
-      return x.endTime;
-  }
-  for (const file of files)
+function GetModdedStar(diffIdSingle, reworkId, mod)
+{
+  if (mod.includes("NC")|| mod.includes("DT"))
   {
+    return StarDTNCs[reworkId][diffIdSingle];
 
-    const zip = await JSZip.loadAsync(file);
-
-    for (const [filename, zipEntry] of Object.entries(zip.files)) {
-      if (!zipEntry.dir) {
-        if (!filename.includes(".json"))
-          continue;
-        const content = await zipEntry.async("string");
-        const data = JSON.parse(content);
-        const keys = Object.keys(data);
-        let hasKey = false;
-        for (const key of keys)
-        {
-          if (key.includes("diffId"))
-          {
-            hasKey = true;
-            break;
-          }          
-        }
-        if (hasKey)
-        {
-          convertedDifficulties.push(data);
-        }
-        else
-        {
-          convertedBeatmaps.push(data);
-        }
-      }
-    }        
   }
-
-  for (const difficulty of convertedDifficulties)
+  if (mod.includes("DC")|| mod.includes("HT"))
   {
-    let mapSongName = "";
-    let mapBpm = 0;
-    for (const beatmap of convertedBeatmaps)
-    {
-      if (beatmap.mapsetId == difficulty.mapsetId)
-      {
-        mapSongName = beatmap.songName;
-        mapBpm = Math.round(beatmap.bpm);
-        break;
-      }      
-    }
-    convertedDifficultyIds.push(difficulty.diffId);
-    convertedBeatmapIds.push(difficulty.mapsetId);
-    convertedSongNames.push(mapSongName);
-    convertedDifficultyNames.push(difficulty.name);
-    convertedBPMs.push(mapBpm);
-    let minTime = Infinity;
-    let maxTime = 0;
-    for (const note of difficulty.notes)
-    {
-      if (minTime > getStartTime(note))
-      {
-        minTime = getStartTime(note);
-      }
-      if (maxTime < getEndTime(note))
-      {
-        maxTime = getEndTime(note);
-      }
-    }
-    for (const typingSection of difficulty.typingSections)
-    {
-      if (minTime > typingSection.startTime)
-      {
-        minTime = typingSection.startTime;
-      }
-      if (maxTime < typingSection.endTime)
-      {
-        maxTime = typingSection.endTime;
-      }
-    }
-    let drainTime = maxTime - minTime;
-    convertedDrainTimes.push(drainTime);
-
-    convertedNoteCounts.push(difficulty.notes.length);
-    convertedTypingSectionCounts.push(difficulty.typingSections.length);
-    
-    let star = starFormulas["valerusReworkV2"](difficulty);
-    star = Math.round(star * 100) / 100;
-    convertedNewStars.push(star);
-
-    let currentSr = starFormulas["originalCalculate"](difficulty);
-    currentSr = Math.round(currentSr * 100) / 100;
-    convertedOldStars.push(currentSr);
-    
-    difficulty.accuracy = 100;    
-    let pp = ppFormulas["valerusRework"](difficulty);
-    pp = Math.round(pp);
-    convertedNewPPs.push(pp);
-
-    let currentPP = ppFormulas["originalCalculate"](difficulty);
-    currentPP = Math.round(currentPP);
-    convertedOldPPs.push(currentPP);
-    
+    return StarHTDCs[reworkId][diffIdSingle];    
   }
-  let textBeatmapIds = "let RankedBeatmapIds = ["
-  let textDifficultyIds = "let RankedDifficultyIds = ["
-  let textSongNames = "let RankedSongNames = [";
-  let textDifficultyNames = "let RankedDifficultyNames = [";
-  let textBPMs = "let RankedBPMs = [";
-  let textDrainTimes = "let RankedDrainTimes = [";
-  let textNoteCounts = "let RankedNoteCounts = [";
-  let textTypingSectionCounts = "let RankedTypingSectionCounts = [";
-  let textOldStars = "let RankedOldStars = [";
-  let textNewStars = "let RankedNewStars = [";
-  let textOldPPs = "let RankedOldPPs = [";
-  let textNewPPs = "let RankedNewPPs = [";
-  for (let i = 0; i < convertedBeatmapIds.length; ++i)
+  return Stars[reworkId][diffIdSingle];
+}
+
+function GetModdedPP(diffIdSingle, reworkId, mod)
+{
+  if (mod.includes("NC")|| mod.includes("DT"))
   {
-    textBeatmapIds += "\n    \""+convertedBeatmapIds[i]+"\",";
-    textDifficultyIds += "\n    \""+convertedDifficultyIds[i]+"\",";
-    textSongNames += "\n    \""+convertedSongNames[i] + "\",";
-    textDifficultyNames += "\n    \""+convertedDifficultyNames[i] + "\",";
-    textBPMs += "\n    "+convertedBPMs[i] + ",";
-    textDrainTimes += "\n    "+convertedDrainTimes[i] + ",";
-    textNoteCounts += "\n    "+convertedNoteCounts[i] + ",";
-    textTypingSectionCounts += "\n    "+convertedTypingSectionCounts[i] + ",";
-    textOldStars += "\n    "+convertedOldStars[i] + ",";
-    textNewStars += "\n    "+convertedNewStars[i] + ",";
-    textOldPPs += "\n    "+convertedOldPPs[i] + ",";
-    textNewPPs += "\n    "+convertedNewPPs[i] + ",";
+    return PPDTNCs[reworkId][diffIdSingle];
+
   }
-  textBeatmapIds += "\n];";
-  textDifficultyIds += "\n];";
-  textSongNames += "\n];";
-  textDifficultyNames += "\n];";
-  textBPMs += "\n];";
-  textDrainTimes += "\n];";
-  textNoteCounts += "\n];";
-  textTypingSectionCounts += "\n];";
-  textOldStars += "\n];";
-  textNewStars += "\n];";
-  textOldPPs += "\n];";
-  textNewPPs += "\n];";
-  let rankedText = textSongNames + "\n" + textDifficultyNames + "\n" 
-  + textBPMs + "\n" + textDrainTimes + "\n" + textNoteCounts + "\n" 
-  + textTypingSectionCounts + "\n" + textOldStars + "\n" + textNewStars 
-  + "\n" + textOldPPs + "\n" + textNewPPs + "\n" 
-  + textBeatmapIds + "\n" + textDifficultyIds;
-  console.log(rankedText);
-});*/
+  if (mod.includes("DC")|| mod.includes("HT"))
+  {
+    return PPHTDCs[reworkId][diffIdSingle];    
+  }
+  return PPs[reworkId][diffIdSingle];
+}

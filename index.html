@@ -9,20 +9,55 @@
     <script src="ppformulas.js"></script>
     <script src="starformulas.js"></script>
     <script src="rankedmaps.js"></script>
+    <script src="ppaccuracies.js"></script>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="darklightmodestyle.css">
 </head>
-<body>
-    <h1 class="title">Rhythm typer SR/PP Rework</h1>
-    <h5 class="author">By Valerus9</h5>
-    <input type="button" id="changemenubutton" value="View profile pp change">
-    <input type="file" id="zipInput" multiple accept=".rtm"/>
-    
-    <!--<input type="file" id="zipInputConverting" multiple accept=".rtm"/>-->
-    <p id="avgSRChange"></p>
-    <p id="avgPPChange"></p>
-    <table id="diffList">
-    </table>
+<body>    
+    <div id="topbar">
+        <input type="button" id="visualmodeswitch" value="Dark mode">    
+        <input type="button" id="changemenuprofile" value="Profile pp change">
+        <input type="button" class="selected" id="changemenumaps" value="Map sr pp change">
+    </div>
+    <div id="container">
+        <h1 class="title">Rhythm typer SR/PP Rework site</h1>
+        <h5 class="author">By Valerus9</h5>
+        <p>Select .rtm file or select multiple .rtm files</p>
+        <input type="file" id="zipInput" multiple accept=".rtm"/>
+        <div class="flexrowcenter">
+            <div class="flexcolumn">
+                <div class="flexcolumn lightmode">
+                    <p>Star rating rework (old)</p>
+                    <select id="srcalcselectfirst">
+                    </select>
+                </div>
+                <div class="flexcolumn">
+                    <p>Star rating rework (new)</p>
+                    <select id="srcalcselectsecond">
+                    </select>
+                </div>
+            </div>
+            <div class="flexcolumn">
+                <div class="flexcolumn">
+                    <p>PP rework (old)</p>
+                    <select id="ppcalcselectfirst">
+                    </select>
+                </div>
+                <div class="flexcolumn">
+                    <p>PP rework (new)</p>
+                    <select id="ppcalcselectsecond">
+                    </select>
+                </div>
+            </div>
+        </div>
+        <input type="button" id="clearrtms" value="Clear loaded rtms">
+        <p>NOTE: This button will not clear the ranked map cache. If you reload the page then the ranked maps are also going to be loaded even if you click this button.</p>
+        <p id="avgSRChange"></p>
+        <p id="avgPPChange"></p>
+        <table id="diffList">
+        </table>
+    </div>
 
-    <script src="main.js"></script>    
+    <script src="main.js" defer></script>    
 </body>
 </html>
