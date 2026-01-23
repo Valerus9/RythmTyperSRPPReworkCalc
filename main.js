@@ -344,11 +344,15 @@ function RefreshSelectedButton()
 function CalculateTopPlayScores()
 {
   let replays = String(document.getElementById("replayInput").value).split("\n");
+  if (replays[0] == "" && replays.length == 1)
+    return;
   let cleanedUpReplay = [];
   let modList = ["NC", "DC", "HT", "DT", "AT", "NF"];
   for (const replay of replays)
   {
     if (replay.startsWith("weighted") || replay.startsWith("#"))
+      continue;
+    if (replay.length <= 1 || (replay.length == 2 && !modList.includes(replay)))
       continue;
     cleanedUpReplay.push(replay);
   }
@@ -357,7 +361,7 @@ function CalculateTopPlayScores()
   let replayAccuracy = [];
   let replayMod = [];
   let foundFirstTitle = false;
-
+  let unknownInformation = [];
   for (let i = 0; i < cleanedUpReplay.length; ++i)
   {    
     if (songNames.includes(cleanedUpReplay[i]))
@@ -366,14 +370,22 @@ function CalculateTopPlayScores()
       if (replayBeatmapName.length - 1 > replayMod.length)
         replayMod.push("");
       foundFirstTitle = true;
+      continue;
     }
     if (!foundFirstTitle)
       continue;
     if (modList.includes(cleanedUpReplay[i]))
     {
-      replayMod.push(cleanedUpReplay[i]);
+      if (replayBeatmapName.length <= replayMod.length)
+      {
+        replayMod[replayMod.length-1] += " "+cleanedUpReplay[i];
+      }
+      else
+        replayMod.push(cleanedUpReplay[i]);
       continue;
     }
+
+    
     if (cleanedUpReplay[i].includes(" • "))
     {
       let diffName = cleanedUpReplay[i].split(" • ")[1];
@@ -394,14 +406,53 @@ function CalculateTopPlayScores()
           index++;
         }
         if (index != -1)
+        {
           replayDiffIds.push(index);        
+          continue;
+        }
       }
-      
     }
     if (cleanedUpReplay[i].includes("%"))
     {
       replayAccuracy.push(parseFloat(cleanedUpReplay[i].replace("%","")));
+      continue;
     }
+    unknownInformation.push(cleanedUpReplay[i]);
+  }
+  if (unknownInformation.length == 0)
+  {
+    for (let i = 0; i < cleanedUpReplay.length; ++i)
+    {    
+      if (modList.includes(cleanedUpReplay[i]))
+      {
+        continue;
+      }
+
+
+      if (cleanedUpReplay[i].includes(" • "))
+      {       
+        continue;
+      }
+      if (cleanedUpReplay[i].includes("%"))
+      {
+        continue;
+      }
+      unknownInformation.push(cleanedUpReplay[i]);
+    }
+  }
+
+
+  if (!(replayBeatmapName.length == replayDiffIds.length &&
+    replayAccuracy.length == replayMod.length &&
+    replayDiffIds.length == replayAccuracy.length && replayBeatmapName.length > 0))
+  {
+    console.log("Error: Missing cached ranked beatmap. Go back to map sr pp change menu and upload the .rtm file of the missing ranked maps:");
+    document.getElementById("replayInput").value = "Error: Check console log for more information";
+    for (let i = 0; i < unknownInformation.length; ++i)
+    {
+      console.log(unknownInformation[i]);
+    }
+    return;
   }
   let oldPPSum = 0;
   let newPPSum = 0;
@@ -634,6 +685,22 @@ document.getElementById("zipInput").addEventListener("change", async (event) => 
       }
     }
 
+    for (const typingSection of difficulty.typingSections)
+    {
+      let tempTypingSectionDTNC = { 
+        startTime: typingSection.startTime / 1.5,
+        endTime: typingSection.endTime / 1.5,
+        text: typingSection.text,
+      };
+      DifficultyDTNC.typingSections.push(tempTypingSectionDTNC);
+      let tempTypingSectionHTDC = { 
+        startTime: typingSection.startTime /  0.75,
+        endTime: typingSection.endTime / 0.75,
+        text: typingSection.text,
+      };
+      DifficultyHTDC.typingSections.push(tempTypingSectionHTDC);
+      
+    }
 
     difficulty.accuracy = 100;   
     DifficultyDTNC.accuracy = 100;
@@ -643,15 +710,12 @@ document.getElementById("zipInput").addEventListener("change", async (event) => 
     {
       
       let star = starFormulas[starFormulaKeys[i]](difficulty);
-      star = Math.round(star * 100) / 100;
       Stars[i].push(star);    
 
       let StarDTNC = starFormulas[starFormulaKeys[i]](DifficultyDTNC);
-      StarDTNC = Math.round(StarDTNC * 100) / 100;
       StarDTNCs[i].push(StarDTNC);
 
       let StarHTDC = starFormulas[starFormulaKeys[i]](DifficultyHTDC);
-      StarHTDC = Math.round(StarHTDC * 100) / 100;
       StarHTDCs[i].push(StarHTDC);
 
     }
@@ -660,15 +724,12 @@ document.getElementById("zipInput").addEventListener("change", async (event) => 
     {
       
       let pp = ppFormulas[ppFormulaKeys[i]](difficulty);
-      pp = Math.round(pp);
       PPs[i].push(pp);
 
       let PPDTNC = ppFormulas[ppFormulaKeys[i]](DifficultyDTNC);
-      PPDTNC = Math.round(PPDTNC);
       PPDTNCs[i].push(PPDTNC);
 
       let PPHTDC = ppFormulas[ppFormulaKeys[i]](DifficultyHTDC);
-      PPHTDC = Math.round(PPHTDC);
       PPHTDCs[i].push(PPHTDC);
 
     }
@@ -835,7 +896,7 @@ function CreateTable()
     
     let oldStar = GetModdedStar(diffIds[i],srReworkFirst,selectedMod);
     let newStar = GetModdedStar(diffIds[i],srReworkSecond,selectedMod);
-    tableText += "<td style=\"width:20%;\">"+ String(oldStar).replace(".",",") +"</td>";
+    tableText += "<td style=\"width:20%;\">"+ String(Math.round(oldStar*100)/100).replace(".",",") +"</td>";
     let colorR = 0;
     let colorG = 0;
     let colorB = 0;
@@ -849,7 +910,7 @@ function CreateTable()
       let changeSize = Math.min(newStar/oldStar, 2) / 2;
       colorG = Math.round(0 + 250*changeSize);
     }
-    tableText += "<td style=\"color:rgb("+colorR+","+colorG+","+colorB+"); width:20%;\">"+ String(newStar).replace(".",",") +"</td>";
+    tableText += "<td style=\"color:rgb("+colorR+","+colorG+","+colorB+"); width:20%;\">"+ String(Math.round(newStar*100)/100).replace(".",",") +"</td>";
     
     let oldPP = GetModdedPP(diffIds[i], ppReworkFirst, selectedMod);
     let newPP = GetModdedPP(diffIds[i], ppReworkSecond, selectedMod);
