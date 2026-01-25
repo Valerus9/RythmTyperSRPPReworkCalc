@@ -56,6 +56,10 @@ text:
 
 let modList = [ "No mods", "DT/NC", "HT/DC"];
 
+let sortByOldStarRank = 0;
+let sortByNewStarRank = 0;
+let sortByOldPPRank = 0;
+let sortByNewPPRank = 0;
 let sortBySongName = 0;
 let sortByDifficultyName = 0;
 let sortByBPM = 0;
@@ -70,6 +74,10 @@ let sortByNewPP = 0;
 let LoadedBeatmapIds = [];
 let LoadedDifficultyIds = [];
 
+let oldStarRanks = [];
+let newStarRanks = [];
+let oldPPRanks = [];
+let newPPRanks = [];
 let songNames = [];
 let difficultyNames = [];
 let BPMs = [];
@@ -252,22 +260,27 @@ function CreateSelectContentUser()
 }
 document.getElementById("srcalcselectfirst").addEventListener("change", async (event) => {
   srReworkFirst = event.target.value - 1;
+  CreateRanks();
   CreateTable();
 });
 document.getElementById("srcalcselectsecond").addEventListener("change", async (event) => {
   srReworkSecond = event.target.value - 1;
+  CreateRanks();
   CreateTable();
 });
 document.getElementById("ppcalcselectfirst").addEventListener("change", async (event) => {
   ppReworkFirst = event.target.value - 1;
+  CreateRanks();
   CreateTable();
 });
 document.getElementById("ppcalcselectsecond").addEventListener("change", async (event) => {
   ppReworkSecond = event.target.value - 1;
+  CreateRanks();  
   CreateTable();
 });
 document.getElementById("modselect").addEventListener("change", async (event) => {
   selectedMod = modList[event.target.value - 1];
+  CreateRanks();
   CreateTable();
 });
 
@@ -737,152 +750,109 @@ document.getElementById("zipInput").addEventListener("change", async (event) => 
 
 
     diffIds.push(diffIds.length);
-
+    oldStarRanks.push(0);
+    newStarRanks.push(0);
+    oldPPRanks.push(0);
+    newPPRanks.push(0);
   }
+  CreateRanks();
   CreateTable();
 });
+
+function GetHeaderSortText(sortBySomething)
+{
+  if (sortBySomething == 0)
+    return "";
+  else if (sortBySomething >= 1)
+    return " (desc)";
+  else if (sortBySomething <= -1)
+    return " (incr)";
+}
 
 function CreateTable()
 {
   const table = document.getElementById("diffList");  
   let tableText = "";
+  let oldStarRankWidth = 80;
+  let newStarRankWidth = 120;
+  let oldPPRankWidth = 80;
+  let newPPRankWidth = 120;
+  let songNameWidth = 200;
+  let difficultyNameWidth = 200;
+  let oldStarWidth = 40;
+  let newStarWidth = 40;
+  let oldPPWidth = 40;
+  let newPPWidth = 40;
+  let BPMWidth = 40;
+  let drainTimeWidth = 40;
+  let noteCountWidth = 40;
+  let typingSectionCountWidth = 40;
   if (diffIds.length > 0)
   {
-    tableText += "<tr>";
-    if (sortBySongName == 0)
-    {
-      tableText += "<th id=\"map\" style=\"width:5%;\">Map</th>";
-    }
-    else if (sortBySongName == 1)
-    {
-      tableText += "<th id=\"map\" style=\"width:5%;\">Map (desc)</th>";
-    }
-    else if (sortBySongName == -1)
-    {
-      tableText += "<th id=\"map\" style=\"width:5%;\">Map (incr)</th>";
-    }
-    if (sortByDifficultyName == 0)
-    {
-      tableText += "<th id=\"difficulty\" style=\"width:5%;\">Difficulty</th>";
-    }
-    else if (sortByDifficultyName == 1)
-    {
-      tableText += "<th id=\"difficulty\" style=\"width:5%;\">Difficulty (desc)</th>";
-    }
-    else if (sortByDifficultyName == -1)
-    {
-      tableText += "<th id=\"difficulty\" style=\"width:5%;\">Difficulty (incr)</th>";
-    }
-    if (sortByBPM == 0)
-    {
-      tableText += "<th id=\"bpm\" style=\"width:2%;\">BPM</th>";
-    }
-    else if (sortByBPM == 1)
-    {
-      tableText += "<th id=\"bpm\" style=\"width:2%;\">BPM (desc)</th>";
-    }
-    else if (sortByBPM == -1)
-    {
-      tableText += "<th id=\"bpm\" style=\"width:2%;\">BPM (incr)</th>";
-    }
-    if (sortByDrainTime == 0)
-    {
-      tableText += "<th id=\"draintime\" style=\"width:3%;\">DrainTime</th>";
-    }
-    else if (sortByDrainTime == 1)
-    {
-      tableText += "<th id=\"draintime\" style=\"width:3%;\">DrainTime (desc)</th>";
-    }
-    else if (sortByDrainTime == -1)
-    {
-      tableText += "<th id=\"draintime\" style=\"width:3%;\">DrainTime (incr)</th>";
-    }
-    if (sortByNoteCount == 0)
-    {
-      tableText += "<th id=\"notecount\" style=\"width:3%;\">NoteCount</th>";
-    }
-    else if (sortByNoteCount == 1)
-    {
-      tableText += "<th id=\"notecount\" style=\"width:3%;\">NoteCount (desc)</th>";
-    }
-    else if (sortByNoteCount == -1)
-    {
-      tableText += "<th id=\"notecount\" style=\"width:3%;\">NoteCount (incr)</th>";
-    }
-    if (sortByTypingSectionCount == 0)
-    {
-      tableText += "<th id=\"tscount\" style=\"width:2%;\">TSCount</th>";
-    }
-    else if (sortByTypingSectionCount == 1)
-    {
-      tableText += "<th id=\"tscount\" style=\"width:2%;\">TSCount (desc)</th>";
-    }
-    else if (sortByTypingSectionCount == -1)
-    {
-      tableText += "<th id=\"tscount\" style=\"width:2%;\">TSCount (incr)</th>";
-    }
-    if (sortByOldStar == 0)
-    {
-      tableText += "<th id=\"oldstar\" style=\"width:20%;\">OldStar</th>";
-    }
-    else if (sortByOldStar == 1)
-    {
-      tableText += "<th id=\"oldstar\" style=\"width:20%;\">OldStar (desc)</th>";
-    }
-    else if (sortByOldStar == -1)
-    {
-      tableText += "<th id=\"oldstar\" style=\"width:20%;\">OldStar (incr)</th>";
-    }
-    if (sortByNewStar == 0)
-    {
-      tableText += "<th id=\"newstar\" style=\"width:20%;\">NewStar</th>";
-    }
-    else if (sortByNewStar == 1)
-    {
-      tableText += "<th id=\"newstar\" style=\"width:20%;\">NewStar (desc)</th>";
-    }
-    else if (sortByNewStar == -1)
-    {
-      tableText += "<th id=\"newstar\" style=\"width:20%;\">NewStar (incr)</th>";
-    }
-    if (sortByOldPP == 0)
-    {
-      tableText += "<th id=\"oldpp\" style=\"width:20%;\">OldPP</th>";
-    }
-    else if (sortByOldPP == 1)
-    {
-      tableText += "<th id=\"oldpp\" style=\"width:20%;\">OldPP (desc)</th>";
-    }
-    else if (sortByOldPP == -1)
-    {
-      tableText += "<th id=\"oldpp\" style=\"width:20%;\">OldPP (incr)</th>";
-    }
-    if (sortByNewPP == 0)
-    {
-      tableText += "<th id=\"newpp\" style=\"width:20%;\">NewPP</th>";
-    }
-    else if (sortByNewPP == 1)
-    {
-      tableText += "<th id=\"newpp\" style=\"width:20%;\">NewPP (desc)</th>";
-    }
-    else if (sortByNewPP == -1)
-    {
-      tableText += "<th id=\"newpp\" style=\"width:20%;\">NewPP (incr)</th>";
-    }
+    tableText += "<tr style=\"height:75px\">";
+    let tempSortOrderingText = "";
+    tempSortOrderingText = GetHeaderSortText(sortByOldStarRank);
+    tableText += "<th id=\"oldstarrank\" style=\"width:"+oldStarRankWidth+"px;\">Old sr Rank"+tempSortOrderingText+"</th>";
+
+    tempSortOrderingText = GetHeaderSortText(sortByNewStarRank);
+    tableText += "<th id=\"newstarrank\" style=\"width:"+newStarRankWidth+"px;\">New sr rank"+tempSortOrderingText+"</th>";
+
+    tempSortOrderingText = GetHeaderSortText(sortByOldPPRank);
+    tableText += "<th id=\"oldpprank\" style=\"width:"+oldPPRankWidth+"px;\">Old pp rank"+tempSortOrderingText+"</th>";
+    
+    tempSortOrderingText = GetHeaderSortText(sortByNewPPRank);
+    tableText += "<th id=\"newpprank\" style=\"width:"+newPPRankWidth+"px;\">New pp rank"+tempSortOrderingText+"</th>";
+
+    tempSortOrderingText = GetHeaderSortText(sortBySongName);
+    tableText += "<th id=\"map\" style=\"width:"+songNameWidth+"px;\">Map"+tempSortOrderingText+"</th>";
+
+    tempSortOrderingText = GetHeaderSortText(sortByDifficultyName);
+    tableText += "<th id=\"difficulty\" style=\"width:"+difficultyNameWidth+"px;\">Difficulty"+tempSortOrderingText+"</th>";
+
+    tempSortOrderingText = GetHeaderSortText(sortByOldStar);
+    tableText += "<th id=\"oldstar\" style=\"width:"+oldStarWidth+"px;\">OldStar"+tempSortOrderingText+"</th>";
+
+    tempSortOrderingText = GetHeaderSortText(sortByNewStar);
+    tableText += "<th id=\"newstar\" style=\"width:"+newStarWidth+"px;\">NewStar"+tempSortOrderingText+"</th>";
+
+    tempSortOrderingText = GetHeaderSortText(sortByOldPP);
+    tableText += "<th id=\"oldpp\" style=\"width:"+oldPPWidth+"px;\">OldPP"+tempSortOrderingText+"</th>";
+
+    tempSortOrderingText = GetHeaderSortText(sortByNewPP);
+    tableText += "<th id=\"newpp\" style=\"width:"+newPPWidth+"px;\">NewPP"+tempSortOrderingText+"</th>";
+
+    tempSortOrderingText = GetHeaderSortText(sortByBPM);
+    tableText += "<th id=\"bpm\" style=\"width:"+BPMWidth+"px;\">BPM"+tempSortOrderingText+"</th>";
+
+    tempSortOrderingText = GetHeaderSortText(sortByDrainTime);
+    tableText += "<th id=\"draintime\" style=\"width:"+drainTimeWidth+"px;\">DrainTime"+tempSortOrderingText+"</th>";
+
+    tempSortOrderingText = GetHeaderSortText(sortByNoteCount);
+    tableText += "<th id=\"notecount\" style=\"width:"+noteCountWidth+"px;\">NoteCount"+tempSortOrderingText+"</th>";
+
+    tempSortOrderingText = GetHeaderSortText(sortByTypingSectionCount);
+    tableText += "<th id=\"tscount\" style=\"width:"+typingSectionCountWidth+"px;\">TSCount"+tempSortOrderingText+"</th>";
+
     tableText += "</tr>";
   }
   
 
-
   let ppDifferenceSum = 0;
+  let ppOldMax = 0;
+  let ppOldMin = Infinity;
+  let ppNewMax = 0;
+  let ppNewMin = Infinity;
   let srDifferenceSum = 0;
+  let srOldMax = 0;
+  let srOldMin = Infinity;
+  let srNewMax = 0;
+  let srNewMin = Infinity;
+  let modSpeed = GetModSpeed(selectedMod);
+
   for (let i = 0; i < diffIds.length; ++i)
   {
     tableText += "<tr>";
-    tableText += "<td style=\"width:5%;\">"+ songNames[diffIds[i]] +"</td>";
-    tableText += "<td style=\"width:5%;\">"+ difficultyNames[diffIds[i]] +"</td>";
-    tableText += "<td style=\"width:2%;\">"+ BPMs[diffIds[i]] +"</td>";
-    let drainTimeAllSecond = Math.round(DrainTimes[diffIds[i]] / 1000); 
+    let drainTimeAllSecond = Math.round((DrainTimes[diffIds[i]] / modSpeed) / 1000); 
     let drainTimeSecond = drainTimeAllSecond % 60;
     if (drainTimeSecond < 10)
       drainTimeSecond = "0"+drainTimeSecond;
@@ -890,13 +860,8 @@ function CreateTable()
     if (drainTimeMinute < 10)
       drainTimeMinute = "0"+drainTimeMinute;
     
-    tableText += "<td style=\"width:3%;\">"+drainTimeMinute+":"+ drainTimeSecond +"</td>";
-    tableText += "<td style=\"width:3%;\">" + NoteCounts[diffIds[i]] + "</td>";
-    tableText += "<td style=\"width:2%;\">" + TypingSectionCounts[diffIds[i]] + "</td>";
-    
     let oldStar = GetModdedStar(diffIds[i],srReworkFirst,selectedMod);
     let newStar = GetModdedStar(diffIds[i],srReworkSecond,selectedMod);
-    tableText += "<td style=\"width:20%;\">"+ String(Math.round(oldStar*100)/100).replace(".",",") +"</td>";
     let colorR = 0;
     let colorG = 0;
     let colorB = 0;
@@ -910,11 +875,10 @@ function CreateTable()
       let changeSize = Math.min(newStar/oldStar, 2) / 2;
       colorG = Math.round(0 + 250*changeSize);
     }
-    tableText += "<td style=\"color:rgb("+colorR+","+colorG+","+colorB+"); width:20%;\">"+ String(Math.round(newStar*100)/100).replace(".",",") +"</td>";
+    let newSRColor = colorR+","+colorG+","+colorB;
     
     let oldPP = GetModdedPP(diffIds[i], ppReworkFirst, selectedMod);
     let newPP = GetModdedPP(diffIds[i], ppReworkSecond, selectedMod);
-    tableText += "<td style=\"width:20%;\">"+ String(Math.round(oldPP)).replace(".",",") +"</td>";
     colorR = 0;
     colorG = 0;
     colorB = 0;
@@ -928,27 +892,109 @@ function CreateTable()
       let changeSize = Math.min(newPP/oldPP, 2) / 2;
       colorG = Math.round(0 + 250*changeSize);
     }
-    tableText += "<td style=\"color:rgb("+colorR+","+colorG+","+colorB+"); width:20%;\">"+ String(Math.round(newPP)).replace(".",",") +"</td>";
+    let newPPColor = colorR+","+colorG+","+colorB;
+
+    colorR = 0;
+    colorG = 0;
+    colorB = 0;
+
+    if (oldStarRanks[diffIds[i]] < newStarRanks[diffIds[i]])    
+      colorR = 200;    
+    else if (oldStarRanks[diffIds[i]] > newStarRanks[diffIds[i]])
+      colorG = 200;
+    let newStarRankColor = colorR+","+colorG+","+colorB;
+    
+    colorR = 0;
+    colorG = 0;
+    colorB = 0;
+
+    if (oldPPRanks[diffIds[i]] < newPPRanks[diffIds[i]])    
+      colorR = 200;    
+    else if (oldPPRanks[diffIds[i]] > newPPRanks[diffIds[i]])
+      colorG = 200;
+    let newPPRankColor = colorR+","+colorG+","+colorB;
+
+    let starRankDifference = oldStarRanks[diffIds[i]] - newStarRanks[diffIds[i]];
+    let ppRankDifference = oldPPRanks[diffIds[i]] - newPPRanks[diffIds[i]];
+
+    let starRankDifferenceText = " (+"+starRankDifference+")";
+    if (starRankDifference == 0)
+      starRankDifferenceText = "";
+    if (starRankDifference < 1)
+      starRankDifferenceText = starRankDifferenceText.replace("+","");
+    
+    let ppRankDifferenceText = " (+"+ppRankDifference+")";
+    if (ppRankDifference == 0)
+      ppRankDifferenceText = "";
+    if (ppRankDifference < 1)
+      ppRankDifferenceText = ppRankDifferenceText.replace("+","");
+    tableText += "<td style=\"width:"+oldStarRankWidth+"px;\">#"+ oldStarRanks[diffIds[i]] +"</td>";
+    tableText += "<td style=\"color:rgb("+newStarRankColor+"); width:"+newStarRankWidth+"px;\">#"+ newStarRanks[diffIds[i]] + starRankDifferenceText+"</td>";
+    tableText += "<td style=\"width:"+oldPPRankWidth+"px;\">#"+ oldPPRanks[diffIds[i]] +"</td>";
+    tableText += "<td style=\"color:rgb("+newPPRankColor+"); width:"+newPPRankWidth+"px;\">#"+ newPPRanks[diffIds[i]] + ppRankDifferenceText+"</td>";
+    tableText += "<td style=\"width:"+songNameWidth+"px;\">"+ songNames[diffIds[i]] +"</td>";
+    tableText += "<td style=\"width:"+difficultyNameWidth+"px;\">"+ difficultyNames[diffIds[i]] +"</td>";
+    tableText += "<td style=\"width:"+oldStarWidth+"px;\">"+ String(Math.round(oldStar*100)/100).replace(".",",") +"</td>";
+    tableText += "<td style=\"color:rgb("+newSRColor+"); width:"+newStarWidth+"px;\">"+ String(Math.round(newStar*100)/100).replace(".",",") +"</td>";
+    tableText += "<td style=\"width:"+oldPPWidth+"px;\">"+ String(Math.round(oldPP)).replace(".",",") +"</td>";
+    tableText += "<td style=\"color:rgb("+newPPColor+"); width:"+newPPWidth+"px;\">"+ String(Math.round(newPP)).replace(".",",") +"</td>";
+    tableText += "<td style=\"width:"+BPMWidth+"px;\">"+ Math.round(BPMs[diffIds[i]] * modSpeed) +"</td>";
+    tableText += "<td style=\"width:"+drainTimeWidth+"px;\">"+drainTimeMinute+":"+ drainTimeSecond +"</td>";
+    tableText += "<td style=\"width:"+noteCountWidth+"px;\">" + NoteCounts[diffIds[i]] + "</td>";
+    tableText += "<td style=\"width:"+typingSectionCountWidth+"px;\">" + TypingSectionCounts[diffIds[i]] + "</td>";
     tableText += "</tr>";
 
+    if (newStar < srNewMin)
+      srNewMin = Math.round(newStar*100)/100;
+    if (newStar > srNewMax)
+      srNewMax = Math.round(newStar*100)/100;
+    if (oldStar < srOldMin)
+      srOldMin = Math.round(oldStar*100)/100;
+    if (oldStar > srOldMax)
+      srOldMax = Math.round(oldStar*100)/100;
+    
+    if (newPP < ppNewMin)
+      ppNewMin = Math.round(newPP);
+    if (newPP > ppNewMax)
+      ppNewMax = Math.round(newPP);
+    if (oldPP < ppOldMin)
+      ppOldMin = Math.round(oldPP);
+    if (oldPP > ppOldMax)
+      ppOldMax = Math.round(oldPP);    
     srDifferenceSum += newStar - oldStar;
     ppDifferenceSum += newPP - oldPP;
   }
   let srAvgParagraph = document.getElementById("avgSRChange");
   let ppAvgParagraph = document.getElementById("avgPPChange");
+  let minMaxOldSRParagraph = document.getElementById("minMaxOldSR");
+  let minMaxNewSRParagraph = document.getElementById("minMaxNewSR");
+  let minMaxOldPPParagraph = document.getElementById("minMaxOldPP");
+  let minMaxNewPPParagraph = document.getElementById("minMaxNewPP");
   let srAverageDifference = Math.round(srDifferenceSum / diffIds.length*100)/100;
   let ppAverageDifference = Math.round(ppDifferenceSum / diffIds.length);
   if (diffIds.length == 0)
   {
     srAvgParagraph.style.display = "none"; 
     ppAvgParagraph.style.display = "none";
+    minMaxOldSRParagraph.style.display = "none";
+    minMaxNewSRParagraph.style.display = "none";
+    minMaxOldPPParagraph.style.display = "none";
+    minMaxNewPPParagraph.style.display = "none";
   }
   else
   {
     srAvgParagraph.style.display = "inline"; 
     ppAvgParagraph.style.display = "inline";
+    minMaxOldSRParagraph.style.display = "inline";
+    minMaxNewSRParagraph.style.display = "inline";
+    minMaxOldPPParagraph.style.display = "inline";
+    minMaxNewPPParagraph.style.display = "inline";
     srAvgParagraph.innerHTML = "Average sr difference: "+ srAverageDifference;
     ppAvgParagraph.innerHTML = "Average pp difference: "+ ppAverageDifference;
+    minMaxOldSRParagraph.innerHTML = "Old sr min: "+srOldMin+ " max: "+ srOldMax;
+    minMaxNewSRParagraph.innerHTML = "New sr min: "+srNewMin+ " max: "+ srNewMax;
+    minMaxOldPPParagraph.innerHTML = "Old pp min: "+ppOldMin+ " max: "+ ppOldMax;
+    minMaxNewPPParagraph.innerHTML = "New pp min: "+ppNewMin+ " max: "+ ppNewMax;
 
   }
 
@@ -966,6 +1012,10 @@ function CreateTable()
     document.getElementById("newstar").addEventListener("click", async (event) => { ChangeSort(7); });
     document.getElementById("oldpp").addEventListener("click", async (event) => { ChangeSort(8); });
     document.getElementById("newpp").addEventListener("click", async (event) => { ChangeSort(9); });
+    document.getElementById("oldstarrank").addEventListener("click", async (event) => { ChangeSort(10); });
+    document.getElementById("newstarrank").addEventListener("click", async (event) => { ChangeSort(11); });
+    document.getElementById("oldpprank").addEventListener("click", async (event) => { ChangeSort(12); });
+    document.getElementById("newpprank").addEventListener("click", async (event) => { ChangeSort(13); });
   }
 }
 
@@ -986,6 +1036,10 @@ function ChangeSort(sortId)
     sortByNewStar = 0
     sortByOldPP = 0
     sortByNewPP = 0
+    sortByOldStarRank = 0;
+    sortByNewStarRank = 0;
+    sortByOldPPRank = 0;
+    sortByNewPPRank = 0;
   }
 
   if (sortId == 1)
@@ -1003,6 +1057,10 @@ function ChangeSort(sortId)
     sortByNewStar = 0
     sortByOldPP = 0
     sortByNewPP = 0
+    sortByOldStarRank = 0;
+    sortByNewStarRank = 0;
+    sortByOldPPRank = 0;
+    sortByNewPPRank = 0;
   }
   if (sortId == 2)
   {
@@ -1019,6 +1077,10 @@ function ChangeSort(sortId)
     sortByNewStar = 0
     sortByOldPP = 0
     sortByNewPP = 0
+    sortByOldStarRank = 0;
+    sortByNewStarRank = 0;
+    sortByOldPPRank = 0;
+    sortByNewPPRank = 0;
   }
   if (sortId == 3)
   {
@@ -1035,6 +1097,10 @@ function ChangeSort(sortId)
     sortByNewStar = 0
     sortByOldPP = 0
     sortByNewPP = 0
+    sortByOldStarRank = 0;
+    sortByNewStarRank = 0;
+    sortByOldPPRank = 0;
+    sortByNewPPRank = 0;
   }
 
   if (sortId == 4)
@@ -1052,6 +1118,10 @@ function ChangeSort(sortId)
     sortByNewStar = 0
     sortByOldPP = 0
     sortByNewPP = 0
+    sortByOldStarRank = 0;
+    sortByNewStarRank = 0;
+    sortByOldPPRank = 0;
+    sortByNewPPRank = 0;
   }
   if (sortId == 5)
   {
@@ -1068,6 +1138,10 @@ function ChangeSort(sortId)
     sortByNewStar = 0
     sortByOldPP = 0
     sortByNewPP = 0
+    sortByOldStarRank = 0;
+    sortByNewStarRank = 0;
+    sortByOldPPRank = 0;
+    sortByNewPPRank = 0;
   }
   if (sortId == 6)
   {
@@ -1084,6 +1158,10 @@ function ChangeSort(sortId)
     sortByNewStar = 0
     sortByOldPP = 0
     sortByNewPP = 0
+    sortByOldStarRank = 0;
+    sortByNewStarRank = 0;
+    sortByOldPPRank = 0;
+    sortByNewPPRank = 0;
   }
 
   if (sortId == 7)
@@ -1101,6 +1179,10 @@ function ChangeSort(sortId)
       sortByNewStar++;
     sortByOldPP = 0
     sortByNewPP = 0
+    sortByOldStarRank = 0;
+    sortByNewStarRank = 0;
+    sortByOldPPRank = 0;
+    sortByNewPPRank = 0;
   }
   if (sortId == 8)
   {
@@ -1117,6 +1199,10 @@ function ChangeSort(sortId)
     else
       sortByOldPP++;
     sortByNewPP = 0
+    sortByOldStarRank = 0;
+    sortByNewStarRank = 0;
+    sortByOldPPRank = 0;
+    sortByNewPPRank = 0;
   }
   if (sortId == 9)
   {
@@ -1133,6 +1219,91 @@ function ChangeSort(sortId)
       sortByNewPP = -1;
     else
       sortByNewPP++;
+    sortByOldStarRank = 0;
+    sortByNewStarRank = 0;
+    sortByOldPPRank = 0;
+    sortByNewPPRank = 0;
+  }
+  if (sortId == 10)
+  {
+    sortBySongName = 0;
+    sortByDifficultyName = 0
+    sortByBPM = 0
+    sortByDrainTime = 0
+    sortByNoteCount = 0
+    sortByTypingSectionCount = 0
+    sortByOldStar = 0
+    sortByNewStar = 0
+    sortByOldPP = 0
+    sortByNewPP = 0;
+    if (sortByOldStarRank == 1)
+      sortByOldStarRank = -1;
+    else
+      sortByOldStarRank++;
+    sortByNewStarRank = 0;
+    sortByOldPPRank = 0;
+    sortByNewPPRank = 0;
+  }
+  if (sortId == 11)
+  {
+    sortBySongName = 0;
+    sortByDifficultyName = 0
+    sortByBPM = 0
+    sortByDrainTime = 0
+    sortByNoteCount = 0
+    sortByTypingSectionCount = 0
+    sortByOldStar = 0
+    sortByNewStar = 0
+    sortByOldPP = 0
+    sortByNewPP = 0;
+    sortByOldStarRank = 0;
+    if (sortByNewStarRank == 1)
+      sortByNewStarRank = -1;
+    else
+      sortByNewStarRank++;
+    sortByOldPPRank = 0;
+    sortByNewPPRank = 0;
+  }
+  if (sortId == 12)
+  {
+    sortBySongName = 0;
+    sortByDifficultyName = 0
+    sortByBPM = 0
+    sortByDrainTime = 0
+    sortByNoteCount = 0
+    sortByTypingSectionCount = 0
+    sortByOldStar = 0
+    sortByNewStar = 0
+    sortByOldPP = 0
+    sortByNewPP = 0;
+    sortByOldStarRank = 0;
+    sortByNewStarRank = 0;
+    if (sortByOldPPRank == 1)
+      sortByOldPPRank = -1;
+    else
+      sortByOldPPRank++;
+    sortByNewPPRank = 0;
+  }
+  if (sortId == 13)
+  {
+    console.log("yippee");
+    sortBySongName = 0;
+    sortByDifficultyName = 0
+    sortByBPM = 0
+    sortByDrainTime = 0
+    sortByNoteCount = 0
+    sortByTypingSectionCount = 0
+    sortByOldStar = 0
+    sortByNewStar = 0
+    sortByOldPP = 0
+    sortByNewPP = 0;
+    sortByOldStarRank = 0;
+    sortByNewStarRank = 0;
+    sortByOldPPRank = 0;
+    if (sortByNewPPRank == 1)
+      sortByNewPPRank = -1;
+    else
+      sortByNewPPRank++; 
   }
 
   DoSort();
@@ -1141,10 +1312,11 @@ function ChangeSort(sortId)
 
 function DoSort()
 {
-  let temp;
   if (sortBySongName == 0 && sortByDifficultyName == 0 && sortByBPM == 0 
     && sortByDrainTime == 0 && sortByNoteCount == 0 && sortByTypingSectionCount == 0
-     && sortByOldStar == 0 && sortByNewStar == 0 && sortByOldPP == 0 && sortByNewPP == 0)
+     && sortByOldStar == 0 && sortByNewStar == 0 && sortByOldPP == 0 && sortByNewPP == 0 
+     && sortByOldStarRank == 0 && sortByNewStarRank == 0 && sortByOldPPRank == 0 
+     && sortByNewPPRank == 0)
   {
     for (let i = 0; i < diffIds.length; ++i)
     {
@@ -1219,6 +1391,30 @@ function DoSort()
         valueHeld1 = PPs[ppReworkSecond][diffIds[i]];
         valueHeld2 = PPs[ppReworkSecond][diffIds[j]];
       }
+      if (sortByOldStarRank != 0)
+      {
+        sortDirection = sortByOldStarRank;
+        valueHeld1 = oldStarRanks[diffIds[i]];
+        valueHeld2 = oldStarRanks[diffIds[j]];
+      }
+      if (sortByNewStarRank != 0)
+      {
+        sortDirection = sortByNewStarRank;
+        valueHeld1 = newStarRanks[diffIds[i]];
+        valueHeld2 = newStarRanks[diffIds[j]];
+      }
+      if (sortByOldPPRank != 0)
+      {
+        sortDirection = sortByOldPPRank;
+        valueHeld1 = oldPPRanks[diffIds[i]];
+        valueHeld2 = oldPPRanks[diffIds[j]];
+      }
+      if (sortByNewPPRank != 0)
+      {
+        sortDirection = sortByNewPPRank;
+        valueHeld1 = newPPRanks[diffIds[i]];
+        valueHeld2 = newPPRanks[diffIds[j]];
+      }
       if (valueHeld1 == valueHeld2)
         continue;
       if ((sortDirection == -1) != (valueHeld1 < valueHeld2))
@@ -1256,6 +1452,10 @@ function LoadRankedBeatmaps()
     NoteCounts.push(RankedNoteCounts[i]);
     TypingSectionCounts.push(RankedTypingSectionCounts[i]);
     diffIds.push(diffIds.length);
+    oldStarRanks.push(0);
+    newStarRanks.push(0);
+    oldPPRanks.push(0);
+    newPPRanks.push(0);
   }
   for (let i = 0; i < RankedStars.length; ++i)
   {
@@ -1276,6 +1476,7 @@ function LoadRankedBeatmaps()
       PPHTDCs[i].push(RankedPPHTDCs[i][j])
     }
   }
+  CreateRanks();
 }
 
 function GetModdedStar(diffIdSingle, reworkId, mod)
@@ -1304,4 +1505,99 @@ function GetModdedPP(diffIdSingle, reworkId, mod)
     return PPHTDCs[reworkId][diffIdSingle];    
   }
   return PPs[reworkId][diffIdSingle];
+}
+
+function GetModSpeed(mod)
+{
+  if (mod.includes("NC")|| mod.includes("DT"))
+  {
+    return 1.5;
+  }
+  if (mod.includes("DC")|| mod.includes("HT"))
+  {
+    return 0.75;    
+  }
+  return 1.0;
+}
+
+function CreateRanks()
+{
+  let tempSortByOldStarRank = sortByOldStarRank;
+  let tempSortByNewStarRank = sortByNewStarRank;
+  let tempSortByOldPPRank = sortByOldPPRank;
+  let tempSortByNewPPRank = sortByNewPPRank;
+  let tempSortBySongName = sortBySongName;
+  let tempSortByDifficultyName = sortByDifficultyName;
+  let tempSortByBPM = sortByBPM;
+  let tempSortByDrainTime = sortByDrainTime;
+  let tempSortByNoteCount = sortByNoteCount;
+  let tempSortByTypingSectionCount = sortByTypingSectionCount;
+  let tempSortByOldStar = sortByOldStar;
+  let tempSortByNewStar = sortByNewStar;
+  let tempSortByOldPP = sortByOldPP;
+  let tempSortByNewPP = sortByNewPP;
+
+  sortByOldStarRank = 0;
+  sortByNewStarRank = 0;
+  sortByOldPPRank = 0;
+  sortByNewPPRank = 0;
+  sortBySongName = 0;
+  sortByDifficultyName = 0;
+  sortByBPM = 0;
+  sortByDrainTime = 0;
+  sortByNoteCount = 0;
+  sortByTypingSectionCount = 0;
+  sortByOldStar = 0;
+  sortByNewStar = 0;
+  sortByOldPP = 0;
+  sortByNewPP = 0;
+
+  sortByOldStar = 1;
+  DoSort();
+  for (let i = 0; i < diffIds.length; ++i)
+  {
+    oldStarRanks[diffIds[i]] = i + 1;
+  }
+
+  sortByOldStar = 0;
+  sortByNewStar = 1;
+  DoSort();
+  for (let i = 0; i < diffIds.length; ++i)
+  {
+    newStarRanks[diffIds[i]] = i + 1;
+  }
+
+  sortByNewStar = 0;
+  sortByOldPP = 1;
+  DoSort();
+  for (let i = 0; i < diffIds.length; ++i)
+  {
+    oldPPRanks[diffIds[i]] = i + 1;
+  }
+
+  sortByOldPP = 0;
+  sortByNewPP = 1;
+  DoSort();
+  for (let i = 0; i < diffIds.length; ++i)
+  {
+    newPPRanks[diffIds[i]] = i + 1;
+  }
+
+  sortByOldStarRank = tempSortByOldStarRank;
+  sortByNewStarRank = tempSortByNewStarRank;
+  sortByOldPPRank = tempSortByOldPPRank;
+  sortByNewPPRank = tempSortByNewPPRank;
+  sortBySongName = tempSortBySongName;
+  sortByDifficultyName = tempSortByDifficultyName;
+  sortByBPM = tempSortByBPM;
+  sortByDrainTime = tempSortByDrainTime;
+  sortByNoteCount = tempSortByNoteCount;
+  sortByTypingSectionCount = tempSortByTypingSectionCount;
+  sortByOldStar = tempSortByOldStar;
+  sortByNewStar = tempSortByNewStar;
+  sortByOldPP = tempSortByOldPP;
+  sortByNewPP = tempSortByNewPP;
+
+  DoSort();
+
 }
