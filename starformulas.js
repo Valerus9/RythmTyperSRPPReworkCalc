@@ -155,6 +155,7 @@ starFormulas = {
     let sortedTimeNotes = [];
     let noteDifficulties = [];
     let heldNoteCounts = [];
+    let alreadyUsedForChord = [];
     for (let i = 0; i < notes.length; ++i)
     {
       if (getStartTime(notes[i]) < minTime)
@@ -162,7 +163,7 @@ starFormulas = {
       if (getEndTime(notes[i]) > maxTime)
         maxTime = getEndTime(notes[i]);
       sortedTimeNotes.push(i);     
-      
+      alreadyUsedForChord.push(false);
       heldNoteCounts.push(0);
     }
 
@@ -194,6 +195,82 @@ starFormulas = {
 
     const drainTime = maxTime - minTime;
 
+    let chords = [];
+    for (let i = 0; i < sortedTimeNotes.length - 1; ++i)
+    {
+      if (alreadyUsedForChord[i])
+        continue;      
+      alreadyUsedForChord[i] = true;
+      let currentNoteTime = getStartTime(notes[sortedTimeNotes[i]]);
+      let addedCurrentNote = false;
+      for (let j = i +1; j < sortedTimeNotes.length; ++j)
+      {
+        let selectedNoteTime = getStartTime(notes[sortedTimeNotes[j]]);
+        if (selectedNoteTime < currentNoteTime + 12)
+        {
+          if (!addedCurrentNote)
+          {
+            chords.push([]);
+            addedCurrentNote = true;
+            chords[chords.length - 1].push(sortedTimeNotes[i]);
+          }
+          chords[chords.length - 1].push(sortedTimeNotes[j]);
+          alreadyUsedForChord[j] = true;
+        }
+        else
+          break;
+      }
+    }
+
+    for (let i = 0; i < chords.length;++i)
+    {
+      let columnPlacement = [];
+      for (let j = 0; j <10; ++j)
+      {
+        columnPlacement.push([-1, -1, -1]);
+      }
+      for (let j = 0; j < chords[i].length; ++j)
+      {
+        columnPlacement[getKeyboardColumn(notes[chords[i][j]])][getKeyboardRow(notes[chords[i][j]])] = chords[i][j];        
+      }
+      let chordDifficulty = 1;
+      let lastColumnPos = -1;      
+      let lastMaxRowPos = -1;
+      let lastMinRowPos = Infinity;
+      for (let j = 0; j < columnPlacement.length; ++j)
+      {
+        let lastRowPos = -1;
+        for (let k = 0; k < columnPlacement[j].length;++k)
+        {
+          if (columnPlacement[j][k] == -1)
+            continue;
+          if (lastRowPos != -1)
+          {
+            if (Math.abs(lastColumnPos - j) == 0)
+            {
+              chordDifficulty += 3;
+            }
+          }
+          if (lastMaxRowPos != -1)
+          {
+            if (Math.abs(lastColumnPos - j) <= 3 && (lastMinRowPos != k || lastMaxRowPos != k))
+            {
+              chordDifficulty += 0.05 * (3-Math.abs(lastColumnPos - j));
+            }
+          }
+          if (k > lastMaxRowPos)
+            lastMaxRowPos = k;
+          if (k < lastMinRowPos)
+            lastMinRowPos = k;
+          lastColumnPos = j;
+          lastRowPos = k;
+        }
+      }
+      for (let j = 0; j < chords[i].length; ++j)
+      {
+        noteDifficulties[chords[i][j]] *= chordDifficulty;
+      }
+    }
 
     let keyboardNotes = [
       [],[],[],[],[], [],[],[],[],[],
@@ -290,7 +367,7 @@ starFormulas = {
       let selectedStartTime = getStartTime(notes[selectedNoteIndex]);
       if (selectedStartTime > previousEndTime)
         timeDurationBonus = OBJECTTIMEDIFFERENCE / (selectedStartTime - previousEndTime + REWARDTIMEDIFFERENCE)
-      let heldNoteBonus = Math.pow(heldNoteCounts[selectedNoteIndex] + 1, 1);
+      let heldNoteBonus = Math.pow(heldNoteCounts[selectedNoteIndex] + 1, 0.8);
       
       timeDurationBonus = Math.max(0.9, timeDurationBonus);
   
@@ -352,14 +429,15 @@ starFormulas = {
     let sortedTimeNotes = [];
     let noteDifficulties = [];
     let heldNoteCounts = [];
+    let alreadyUsedForChord = [];
     for (let i = 0; i < notes.length; ++i)
     {
       if (getStartTime(notes[i]) < minTime)
         minTime = getStartTime(notes[i]);
       if (getEndTime(notes[i]) > maxTime)
         maxTime = getEndTime(notes[i]);
-      sortedTimeNotes.push(i);     
-      
+      sortedTimeNotes.push(i); 
+      alreadyUsedForChord.push(false);
       heldNoteCounts.push(0);
     }
 
@@ -391,6 +469,82 @@ starFormulas = {
 
     const drainTime = maxTime - minTime;
 
+    let chords = [];
+    for (let i = 0; i < sortedTimeNotes.length - 1; ++i)
+    {
+      if (alreadyUsedForChord[i])
+        continue;      
+      alreadyUsedForChord[i] = true;
+      let currentNoteTime = getStartTime(notes[sortedTimeNotes[i]]);
+      let addedCurrentNote = false;
+      for (let j = i +1; j < sortedTimeNotes.length; ++j)
+      {
+        let selectedNoteTime = getStartTime(notes[sortedTimeNotes[j]]);
+        if (selectedNoteTime < currentNoteTime + 12)
+        {
+          if (!addedCurrentNote)
+          {
+            chords.push([]);
+            addedCurrentNote = true;
+            chords[chords.length - 1].push(sortedTimeNotes[i]);
+          }
+          chords[chords.length - 1].push(sortedTimeNotes[j]);
+          alreadyUsedForChord[j] = true;
+        }
+        else
+          break;
+      }
+    }
+
+    for (let i = 0; i < chords.length;++i)
+    {
+      let columnPlacement = [];
+      for (let j = 0; j <10; ++j)
+      {
+        columnPlacement.push([-1, -1, -1]);
+      }
+      for (let j = 0; j < chords[i].length; ++j)
+      {
+        columnPlacement[getKeyboardColumn(notes[chords[i][j]])][getKeyboardRow(notes[chords[i][j]])] = chords[i][j];        
+      }
+      let chordDifficulty = 1;
+      let lastColumnPos = -1;      
+      let lastMaxRowPos = -1;
+      let lastMinRowPos = Infinity;
+      for (let j = 0; j < columnPlacement.length; ++j)
+      {
+        let lastRowPos = -1;
+        for (let k = 0; k < columnPlacement[j].length;++k)
+        {
+          if (columnPlacement[j][k] == -1)
+            continue;
+          if (lastRowPos != -1)
+          {
+            if (Math.abs(lastColumnPos - j) == 0)
+            {
+              chordDifficulty += 3;
+            }
+          }
+          if (lastMaxRowPos != -1)
+          {
+            if (Math.abs(lastColumnPos - j) <= 3 && (lastMinRowPos != k || lastMaxRowPos != k))
+            {
+              chordDifficulty += 0.05 * (3-Math.abs(lastColumnPos - j));
+            }
+          }
+          if (k > lastMaxRowPos)
+            lastMaxRowPos = k;
+          if (k < lastMinRowPos)
+            lastMinRowPos = k;
+          lastColumnPos = j;
+          lastRowPos = k;
+        }
+      }
+      for (let j = 0; j < chords[i].length; ++j)
+      {
+        noteDifficulties[chords[i][j]] *= chordDifficulty;
+      }
+    }
 
     let keyboardNotes = [
       [],[],[],[],[], [],[],[],[],[],
@@ -496,7 +650,7 @@ starFormulas = {
       let selectedStartTime = getStartTime(notes[selectedNoteIndex]);
       if (selectedStartTime > previousEndTime)
         timeDurationBonus = OBJECTTIMEDIFFERENCE / (selectedStartTime - previousEndTime + REWARDTIMEDIFFERENCE)
-      let heldNoteBonus = Math.pow(heldNoteCounts[selectedNoteIndex] + 1, 1);
+      let heldNoteBonus = Math.pow(heldNoteCounts[selectedNoteIndex] + 1, 0.8);
       
       timeDurationBonus = Math.max(0.9, timeDurationBonus);
   
