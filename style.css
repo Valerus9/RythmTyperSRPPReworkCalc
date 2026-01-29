@@ -2,13 +2,42 @@ body{
     font-size: 1.3em;
     /*text-align: center;*/
 }
+body > h1
+{
+    text-align: center;
+}
+body > h2
+{
+    text-align: center;
+}
+body > h3
+{
+    text-align: center;
+}
+body > h4
+{
+    text-align: center;
+}
+body > h5
+{
+    text-align: center;
+}
 td, th{
     padding: 10px;
     text-align: center;
 }
-td, th, table, tr
+/*th{
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+}*/
+
+/*td, th, table, tr
 {
     border-collapse: collapse;
+}*/
+table
+{
+    border-spacing: 0;
 }
 .title
 {

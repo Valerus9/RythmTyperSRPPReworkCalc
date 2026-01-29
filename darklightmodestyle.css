@@ -1,9 +1,6 @@
-html.lightmode td,
-html.lightmode th,
-html.lightmode table,
-html.lightmode tr
+html.lightmode td
 {
-    border: 2px solid black;
+    border-top: 2px solid black;
 }
 html.lightmode th
 {
@@ -54,12 +51,8 @@ html.lightmode div#topbar{
 }
 
 
-html.darkmode td,
-html.darkmode th,
-html.darkmode table,
-html.darkmode tr
-{
-    border: 2px solid white;
+html.darkmode td {
+    border-top: 2px solid rgb(100,100,100);
 }
 html.darkmode th
 {
@@ -80,34 +73,34 @@ html.darkmode tbody tr:nth-child(odd) {
 }
 html.darkmode body {
     background-color: rgb(5,5,0);
-    color: white;
+    color:rgb(180, 180, 180);
 }
 html.darkmode input[type="button"],
 html.darkmode input[type="file"]::file-selector-button
 {
     background-color: rgb(35,35,15);
     border: 2px solid rgb(55,55,35);
-    color:white;
+    color:rgb(180, 180, 180);
 }
 html.darkmode input[type="button"]:hover,
 html.darkmode input[type="file"]::file-selector-button:hover
 {
     background-color: rgb(55,55,35);
     border: 2px solid rgb(75,75,75);
-    color:white;
+    color:rgb(180, 180, 180);
 }
 html.darkmode textarea,
 html.darkmode select
 {
     background-color: rgb(35,35,15);
     border: 2px solid rgb(55,55,35);
-    color:white;
+    color:rgb(180, 180, 180);
 }
 html.darkmode select:hover
 {
     background-color: rgb(55,55,35);
     border: 2px solid rgb(75,75,75);
-    color:white;
+    color:rgb(180, 180, 180);
 }
 html.darkmode div#topbar{
     background-color: rgb(0,0,25);;
@@ -131,13 +124,13 @@ html.lightmode input[type="button"]#visualmodeswitch
 {
     background-color: rgb(35,35,15);
     border: 2px solid rgb(55,55,35);
-    color:white;
+    color:rgb(180, 180, 180);
 }
 html.lightmode input[type="button"]#visualmodeswitch:hover
 {
     background-color: rgb(55,55,35);
     border: 2px solid rgb(75,75,75);
-    color:white;
+    color:rgb(180, 180, 180);
 }
 
 html.lightmode input[type="button"].selected
@@ -154,11 +147,11 @@ html.darkmode input[type="button"].selected
 {
     background-color: rgb(75,75,55);
     border: 2px solid rgb(55,55,35);
-    color:white;
+    color:rgb(180, 180, 180);
 }
 html.darkmode input[type="button"].selected:hover
 {
     background-color: rgb(75,75,55);
     border: 2px solid rgb(55,55,35);
-    color:white;
+    color:rgb(180, 180, 180);
 }

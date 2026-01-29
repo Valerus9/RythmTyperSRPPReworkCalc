@@ -57,7 +57,7 @@ text:
 let modList = [ "No mods", "DT/NC", "HT/DC"];
 
 let sortByOldStarRank = 0;
-let sortByNewStarRank = 0;
+let sortByNewStarRank = -1;
 let sortByOldPPRank = 0;
 let sortByNewPPRank = 0;
 let sortBySongName = 0;
@@ -168,7 +168,7 @@ function CreateSelectContentBeatmap()
   }
   selectsrSecond.innerHTML = selectsrtextSecond;
   let selectppFirst = document.getElementById("ppcalcselectfirst");
-  let selectpptextFirst = "<option value=\"\" disabled selected>Select a sr rework</option>\n";
+  let selectpptextFirst = "<option value=\"\" disabled selected>Select a pp rework</option>\n";
   let ppReworkKeys = Object.keys(ppFormulas);
   for (let i = 0; i < ppReworkKeys.length; ++i)
   {    
@@ -183,7 +183,7 @@ function CreateSelectContentBeatmap()
   }
   selectppFirst.innerHTML = selectpptextFirst;
   let selectppSecond = document.getElementById("ppcalcselectsecond");
-  let selectpptextSecond = "<option value=\"\" disabled selected>Select a sr rework</option>\n";
+  let selectpptextSecond = "<option value=\"\" disabled selected>Select a pp rework</option>\n";
   for (let i = 0; i < ppReworkKeys.length; ++i)
   {
     if (i == 1)
@@ -218,7 +218,7 @@ function CreateSelectContentBeatmap()
 function CreateSelectContentUser()
 {
   let selectppFirst = document.getElementById("ppcalcselectfirst");
-  let selectpptextFirst = "<option value=\"\" disabled selected>Select a sr rework</option>\n";
+  let selectpptextFirst = "<option value=\"\" disabled selected>Select a pp rework</option>\n";
   let ppReworkKeys = Object.keys(ppFormulas);
   for (let i = 0; i < ppReworkKeys.length; ++i)
   {
@@ -234,7 +234,7 @@ function CreateSelectContentUser()
   }
   selectppFirst.innerHTML = selectpptextFirst;
   let selectppSecond = document.getElementById("ppcalcselectsecond");
-  let selectpptextSecond = "<option value=\"\" disabled selected>Select a sr rework</option>\n";
+  let selectpptextSecond = "<option value=\"\" disabled selected>Select a pp rework</option>\n";
   for (let i = 0; i < ppReworkKeys.length; ++i)
   {
     if (i == 1)
@@ -292,9 +292,7 @@ function ChangeMenu(elementId)
   selectedId = elementId;
   if (changeMenuButton.value == "Profile pp change")
   {
-    document.getElementById("container").innerHTML = "<h1 class=\"title\">Rhythm typer SR/PP Rework site</h1>\n"
-    +"<h5 class=\"author\">By Valerus9</h5>\n"
-    +"<input type=\"button\" id=\"calculatepp\" value=\"Calculate pp\">\n"
+    document.getElementById("container").innerHTML = "<input type=\"button\" id=\"calculatepp\" value=\"Calculate pp\">\n"
     +"<select id=\"ppcalcselectfirst\">"
     +"</select>"
     +"<select id=\"ppcalcselectsecond\">"
@@ -773,11 +771,11 @@ function CreateTable()
 {
   const table = document.getElementById("diffList");  
   let tableText = "";
-  let oldStarRankWidth = 80;
-  let newStarRankWidth = 120;
-  let oldPPRankWidth = 80;
-  let newPPRankWidth = 120;
-  let songNameWidth = 200;
+  let oldStarRankWidth = 40;
+  let newStarRankWidth = 40;
+  let oldPPRankWidth = 40;
+  let newPPRankWidth = 40;
+  let songNameWidth = 300;
   let difficultyNameWidth = 200;
   let oldStarWidth = 40;
   let newStarWidth = 40;
@@ -810,16 +808,16 @@ function CreateTable()
     tableText += "<th id=\"difficulty\" style=\"width:"+difficultyNameWidth+"px;\">Difficulty"+tempSortOrderingText+"</th>";
 
     tempSortOrderingText = GetHeaderSortText(sortByOldStar);
-    tableText += "<th id=\"oldstar\" style=\"width:"+oldStarWidth+"px;\">OldStar"+tempSortOrderingText+"</th>";
+    tableText += "<th id=\"oldstar\" style=\"width:"+oldStarWidth+"px;\">Old Star"+tempSortOrderingText+"</th>";
 
     tempSortOrderingText = GetHeaderSortText(sortByNewStar);
-    tableText += "<th id=\"newstar\" style=\"width:"+newStarWidth+"px;\">NewStar"+tempSortOrderingText+"</th>";
+    tableText += "<th id=\"newstar\" style=\"width:"+newStarWidth+"px;\">New Star"+tempSortOrderingText+"</th>";
 
     tempSortOrderingText = GetHeaderSortText(sortByOldPP);
-    tableText += "<th id=\"oldpp\" style=\"width:"+oldPPWidth+"px;\">OldPP"+tempSortOrderingText+"</th>";
+    tableText += "<th id=\"oldpp\" style=\"width:"+oldPPWidth+"px;\">Old PP"+tempSortOrderingText+"</th>";
 
     tempSortOrderingText = GetHeaderSortText(sortByNewPP);
-    tableText += "<th id=\"newpp\" style=\"width:"+newPPWidth+"px;\">NewPP"+tempSortOrderingText+"</th>";
+    tableText += "<th id=\"newpp\" style=\"width:"+newPPWidth+"px;\">New PP"+tempSortOrderingText+"</th>";
 
     tempSortOrderingText = GetHeaderSortText(sortByBPM);
     tableText += "<th id=\"bpm\" style=\"width:"+BPMWidth+"px;\">BPM"+tempSortOrderingText+"</th>";
@@ -875,7 +873,9 @@ function CreateTable()
       let changeSize = Math.min(newStar/oldStar, 2) / 2;
       colorG = Math.round(0 + 250*changeSize);
     }
-    let newSRColor = colorR+","+colorG+","+colorB;
+    let newSRColor ="color:rgb("+ colorR+","+colorG+","+colorB +"); ";
+    if (!(colorR > 0 || colorG > 0))
+      newSRColor = "";
     
     let oldPP = GetModdedPP(diffIds[i], ppReworkFirst, selectedMod);
     let newPP = GetModdedPP(diffIds[i], ppReworkSecond, selectedMod);
@@ -892,7 +892,9 @@ function CreateTable()
       let changeSize = Math.min(newPP/oldPP, 2) / 2;
       colorG = Math.round(0 + 250*changeSize);
     }
-    let newPPColor = colorR+","+colorG+","+colorB;
+    let newPPColor = "color:rgb("+colorR+","+colorG+","+colorB+"); ";
+    if (!(colorR > 0 || colorG > 0))
+      newPPColor = "";
 
     colorR = 0;
     colorG = 0;
@@ -902,7 +904,9 @@ function CreateTable()
       colorR = 200;    
     else if (oldStarRanks[diffIds[i]] > newStarRanks[diffIds[i]])
       colorG = 200;
-    let newStarRankColor = colorR+","+colorG+","+colorB;
+    let newStarRankColor ="color:rgb("+ colorR+","+colorG+","+colorB+"); ";
+    if (!(colorR > 0 || colorG > 0))
+      newStarRankColor = "";
     
     colorR = 0;
     colorG = 0;
@@ -912,7 +916,9 @@ function CreateTable()
       colorR = 200;    
     else if (oldPPRanks[diffIds[i]] > newPPRanks[diffIds[i]])
       colorG = 200;
-    let newPPRankColor = colorR+","+colorG+","+colorB;
+    let newPPRankColor = "color:rgb("+ colorR+","+colorG+","+colorB+"); ";
+    if (!(colorR > 0 || colorG > 0))
+      newPPRankColor = "";
 
     let starRankDifference = oldStarRanks[diffIds[i]] - newStarRanks[diffIds[i]];
     let ppRankDifference = oldPPRanks[diffIds[i]] - newPPRanks[diffIds[i]];
@@ -929,15 +935,15 @@ function CreateTable()
     if (ppRankDifference < 1)
       ppRankDifferenceText = ppRankDifferenceText.replace("+","");
     tableText += "<td style=\"width:"+oldStarRankWidth+"px;\">#"+ oldStarRanks[diffIds[i]] +"</td>";
-    tableText += "<td style=\"color:rgb("+newStarRankColor+"); width:"+newStarRankWidth+"px;\">#"+ newStarRanks[diffIds[i]] + starRankDifferenceText+"</td>";
+    tableText += "<td style=\""+newStarRankColor+"width:"+newStarRankWidth+"px;\">#"+ newStarRanks[diffIds[i]] + starRankDifferenceText+"</td>";
     tableText += "<td style=\"width:"+oldPPRankWidth+"px;\">#"+ oldPPRanks[diffIds[i]] +"</td>";
-    tableText += "<td style=\"color:rgb("+newPPRankColor+"); width:"+newPPRankWidth+"px;\">#"+ newPPRanks[diffIds[i]] + ppRankDifferenceText+"</td>";
+    tableText += "<td style=\""+newPPRankColor+"width:"+newPPRankWidth+"px;\">#"+ newPPRanks[diffIds[i]] + ppRankDifferenceText+"</td>";
     tableText += "<td style=\"width:"+songNameWidth+"px;\">"+ songNames[diffIds[i]] +"</td>";
     tableText += "<td style=\"width:"+difficultyNameWidth+"px;\">"+ difficultyNames[diffIds[i]] +"</td>";
     tableText += "<td style=\"width:"+oldStarWidth+"px;\">"+ String(Math.round(oldStar*100)/100).replace(".",",") +"</td>";
-    tableText += "<td style=\"color:rgb("+newSRColor+"); width:"+newStarWidth+"px;\">"+ String(Math.round(newStar*100)/100).replace(".",",") +"</td>";
+    tableText += "<td style=\""+newSRColor+"width:"+newStarWidth+"px;\">"+ String(Math.round(newStar*100)/100).replace(".",",") +"</td>";
     tableText += "<td style=\"width:"+oldPPWidth+"px;\">"+ String(Math.round(oldPP)).replace(".",",") +"</td>";
-    tableText += "<td style=\"color:rgb("+newPPColor+"); width:"+newPPWidth+"px;\">"+ String(Math.round(newPP)).replace(".",",") +"</td>";
+    tableText += "<td style=\""+newPPColor+"width:"+newPPWidth+"px;\">"+ String(Math.round(newPP)).replace(".",",") +"</td>";
     tableText += "<td style=\"width:"+BPMWidth+"px;\">"+ Math.round(BPMs[diffIds[i]] * modSpeed) +"</td>";
     tableText += "<td style=\"width:"+drainTimeWidth+"px;\">"+drainTimeMinute+":"+ drainTimeSecond +"</td>";
     tableText += "<td style=\"width:"+noteCountWidth+"px;\">" + NoteCounts[diffIds[i]] + "</td>";
