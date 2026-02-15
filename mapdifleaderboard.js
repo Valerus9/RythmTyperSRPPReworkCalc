@@ -189,10 +189,61 @@ async function LoadMapDataValues(localValues)
     {
         if (LoadedDifficultyIds.includes(localValues[0][i].mapsetId))
         {
-            continue;
+            if (!isCache[LoadedDifficultyIds.includes(localValues[0][i].mapsetId)])
+                continue;
+            else
+            {
+                for (let j = i; j < localValues[0].length; ++j)
+                {
+                    LoadedBeatmapIds.splice(j, 1);
+                    LoadedDifficultyIds.splice(j, 1);
+                    beatmapList.splice(j, 1);
+                    difficultyList.splice(j, 1);
+                    LoadedBeatmapIds.splice(j, 1);
+                    LoadedDifficultyIds.splice(j, 1);
+                    songNames.splice(j, 1);
+                    difficultyNames.splice(j, 1);
+                    BPMs.splice(j, 1);
+                    DrainTimes.splice(j, 1);
+                    ODs.splice(j, 1);
+                    NoteCounts.splice(j, 1);
+                    TypingSectionCounts.splice(j, 1);
+                    for (let k = 0; k < Stars.length; ++k)
+                    {
+                        Stars[k].splice(j, 1);
+                        StarHTDCs[k].splice(j, 1);
+                        StarDTNCs[k].splice(j, 1);
+                    }
+                    for (let k = 0; k < PPs.length; ++k)
+                    {
+                        PPs[k].splice(j, 1);
+                        PPHTDCs[k].splice(j, 1);
+                        PPDTNCs[k].splice(j, 1);                        
+                    }
+                }
+            }
         }
         LoadedBeatmapIds.push(localValues[0][i].mapsetId);
         LoadedDifficultyIds.push(localValues[1][i].diffId);
+        localDifficultyValues = CreateDifficultyData([localValues[1][i]]);
+        for (let i = 0; i < localDifficultyValues[0].length; ++i)
+        {
+            for (let j = 0; j < localDifficultyValues[0][i].length; ++j)
+            {
+                Stars[i].push(localDifficultyValues[0][i][j]);
+                StarHTDCs[i].push(localDifficultyValues[1][i][j]);
+                StarDTNCs[i].push(localDifficultyValues[2][i][j]);
+            }
+        }
+        for (let i = 0; i < localDifficultyValues[3].length; ++i)
+        {    
+            for (let j = 0; j < localDifficultyValues[3][i].length; ++j)
+            {
+                PPs[i].push(localDifficultyValues[3][i][j]);
+                PPHTDCs[i].push(localDifficultyValues[4][i][j]);
+                PPDTNCs[i].push(localDifficultyValues[5][i][j]);
+            }
+        }
         beatmapList.push(localValues[0][i]);
         difficultyList.push(localValues[1][i]);
         LoadedBeatmapIds.push(localValues[2][i]);
@@ -204,35 +255,13 @@ async function LoadMapDataValues(localValues)
         ODs.push(localValues[8][i]);
         NoteCounts.push(localValues[9][i]);
         TypingSectionCounts.push(localValues[10][i]);
-    }
-    localDifficultyValues = CreateDifficultyData(localValues[1]);
-    for (let i = 0; i < localDifficultyValues[0].length; ++i)
-    {
-        for (let j = 0; j < localDifficultyValues[0][i].length; ++j)
-        {
-            Stars[i].push(localDifficultyValues[0][i][j]);
-            StarHTDCs[i].push(localDifficultyValues[1][i][j]);
-            StarDTNCs[i].push(localDifficultyValues[2][i][j]);
-        }
-    }
-    for (let i = 0; i < localDifficultyValues[3].length; ++i)
-    {    
-        for (let j = 0; j < localDifficultyValues[3][i].length; ++j)
-        {
-            PPs[i].push(localDifficultyValues[3][i][j]);
-            PPHTDCs[i].push(localDifficultyValues[4][i][j]);
-            PPDTNCs[i].push(localDifficultyValues[5][i][j]);
-        }
-    }
-
-    for (let i = 0; i < localValues[0].length; ++i)
-    {
         isCache.push(false);
         oldStarRanks.push(0);
         newStarRanks.push(0);
         oldPPRanks.push(0);
         newPPRanks.push(0);
     }
+
     CreateTable("diffList", difTableColumnNames, difTableColumnIds, difTableColumnWidths, CreateDefaultRowIds(songNames.length), CreateDiffTableValues(true), difTableColumnCompare, difTableColumnTypes, 0);
     if (songNames.length == 0)
     {
