@@ -196,18 +196,19 @@ function Createbuilduptable()
         localTypingSectionMultiplierColors.push(GenerateColor());
     }
 
+    let localNegateBorderWidths = 1;
     let labelText = "";
     labelText += "<div style=\"display:flex; flex-direction:row;\"><div style=\"width:30px; height:30px; background-color:rgb("+localNoteMultiplierColors[0]+")\"></div><div>baseValue</div></div>"
     for (let i = 0; i < localNoteMultiplierNames.length; ++i)
     {
         labelText += "<div style=\"display:flex; flex-direction:row;\"><div style=\"width:30px; height:30px; background-color:rgb("+localNoteMultiplierColors[i+1]+")\"></div><div>"+localNoteMultiplierNames[i]+"</div></div>";
     }
+    labelText += "<div style=\"display:flex; flex-direction:row;\"><div style=\"width:"+(30-2*localNegateBorderWidths)+"px; height:"+(30-2*localNegateBorderWidths)+"px; border: "+localNegateBorderWidths+"px solid rgb(230,60,60)\"></div><div>LessThanOneModifierEffect</div></div>"
     document.getElementById("graphlabels").innerHTML = labelText;
 
     let graphText = "";
     let localMaxHeight = 300;
     let localColumnWidths = 10;
-    let localNegateBorderWidths = 1;
     for (let i = 0; i < localNoteBaseValues.length; ++i)
     {
         if (i != 0)
