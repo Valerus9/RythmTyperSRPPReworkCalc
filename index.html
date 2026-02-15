@@ -10,16 +10,21 @@
     <script src="starformulas.js"></script>
     <script src="rankedmaps.js"></script>
     <script src="ppaccuracies.js"></script>
+    <script src="leaderboardData.js"></script>
+    <script src="starformulabuildup.js"></script>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="darklightmodestyle.css">
 </head>
 <body>    
     <div id="topbar">
         <input type="button" id="visualmodeswitch" value="Dark mode">    
-        <input type="button" id="changemenuprofile" value="Profile pp change">
-        <!--<input type="button" id="changemenuleaderboard" value="Leaderboard change" disabled>-->
+        <input type="button" id="changemenuprofile" value="Leaderboard change">
         <input type="button" class="selected" id="changemenumaps" value="Map sr pp change">
+        <input type="button" id="changemenudifferentodCalc" disabled value="Different OD calc">
+        <input type="button" id="changemenugraphviewofrework" disabled value="Rework graph view">
+        
     </div>
+    <div id="warningcacheonly" style="display:flex; justify-content:center; width:100%;"><div id="warningcacheonlycenter" >You need to upload .rtm files on the Map sr pp change menu in order to access Different OD calc and Rework graph view</div></div>
     <h1 class="title">Rhythm typer SR/PP Rework site</h1>
     <h5 class="author">By Valerus9</h5>
     <div id="container">
@@ -55,7 +60,8 @@
         <select id="modselect">
         </select>
         <input type="button" id="clearrtms" value="Clear loaded rtms">
-        <p>NOTE: This button will not clear the ranked map cache. If you reload the page then the ranked maps are also going to be loaded even if you click this button.</p>
+        <input type="button" id="clearcachertms" value="Clear cached values">
+        <p id="cacheMessage">There are cached map data loaded.</p>
         <p id="avgSRChange"></p>
         <p id="avgPPChange"></p>
         <p id="minMaxOldSR"></p>
@@ -64,8 +70,14 @@
         <p id="minMaxNewPP"></p>
         <table id="diffList">
         </table>
-    </div>
-
+    </div>     
+    <script src="beatmapStuff.js"></script>   
+    <script src="tablecreator.js"></script>
+    <script src="starratingppstuff.js"></script>
+    <script src="differentodcalc.js"></script>
+    <script src="newPlayerleaderboard.js"></script>
+    <script src="mapdifleaderboard.js"></script>
+    <script src="hitobjectdifficultybuildup.js"></script>
     <script src="main.js" defer></script>    
 </body>
 </html>

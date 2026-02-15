@@ -90,7 +90,7 @@ select
 }
 div
 {
-    padding: 0.4em
+    padding: 0.4em;
 }
 input[type="button"],
 input[type="file"]::file-selector-button
@@ -108,8 +108,10 @@ input
     margin-top: 0.2em;
     margin-bottom: 0.2em;
 }
-#replayInput
+div#linegraph
 {
-    height:30em;
-    width:80%
+    display:flex;
+    flex-direction:row;
+    align-items:flex-end;
+    width: max-content;
 }

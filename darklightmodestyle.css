@@ -50,6 +50,86 @@ html.lightmode div#topbar{
     background-color: rgb(100,100,200);;
 }
 
+html.lightmode input[type="button"]#visualmodeswitch
+{
+    background-color: rgb(35,35,15);
+    border: 2px solid rgb(55,55,35);
+    color:rgb(180, 180, 180);
+}
+html.lightmode input[type="button"]#visualmodeswitch:hover
+{
+    background-color: rgb(55,55,35);
+    border: 2px solid rgb(75,75,75);
+    color:rgb(180, 180, 180);
+}
+
+html.lightmode input[type="button"].selected
+{
+    background-color: rgb(180,180,200);
+    border: 2px solid rgb(100,100,120);
+}
+html.lightmode input[type="button"].selected:hover
+{
+    background-color: rgb(180,180,200);
+    border: 2px solid rgb(100,100,120);    
+}
+
+html.lightmode div.buttonstyle.selected
+{
+    background-color: rgb(180,180,200);
+    border: 2px solid rgb(100,100,120);
+}
+html.lightmode div.buttonstyle.selected:hover
+{
+    background-color: rgb(180,180,200);
+    border: 2px solid rgb(100,100,120);    
+}
+
+html.lightmode table.subtable tr td
+{
+    border-top: 2px solid black;
+}
+html.lightmode table.subtable tr th
+{
+    color: white;
+    background-color: rgb(0, 0, 128);
+}
+html.lightmode table.subtable tr th:hover
+{
+    color: rgb(225,225,225);
+    background-color: rgb(0, 0, 138);
+}
+html.lightmode table.subtable tr
+{
+    background-color: rgb(205, 205, 230);
+}
+html.lightmode table.subtable tbody tr:nth-child(odd) {
+    background-color: rgb(190, 190, 215);
+}
+
+html.lightmode div.buttonstyle
+{
+    background-color: rgb(220,220,240);
+    border: 2px solid rgb(100,100,120);
+}
+html.lightmode div.buttonstyle:hover
+{
+    background-color: rgb(230,230,250);
+    border: 2px solid rgb(110,110,130);
+}
+html.lightmode div#diffgraphdatadisplay
+{
+    background-color: rgb(200,200,200);
+}
+html.lightmode div#linegraph
+{
+    background-color: rgb(230,230,250);
+}
+
+html.lightmode div#warningcacheonlycenter {
+    background-color: rgb(255, 255, 0); 
+    border: 5px solid black;
+}
 
 html.darkmode td {
     border-top: 2px solid rgb(100,100,100);
@@ -120,29 +200,7 @@ html.darkmode input[type="button"]#visualmodeswitch:hover
     border: 2px solid rgb(110,110,130);
     color: black;
 }
-html.lightmode input[type="button"]#visualmodeswitch
-{
-    background-color: rgb(35,35,15);
-    border: 2px solid rgb(55,55,35);
-    color:rgb(180, 180, 180);
-}
-html.lightmode input[type="button"]#visualmodeswitch:hover
-{
-    background-color: rgb(55,55,35);
-    border: 2px solid rgb(75,75,75);
-    color:rgb(180, 180, 180);
-}
 
-html.lightmode input[type="button"].selected
-{
-    background-color: rgb(180,180,200);
-    border: 2px solid rgb(100,100,120);
-}
-html.lightmode input[type="button"].selected:hover
-{
-    background-color: rgb(180,180,200);
-    border: 2px solid rgb(100,100,120);    
-}
 html.darkmode input[type="button"].selected
 {
     background-color: rgb(75,75,55);
@@ -154,4 +212,64 @@ html.darkmode input[type="button"].selected:hover
     background-color: rgb(75,75,55);
     border: 2px solid rgb(55,55,35);
     color:rgb(180, 180, 180);
+}
+html.darkmode div.buttonstyle.selected
+{
+    background-color: rgb(75,75,55);
+    border: 2px solid rgb(55,55,35);
+    color:rgb(180, 180, 180);
+}
+html.darkmode div.buttonstyle.selected:hover
+{
+    background-color: rgb(75,75,55);
+    border: 2px solid rgb(55,55,35);
+    color:rgb(180, 180, 180);
+}
+
+html.darkmode tbody.subtable tr td {
+    border-top: 2px solid rgb(100,100,100);
+}
+html.darkmode tbody.subtable tr th
+{
+    color: black;
+    background-color: rgb(0,50,100);
+}
+html.darkmode tbody.subtable tr th:hover
+{
+    color: rgb(25,25,25);
+    background-color: rgb(0, 60, 125);
+}
+html.darkmode tbody.subtable tr
+{
+    background-color: rgb(0, 10, 15);
+}
+html.darkmode tbody.subtable tr:nth-child(odd) {
+    background-color: rgb(0, 25, 35);
+}
+html.darkmode div.buttonstyle
+{
+    background-color: rgb(35,35,15);
+    border: 2px solid rgb(55,55,35);
+    color:rgb(180, 180, 180);
+}
+html.darkmode div.buttonstyle:hover
+{
+    background-color: rgb(55,55,35);
+    border: 2px solid rgb(75,75,75);
+    color:rgb(180, 180, 180);
+}
+
+html.darkmode div#diffgraphdatadisplay
+{
+    background-color: rgb(50,50,50);
+}
+
+html.darkmode div#linegraph
+{
+    background-color: rgb(50,50,90);
+}
+
+html.darkmode div#warningcacheonlycenter {
+    background-color: rgb(100, 100, 0); 
+    border: 5px solid rgb(100,100,100);
 }
