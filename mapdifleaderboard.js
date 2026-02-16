@@ -184,14 +184,15 @@ function LoadMapDifLeaderboard() {
 }
 
 async function LoadMapDataValues(localValues)
-{
+{   
+    ClearCachedRTMS();
     for (let i = 0; i < localValues[0].length; ++i)
     {
-        if (LoadedBeatmapIds.includes(localValues[0][i].mapsetId))
+        /*if (LoadedBeatmapIds.includes(localValues[0][i].mapsetId))
         {
             for (let j = 0; j < LoadedBeatmapIds.length; ++j)
             {
-                if (LoadedBeatmapIds[j] != localValues[0][i].mapsetId || LoadedDifficultyIds[j] != localValues[1][i].diffId || !isCache[j])
+                if ((LoadedBeatmapIds[j] != localValues[0][i].mapsetId && LoadedDifficultyIds[j] != localValues[1][i].diffId) || !isCache[j])
                     continue;
                 LoadedBeatmapIds.splice(j, 1);
                 LoadedDifficultyIds.splice(j, 1);
@@ -224,7 +225,7 @@ async function LoadMapDataValues(localValues)
                     PPDTNCs[k].splice(j, 1);                        
                 }
             }
-        }
+        }*/
         LoadedBeatmapIds.push(localValues[0][i].mapsetId);
         LoadedDifficultyIds.push(localValues[1][i].diffId);
         localDifficultyValues = CreateDifficultyData([localValues[1][i]]);

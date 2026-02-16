@@ -355,7 +355,7 @@ ppFormulas = {
         //let ms = 80 - 6 * Math.min(overallDifficulty, 11);
         //let od5ms = 80 - 6 * 5;
         //const ODSCALE = 0.03;
-        let odnerf = 1 / (Math.pow(Math.max(9 - overallDifficulty, 0), 2.2) / 100 + 1);
+        let odnerf = 1 / (Math.pow(Math.max(9 - overallDifficulty, 0), 1.3) / 100 + 1);
         let odbonus = Math.pow(Math.max(overallDifficulty - 7, 0), 2.3) / 100 + 1
         //let odbonus = ((ODSCALE * (1 / ms)) / (1 / od5ms)) - ODSCALE + 1;
         odbonus = odbonus * odnerf;
@@ -388,7 +388,7 @@ ppFormulas = {
             let previousEndTime = getEndTime(notes[previousNoteIndex]);
             let selectedStartTime = getStartTime(notes[selectedNoteIndex]);
             if (selectedStartTime > previousEndTime)
-                timeDurationBonus = OBJECTTIMEDIFFERENCE / (selectedStartTime - previousEndTime + REWARDTIMEDIFFERENCE)
+                timeDurationBonus = Math.max(OBJECTTIMEDIFFERENCE / (selectedStartTime - previousEndTime + REWARDTIMEDIFFERENCE),1.3);
             let heldNoteBonus = Math.pow(heldNoteCounts[selectedNoteIndex] + 1, 0.80/Math.pow(chordBuffForNote[selectedNoteIndex],2));
             //let heldNoteBonus = Math.pow(heldNoteCounts[selectedNoteIndex] + 1, 0.8);
 
@@ -406,6 +406,6 @@ ppFormulas = {
         {
           difficultyDensity =8*Math.pow(difficultyDensity/8,0.4);
         }*/
-        return Math.pow(difficultyDensity * 12.5, 1.05) * Math.pow(acc, 5);
+        return Math.pow(difficultyDensity * 12, 1.02) * Math.pow(acc, 5);
     }
 };
