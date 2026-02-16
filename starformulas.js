@@ -150,6 +150,7 @@ starFormulas = {
         let noteDifficulties = [];
         let heldNoteCounts = [];
         let alreadyUsedForChord = [];
+        let chordBuffForNote = [];
         for (let i = 0; i < notes.length; ++i) {
             if (getStartTime(notes[i]) < minTime)
                 minTime = getStartTime(notes[i]);
@@ -158,6 +159,7 @@ starFormulas = {
             sortedTimeNotes.push(i);
             alreadyUsedForChord.push(false);
             heldNoteCounts.push(0);
+            chordBuffForNote.push(1);
         }
 
         for (let i = 0; i < sortedTimeNotes.length - 1; ++i) {
@@ -243,7 +245,8 @@ starFormulas = {
                 }
             }
             for (let j = 0; j < chords[i].length; ++j) {
-                noteDifficulties[chords[i][j]] *= chordDifficulty;
+                chordBuffForNote[chords[i][j]] = Math.max(chordDifficulty, 1);
+                noteDifficulties[chords[i][j]] *= Math.max(chordDifficulty, 1);
             }
         }
 
@@ -300,7 +303,7 @@ starFormulas = {
                         stackNotesIds.push(j);
                         for (let k = 0; k < stackNotesIds.length; ++k)
                         {
-                            noteDifficulties[keyboardSortedIds[i][stackNotesIds[k]]] *= Math.pow(40 / stackNotes[k] + 1, Math.pow(stackSize, 0.3));
+                            noteDifficulties[keyboardSortedIds[i][stackNotesIds[k]]] *= Math.pow(40 / stackNotes[k] + 1, Math.pow(stackSize, 0.3));                            
                         }
                         stackNotes = [];
                         stackNotesIds = [];
@@ -386,8 +389,8 @@ starFormulas = {
             let selectedStartTime = getStartTime(notes[selectedNoteIndex]);
             if (selectedStartTime > previousEndTime)
                 timeDurationBonus = OBJECTTIMEDIFFERENCE / (selectedStartTime - previousEndTime + REWARDTIMEDIFFERENCE)
-            let heldNoteBonus = Math.pow(heldNoteCounts[selectedNoteIndex] + 1, 0.8);
-
+            let heldNoteBonus = Math.pow(heldNoteCounts[selectedNoteIndex] + 1, 0.80/Math.pow(chordBuffForNote[selectedNoteIndex],2));
+            //let heldNoteBonus = Math.pow(heldNoteCounts[selectedNoteIndex] + 1, 0.8);
             timeDurationBonus = Math.max(0.9, timeDurationBonus);
 
             objectDifficultySum += noteDifficulties[selectedNoteIndex] * timeDurationBonus * heldNoteBonus * lengthBonus * odbonus;

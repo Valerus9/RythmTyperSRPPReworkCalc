@@ -233,8 +233,8 @@ async function LoadMapDataValues(localValues)
             for (let j = 0; j < localDifficultyValues[0][i].length; ++j)
             {
                 Stars[i].push(localDifficultyValues[0][i][j]);
-                StarHTDCs[i].push(localDifficultyValues[1][i][j]);
-                StarDTNCs[i].push(localDifficultyValues[2][i][j]);
+                StarDTNCs[i].push(localDifficultyValues[1][i][j]);
+                StarHTDCs[i].push(localDifficultyValues[2][i][j]);
             }
         }
         for (let i = 0; i < localDifficultyValues[3].length; ++i)
@@ -242,8 +242,8 @@ async function LoadMapDataValues(localValues)
             for (let j = 0; j < localDifficultyValues[3][i].length; ++j)
             {
                 PPs[i].push(localDifficultyValues[3][i][j]);
-                PPHTDCs[i].push(localDifficultyValues[4][i][j]);
-                PPDTNCs[i].push(localDifficultyValues[5][i][j]);
+                PPDTNCs[i].push(localDifficultyValues[4][i][j]);
+                PPHTDCs[i].push(localDifficultyValues[5][i][j]);
             }
         }
         beatmapList.push(localValues[0][i]);

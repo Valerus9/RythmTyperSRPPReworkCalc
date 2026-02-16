@@ -57,6 +57,7 @@ function valerusReworkBuildup(scoreData) {
     let noteDifficulties = [];
     let heldNoteCounts = [];
     let alreadyUsedForChord = [];
+    let chordBuffForNote = [];
     for (let i = 0; i < notes.length; ++i) {
         if (getStartTime(notes[i]) < minTime)
             minTime = getStartTime(notes[i]);
@@ -65,6 +66,7 @@ function valerusReworkBuildup(scoreData) {
         sortedTimeNotes.push(i);
         alreadyUsedForChord.push(false);
         heldNoteCounts.push(0);
+        chordBuffForNote.push(1);
     }
 
     for (let i = 0; i < sortedTimeNotes.length - 1; ++i) {
@@ -167,8 +169,8 @@ function valerusReworkBuildup(scoreData) {
             }
         }
         for (let j = 0; j < chords[i].length; ++j) {
-            noteDifficulties[chords[i][j]] *= chordDifficulty;
-            noteMultiplierValues[1][chords[i][j]] = chordDifficulty;
+            noteDifficulties[chords[i][j]] *= Math.max(chordDifficulty, 1);
+            noteMultiplierValues[1][chords[i][j]] = Math.max(chordDifficulty, 1);
         }
     }
 
@@ -313,10 +315,10 @@ function valerusReworkBuildup(scoreData) {
         let selectedStartTime = getStartTime(notes[selectedNoteIndex]);
         if (selectedStartTime > previousEndTime)
             timeDurationBonus = OBJECTTIMEDIFFERENCE / (selectedStartTime - previousEndTime + REWARDTIMEDIFFERENCE)
-        let heldNoteBonus = Math.pow(heldNoteCounts[selectedNoteIndex] + 1, 0.8);
-
+        let heldNoteBonus = Math.pow(heldNoteCounts[selectedNoteIndex] + 1, 0.80/Math.pow(chordBuffForNote[selectedNoteIndex],2));
+        //let heldNoteBonus = Math.pow(heldNoteCounts[selectedNoteIndex] + 1, 0.8);
         timeDurationBonus = Math.max(0.9, timeDurationBonus);
-        "timeDurationBonus", "heldNoteBonus", "lengthBonus", "odbonus"
+        //"timeDurationBonus", "heldNoteBonus", "lengthBonus", "odbonus"
         noteMultiplierValues[4][selectedNoteIndex] = timeDurationBonus;
         noteMultiplierValues[5][selectedNoteIndex] = heldNoteBonus;
         noteMultiplierValues[6][selectedNoteIndex] = lengthBonus;

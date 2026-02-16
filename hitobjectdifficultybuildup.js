@@ -82,7 +82,7 @@ let builduptableFilteredText = "";
 let builduptablePreviousFilteredText = "";
 let builduptableCursorPosition = 0;
 let buildupshowdistance = false;
-let buildupScaleValues = true;
+let buildupScaleValues = false;
 let buildupTimeMultiplier = 1.0;
 
 let buildupNoteMultiplierColors = [];
