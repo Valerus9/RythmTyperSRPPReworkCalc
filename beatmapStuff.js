@@ -278,3 +278,42 @@ function CreateDifficultyData(difficultyInput)
     return [localStars, localStarDTNCs, localStarHTDCs, localPPs, localPPDTNCs, localPPHTDCs];
 }
 
+function scaleDifficultySpeed(difficultyInput, speedInput)
+{
+    let ms = 80 - 6 * difficultyInput.overallDifficulty;
+    let overallDifficultyResult = (80 - (ms / speedInput)) / 6;
+    let DifficultyResult = {
+        notes: [],
+        overallDifficulty: overallDifficultyResult,
+        typingSections: [],
+        accuracy: 100,
+    };
+    for (const note of difficultyInput.notes) {
+        if (note.type == "tap") {
+            let tempNoteResult = {
+                key: note.key,
+                type: note.type,
+                time: note.time / speedInput,
+            };
+            DifficultyResult.notes.push(tempNoteResult);
+        }
+        if (note.type == "hold") {
+            let tempNoteResult = {
+                key: note.key,
+                type: note.type,
+                startTime: note.startTime / speedInput,
+                endTime: note.endTime / speedInput,
+            };
+            DifficultyResult.notes.push(tempNoteResult);
+        }
+    }
+    for (const typingSection of difficultyInput.typingSections) {
+        let tempTypingSectionResult = {
+            startTime: typingSection.startTime / speedInput,
+            endTime: typingSection.endTime / speedInput,
+            text: typingSection.text,
+        };
+        DifficultyResult.typingSections.push(tempTypingSectionResult);
+    }
+    return DifficultyResult;
+}

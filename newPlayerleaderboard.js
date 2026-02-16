@@ -58,6 +58,15 @@ function CreateLeaderboard()
         leaderboardRowIds.push(i);
     }
     CreateTable("playerleaderboard",leaderboardColumnNames,leaderboardColumnIds,leaderboardColumnWidths,leaderboardRowIds,CreateLeaderboardValues(),leaderboardColumnCompare,leaderboardColumnTypes, 50);
+    tableSubtablesHidden[createdTableIds.indexOf("playerleaderboard")] = true;
+    for (let i = 0; i < tableHidden.length;++i)
+    {
+        if (createdTableIds[i].includes("subtable") && createdTableIds[i].includes("playerleaderboard"))
+        {
+            tableHidden[i] = true;
+        }
+    } 
+    CreateTable("playerleaderboard",leaderboardColumnNames,leaderboardColumnIds,leaderboardColumnWidths,leaderboardRowIds,CreateLeaderboardValues(),leaderboardColumnCompare,leaderboardColumnTypes, 50);
 }
 
 function CreateLeaderboardValues()
@@ -76,7 +85,7 @@ function CreateLeaderboardValues()
     let leaderboardPPdiff = [];
     let leaderboardActualPPdiff = [];
 
-    let subtableScoreColumnNames = ["Song name", "Diff name", "Old PP", "Old calc PP", "New PP", "New calc PP", "Accuracy", "Mods"];
+    let subtableScoreColumnNames = ["Song name", "Diff name", "Old PP", "Old weighted PP", "New PP", "New weighted PP", "Accuracy", "Mods"];
     let subtableScoreColumnIds = ["songName", "diffName", "oldPP", "oldcalcPP", "newPP", "newcalcPP", "acc", "mods"];
     let subtableScoreColumnWidths = [300, 200, 40, 40, 40, 40, 40, 40];    
     let subtableScoreColumnCompare = [-1, -1, -1, -1, 2, 3, -1, -1];

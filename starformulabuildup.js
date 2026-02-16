@@ -334,6 +334,7 @@ function valerusReworkBuildup(scoreData) {
     {
       difficultyDensity =8*Math.pow(difficultyDensity/8,0.4);
     }*/
-    return [noteStartTimesForBuildUp, noteBaseValuesForBuildUp, noteMultiplierNames, noteMultiplierValues, typingSectionBaseValuesForBuildUp, typingSectionMultiplierNames, typingSectionMultiplierValues];
+    let notecolors = [[94, 140, 105], [70, 235, 52], [8, 189, 131], [191, 224, 27], [212, 132, 47], [111, 78, 204], [128, 31, 135], [0, 247, 231], [28, 22, 186]];
+    return [noteStartTimesForBuildUp, noteBaseValuesForBuildUp, noteMultiplierNames, noteMultiplierValues, notecolors, typingSectionBaseValuesForBuildUp, typingSectionMultiplierNames, typingSectionMultiplierValues];
 
 }

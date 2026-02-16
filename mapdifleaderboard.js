@@ -187,39 +187,41 @@ async function LoadMapDataValues(localValues)
 {
     for (let i = 0; i < localValues[0].length; ++i)
     {
-        if (LoadedDifficultyIds.includes(localValues[0][i].mapsetId))
+        if (LoadedBeatmapIds.includes(localValues[0][i].mapsetId))
         {
-            if (!isCache[LoadedDifficultyIds.includes(localValues[0][i].mapsetId)])
-                continue;
-            else
+            for (let j = 0; j < LoadedBeatmapIds.length; ++j)
             {
-                for (let j = i; j < localValues[0].length; ++j)
+                if (LoadedBeatmapIds[j] != localValues[0][i].mapsetId || LoadedDifficultyIds[j] != localValues[1][i].diffId || !isCache[j])
+                    continue;
+                LoadedBeatmapIds.splice(j, 1);
+                LoadedDifficultyIds.splice(j, 1);
+                beatmapList.splice(j, 1);
+                difficultyList.splice(j, 1);
+                LoadedBeatmapIds.splice(j, 1);
+                LoadedDifficultyIds.splice(j, 1);
+                songNames.splice(j, 1);
+                difficultyNames.splice(j, 1);
+                BPMs.splice(j, 1);
+                DrainTimes.splice(j, 1);
+                ODs.splice(j, 1);
+                NoteCounts.splice(j, 1);
+                TypingSectionCounts.splice(j, 1);
+                isCache.splice(j, 1);
+                oldStarRanks.splice(j, 1);
+                newStarRanks.splice(j, 1);
+                oldPPRanks.splice(j, 1);
+                newPPRanks.splice(j, 1);
+                for (let k = 0; k < Stars.length; ++k)
                 {
-                    LoadedBeatmapIds.splice(j, 1);
-                    LoadedDifficultyIds.splice(j, 1);
-                    beatmapList.splice(j, 1);
-                    difficultyList.splice(j, 1);
-                    LoadedBeatmapIds.splice(j, 1);
-                    LoadedDifficultyIds.splice(j, 1);
-                    songNames.splice(j, 1);
-                    difficultyNames.splice(j, 1);
-                    BPMs.splice(j, 1);
-                    DrainTimes.splice(j, 1);
-                    ODs.splice(j, 1);
-                    NoteCounts.splice(j, 1);
-                    TypingSectionCounts.splice(j, 1);
-                    for (let k = 0; k < Stars.length; ++k)
-                    {
-                        Stars[k].splice(j, 1);
-                        StarHTDCs[k].splice(j, 1);
-                        StarDTNCs[k].splice(j, 1);
-                    }
-                    for (let k = 0; k < PPs.length; ++k)
-                    {
-                        PPs[k].splice(j, 1);
-                        PPHTDCs[k].splice(j, 1);
-                        PPDTNCs[k].splice(j, 1);                        
-                    }
+                    Stars[k].splice(j, 1);
+                    StarHTDCs[k].splice(j, 1);
+                    StarDTNCs[k].splice(j, 1);
+                }
+                for (let k = 0; k < PPs.length; ++k)
+                {
+                    PPs[k].splice(j, 1);
+                    PPHTDCs[k].splice(j, 1);
+                    PPDTNCs[k].splice(j, 1);                        
                 }
             }
         }

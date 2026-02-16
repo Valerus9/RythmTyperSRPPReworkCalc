@@ -8,6 +8,7 @@ let tableSearchCursorPosition = [];
 let tableSearchCursorPositionEnd = [];
 let tableOffsets = [];
 let tableLimits = [];
+let tableSubtablesHidden = [];
 
 function GetHeaderSortText(sortBySomething) {
     if (sortBySomething == 0)
@@ -49,35 +50,7 @@ function CreateTable(tableid, tableColumnNames, tableColumnIds, tableColumnWidth
      
     let tableGlobalArrayId = 0;   
     
-    if (!createdTableIds.includes(tableid))
-    {
-        createdTableIds.push(tableid);
-        tableSearchTerm.push("");
-        tableSearchPreviousTerm.push("");
-        tableSearchCursorPosition.push(0);
-        tableSearchCursorPositionEnd.push(0);
-        tableOffsets.push(0);
-        tableLimits.push(tableLimit);
-        for (let i = 0; i < createdTableIds.length; ++i)
-        {
-            if (createdTableIds[i] == tableid)
-            {
-                tableGlobalArrayId = i;
-                break;
-            }            
-        }
-        columnSorts.push([]);        
-        for (let i = 0; i < tableColumnNames.length; ++i)
-        {
-            columnSorts[columnSorts.length-1].push(0);
-        }
-        tableOriginalRowIds.push([]);
-        for (let i = 0; i < tableRowIds.length; ++i)
-        {
-            tableOriginalRowIds[tableGlobalArrayId].push(tableRowIds[i]);
-        }
-        tableHidden.push(false);
-    }
+    CreateGlobalTableData(tableid, tableColumnNames, tableColumnIds, tableColumnWidths, tableRowIds, tableColumnValues, tableColumnCompare, tableColumnTypes, tableLimit);
     for (let i = 0; i < createdTableIds.length; ++i)
     {
         if (createdTableIds[i] == tableid)
@@ -88,7 +61,7 @@ function CreateTable(tableid, tableColumnNames, tableColumnIds, tableColumnWidth
     }
     if (tableHidden[tableGlobalArrayId])
     {
-        document.getElementById(tableid).innerHTML = "<tr><th id=\""+ tableid+"hideshowtable\" colspan=\""+(tableColumnValues.length)+"\">Hide/Show table</th></tr>";
+        document.getElementById(tableid).innerHTML = "<tr><th  id=\""+ tableid+"hideshowtable\" colspan=\""+(tableColumnValues.length)+"\">Show table</th></tr>";
         document.getElementById(tableid+"hideshowtable").addEventListener("click", async (event) => {
             tableHidden[createdTableIds.indexOf(tableid)] = !tableHidden[createdTableIds.indexOf(tableid)];
             CreateTable(tableid, tableColumnNames, tableColumnIds, tableColumnWidths, tableRowIds, tableColumnValues, tableColumnCompare, tableColumnTypes, tableLimit);
@@ -149,7 +122,55 @@ function CreateTable(tableid, tableColumnNames, tableColumnIds, tableColumnWidth
         tableText += "<tr><th colspan=\""+(tableColumnValues.length-subtableColumns.length)+"\"><input type=\"text\" style=\"width: 100%; box-sizing: border-box;\" name=\""+tableid+"mapsearch\" placeholder=\"Search\" id=\""+tableid+"mapsearch\" value=\""+tableSearchTerm[tableGlobalArrayId]+"\"></th><tr>";
     //console.log(tableColumnValues);
     if (subtableCounter > 1)
-        tableText += "<tr><th id=\""+ tableid+"hideshowsubtables\" colspan=\""+(tableColumnValues.length-subtableColumns.length)+"\">Hide/Show subtables</th></tr>";
+    {
+        if (tableSubtablesHidden[tableGlobalArrayId])
+        {
+            tableText += "<tr><th id=\""+ tableid+"enabledisablesubtables\" colspan=\""+(tableColumnValues.length-subtableColumns.length)+"\">Enable subtables</th></tr>";
+        }
+        else
+        {
+            tableText += "<tr><th id=\""+ tableid+"enabledisablesubtables\" colspan=\""+(tableColumnValues.length-subtableColumns.length)+"\">Disable subtables</th></tr>";
+        }
+    }
+    
+    if (subtableCounter > 1 && !tableSubtablesHidden[tableGlobalArrayId])
+    {
+        let subtablesShowHidden = 2;
+        for (let i = 0; i < createdTableIds.length; ++i)
+        {
+            if (createdTableIds[i].includes(tableid + tableColumnNames[subtableColumns[i]] + "subtable"))
+            {
+                if (tableHidden[i])
+                {
+                    if (subtablesShowHidden == 2)
+                        subtablesShowHidden = 1;
+                    if (subtablesShowHidden < 0)
+                        subtablesShowHidden = 0;
+                }
+                else
+                {
+                    
+                    if (subtablesShowHidden == 2)
+                        subtablesShowHidden = -1;
+                    if (subtablesShowHidden > 0)
+                        subtablesShowHidden = 0;
+                }
+
+            }
+        }
+        let subtablesShowHiddenText = "Hide/Show";
+        if (subtablesShowHidden == 1)
+        {
+            subtablesShowHiddenText = "Show"
+        }
+        if (subtablesShowHidden == -1)
+        {
+            subtablesShowHiddenText = "Hide"
+        }
+        tableText += "<tr><th id=\""+ tableid+"hideshowsubtables\" colspan=\""+(tableColumnValues.length-subtableColumns.length)+"\">"+subtablesShowHiddenText+" subtables</th></tr>";
+        
+    }
+        
     if (tableLimits[tableGlobalArrayId] > 0)
     {
         if (tableOffsets[tableGlobalArrayId] + tableLimits[tableGlobalArrayId] < tableColumnValues[0].length)
@@ -161,7 +182,7 @@ function CreateTable(tableid, tableColumnNames, tableColumnIds, tableColumnWidth
             tableText += "<tr><th id=\""+tableid+"previouspagetop\" colspan=\""+(tableColumnValues.length-subtableColumns.length)+"\">Previous page</th></tr>"
         }
     }
-    tableText += "<tr><th id=\""+ tableid+"hideshowtable\" colspan=\""+(tableColumnValues.length-subtableColumns.length)+"\">Hide/Show table</th></tr>";
+    tableText += "<tr><th id=\""+ tableid+"hideshowtable\"  colspan=\""+(tableColumnValues.length-subtableColumns.length)+"\">Hide table</th></tr>";
     if (tableColumnValues[0].length > 0)
     {
         tableText += "<tr style=\"height:75px\">";
@@ -221,7 +242,7 @@ function CreateTable(tableid, tableColumnNames, tableColumnIds, tableColumnWidth
                 rowPosition = j * subtableCounter + offset;
                 let subtableId = tableid + tableColumnNames[i] + "subtable" + tableRowIds[j];
                 subtableIds[subtableColumns.indexOf(i)].push(subtableId);
-                if (createdTableIds.includes(subtableId) && tableHidden[createdTableIds.indexOf(subtableId)])
+                if (createdTableIds.includes(subtableId) && tableSubtablesHidden[tableGlobalArrayId])
                 {
                     subtableHidden[subtableColumns.indexOf(i)].push(true);
                     rowHidden[rowPosition] = true;
@@ -231,7 +252,8 @@ function CreateTable(tableid, tableColumnNames, tableColumnIds, tableColumnWidth
                     subtableHidden[subtableColumns.indexOf(i)].push(false);
                     rowHidden[rowPosition] = false;
                 }
-                rows[rowPosition] = "<td colspan=\""+(tableColumnValues.length-subtableColumns.length)+"\"><table class=\"subtable\" id=\""+ subtableId +"\"></table></td>";
+                let subtableStyle = "style=\"width:100%;\"";
+                rows[rowPosition] = "<td colspan=\""+(tableColumnValues.length-subtableColumns.length)+"\"><table "+subtableStyle+" class=\"subtable\" id=\""+ subtableId +"\"></table></td>";
                 continue;
             }   
             let shownValue = tableColumnValues[i][tableRowIds[j]];
@@ -334,7 +356,8 @@ function CreateTable(tableid, tableColumnNames, tableColumnIds, tableColumnWidth
         {
             continue;
         }
-        if (!(rowHidden[i] || !rowMeetsSearchTerm[(i - i % subtableCounter)/subtableCounter]))
+        //
+        if (!rowHidden[i] && rowMeetsSearchTerm[(i - i % subtableCounter)/subtableCounter])
         //    tableText += "<tr style=\"display:\"none\";\">"+rows[i]+"</tr>";
         //else
             tableText += "<tr>"+rows[i]+"</tr>";
@@ -354,6 +377,15 @@ function CreateTable(tableid, tableColumnNames, tableColumnIds, tableColumnWidth
 
     table.innerHTML = tableText;
     
+    if (subtableCounter > 1)
+    {
+        document.getElementById(tableid+"enabledisablesubtables").addEventListener("click", async (event) => {
+            tableSubtablesHidden[tableGlobalArrayId] = !tableSubtablesHidden[tableGlobalArrayId];
+            CreateTable(tableid, tableColumnNames, tableColumnIds, tableColumnWidths, tableRowIds, tableColumnValues, tableColumnCompare, tableColumnTypes, tableLimit);
+        });
+    }
+    
+
     if (tableSearchTerm[tableGlobalArrayId] != tableSearchPreviousTerm[tableGlobalArrayId])    
     {
         document.getElementById(tableid+"mapsearch").focus();
@@ -431,34 +463,37 @@ function CreateTable(tableid, tableColumnNames, tableColumnIds, tableColumnWidth
                 CreateTable(subtableIds[i][j], subtableColumnNames, subtableColumnIds, subtableColumnWidths, subtableRowIds, subtableColumnValues, subtableColumnCompare, subtableColumnTypes, subtableColumnLimit);
             }
         }
-        document.getElementById(tableid+"hideshowsubtables").addEventListener("click", async (event) => {
-            let subtableFlip = false;
-            if (missingSubtables[0].length > 0)
-            {
-                subtableFlip = !tableHidden[createdTableIds.indexOf(missingSubtables[0][0])];
-            }
-            else
-            {
-                subtableFlip = !tableHidden[createdTableIds.indexOf(existingSubtables[0][0])];
-            }
-            if (missingSubtables[0].length > 0)
-            {
-                for (let i = 0; i < missingSubtables.length; ++i)
+        if (!tableSubtablesHidden[tableGlobalArrayId])
+        {
+            document.getElementById(tableid+"hideshowsubtables").addEventListener("click", async (event) => {
+                let subtableFlip = false;
+                if (missingSubtables[0].length > 0)
                 {
-                    for (let j = 0; j < missingSubtables[i].length; ++j)
-                    tableHidden[createdTableIds.indexOf(missingSubtables[i][j])] = subtableFlip;
+                    subtableFlip = !tableHidden[createdTableIds.indexOf(missingSubtables[0][0])];
                 }
-            }
-            if (existingSubtables[0].length > 0)
-            {
-                for (let i = 0; i < existingSubtables.length; ++i)
+                else
                 {
-                    for (let j = 0; j < existingSubtables[i].length; ++j)
-                    tableHidden[createdTableIds.indexOf(existingSubtables[i][j])] = subtableFlip;
+                    subtableFlip = !tableHidden[createdTableIds.indexOf(existingSubtables[0][0])];
                 }
-            }
-            CreateTable(tableid, tableColumnNames, tableColumnIds, tableColumnWidths, tableRowIds, tableColumnValues, tableColumnCompare, tableColumnTypes, tableLimit);
-        });
+                if (missingSubtables[0].length > 0)
+                {
+                    for (let i = 0; i < missingSubtables.length; ++i)
+                    {
+                        for (let j = 0; j < missingSubtables[i].length; ++j)
+                        tableHidden[createdTableIds.indexOf(missingSubtables[i][j])] = subtableFlip;
+                    }
+                }
+                if (existingSubtables[0].length > 0)
+                {
+                    for (let i = 0; i < existingSubtables.length; ++i)
+                    {
+                        for (let j = 0; j < existingSubtables[i].length; ++j)
+                        tableHidden[createdTableIds.indexOf(existingSubtables[i][j])] = subtableFlip;
+                    }
+                }
+                CreateTable(tableid, tableColumnNames, tableColumnIds, tableColumnWidths, tableRowIds, tableColumnValues, tableColumnCompare, tableColumnTypes, tableLimit);
+            });
+        }
     }
 
     document.getElementById(tableid+"hideshowtable").addEventListener("click", async (event) => {
@@ -572,5 +607,6 @@ function CreateGlobalTableData(tableid, tableColumnNames, tableColumnIds, tableC
             tableOriginalRowIds[tableGlobalArrayId].push(tableRowIds[i]);
         }
         tableHidden.push(false);
+        tableSubtablesHidden.push(false);
     }
 }

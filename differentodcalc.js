@@ -3,24 +3,68 @@ let odtableNotCachedDifIds = [];
 let odtableFilteredText = "";
 let odtablePreviousFilteredText = "";
 let odtableCursorPosition = 0;
+let odtableMultiplier = 1;
 
 function LoadDifODCalc() {
-    document.getElementById("container").innerHTML = "<div id=\"datadisplay\" style=\"display:flex; width:100%\">"
+    document.getElementById("container").innerHTML =     
+    "<div style=\"display:flex; flex-direction:row; justify-content:center; width:100%;\">"
+    +"<input type=\"button\" id=\"applynomod\" value=\"No mod\">"
+    +"<input type=\"button\" id=\"applydoubletimenightcore\" value=\"DT/NC\">"
+    +"<input type=\"button\" id=\"applyhalftimedaycore\" value=\"HT/DC\">"
+    +"</div>"
+    +"<div style=\"display:flex; flex-direction:column;\">"
+    +"Speed (1.5 is DT/NC, 0.75 HT/DC)"
+    +"<input type=\"number\" name=\"odtabletimescale\" id=\"odtabletimescale\" step=\"0.05\" value=\"1\"></input>"
+    +"</div>"
+    +"<div id=\"datadisplay\" style=\"display:flex; width:100%\">"
     + "<div id=\"beatmapdiflist\" style=\"display:flex; flex-direction:column; align-self:left;\"></div>"
     + "<div id=\"tabledisplay\">"
     + "<div id=\"beatmapdifdata\"></div>"
     +"<table id=\"odchangesdisplay\"></table>"
     +"</div>"
     
+    
     + "</div>";
     LoadDifs();
-    
+    document.getElementById("odtabletimescale").addEventListener("change", async (event) => {
+        odtableMultiplier = document.getElementById("odtabletimescale").value;
+        if (odtableSelectedDif != -1)
+        {
+            CreateODTable();
+        }
+    });
+    document.getElementById("applynomod").addEventListener("click", async (event) => {
+        odtableMultiplier = 1.0;
+        document.getElementById("odtabletimescale").value = 1.0;
+        if (odtableSelectedDif != -1)
+        {
+            CreateODTable();
+        }
+    });
+    document.getElementById("applydoubletimenightcore").addEventListener("click", async (event) => {
+        odtableMultiplier = 1.5;
+        document.getElementById("odtabletimescale").value = 1.5;
+        if (odtableSelectedDif != -1)
+        {
+            CreateODTable();
+        }
+    });
+    document.getElementById("applyhalftimedaycore").addEventListener("click", async (event) => {
+        odtableMultiplier = 0.75;
+        document.getElementById("odtabletimescale").value = 0.75;
+        if (odtableSelectedDif != -1)
+        {
+            CreateODTable();
+        }
+    });
+    document.getElementById("odtabletimescale").value = odtableMultiplier;
 }
 
 function LoadDifs()
 {
     odtableNotCachedDifIds = [];
     let diflisttext = "<input type=\"text\" name=\"odtablemapsearch\" placeholder=\"Search for song titles...\" id=\"odtablemapsearch\" value=\""+odtableFilteredText+"\">";
+   
     for (let i = 0; i < isCache.length; ++i)
     {
         if (isCache[i] || (odtableFilteredText != "" && !songNames[i].toLowerCase().includes(odtableFilteredText.toLowerCase())))
@@ -73,8 +117,9 @@ function ClearSelection()
 
 function CreateODTable()
 {
-    let originalOD = difficultyList[odtableSelectedDif].overallDifficulty;
-    difficultyList[odtableSelectedDif].overallDifficulty = -0.5;
+    let modifiedDifficulty = scaleDifficultySpeed(difficultyList[odtableSelectedDif],odtableMultiplier);
+    let originalOD = modifiedDifficulty.overallDifficulty;
+    modifiedDifficulty.overallDifficulty = -0.5;
     let localODs = [];
     let localStars = [];
     let localPPs = [];
@@ -88,19 +133,19 @@ function CreateODTable()
     }
     for (let i = 0; i < 23; ++i)
     {
-        difficultyList[odtableSelectedDif].overallDifficulty = difficultyList[odtableSelectedDif].overallDifficulty + 0.5;
-        localODs.push(difficultyList[odtableSelectedDif].overallDifficulty);        
+        modifiedDifficulty.overallDifficulty = modifiedDifficulty.overallDifficulty + 0.5;
+        localODs.push(modifiedDifficulty.overallDifficulty);        
         localODTableRowIds.push(i);
         for (let i = 0; i < starFormulaKeys.length; ++i) {
 
-            let star = starFormulas[starFormulaKeys[i]](difficultyList[odtableSelectedDif]);
+            let star = starFormulas[starFormulaKeys[i]](modifiedDifficulty);
             localStars[i].push(Math.round(star*100)/100);
 
         }
 
         for (let i = 0; i < ppFormulaKeys.length; ++i) {
 
-            let pp = ppFormulas[ppFormulaKeys[i]](difficultyList[odtableSelectedDif]);
+            let pp = ppFormulas[ppFormulaKeys[i]](modifiedDifficulty);
             localPPs[i].push(pp);
         }
     }    
@@ -139,5 +184,5 @@ function CreateODTable()
     let localODTableCompares = [-1, -1, 1, -1, 3, -1, 5, -1, 7];
     let localODTableTypes = ["float", "float", "float", "integer", "integer", "percentage", "percentage", "percentage", "percentage"];
     CreateTable("odchangesdisplay", localODTableNames, localODTableIDs, localODTableWidths, localODTableRowIds, localODTableValues, localODTableCompares, localODTableTypes, 0);
-    difficultyList[odtableSelectedDif].overallDifficulty = originalOD;
+    modifiedDifficulty.overallDifficulty = originalOD;
 }
