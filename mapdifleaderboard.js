@@ -185,7 +185,14 @@ function LoadMapDifLeaderboard() {
 
 async function LoadMapDataValues(localValues)
 {   
-    ClearCachedRTMS();
+    for (let i = 0; i < localValues[0].length; ++i)
+    {
+        if (songNames.includes(localValues[4][i]) && isCache[songNames.indexOf(localValues[4][i])])
+        {
+            ClearCachedRTMS();
+            break;
+        }
+    }
     for (let i = 0; i < localValues[0].length; ++i)
     {
         /*if (LoadedBeatmapIds.includes(localValues[0][i].mapsetId))

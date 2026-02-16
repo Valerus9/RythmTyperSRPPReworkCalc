@@ -179,12 +179,12 @@ starFormulas = {
             if (i <= noteFewNerfLimit)
                 noteDifficulties.push(noteDefaultDiff * Math.pow((i + 1) / noteFewNerfLimit, 0.1));
             else if (i >= noteLotBuffLimit)
-                noteDifficulties.push(noteDefaultDiff * Math.pow((i + 1) / noteLotBuffLimit, 1));
+                noteDifficulties.push(noteDefaultDiff * Math.pow((i + 1) / noteLotBuffLimit, 0.05));
             else
                 noteDifficulties.push(noteDefaultDiff);
         }
 
-        const drainTime = maxTime - minTime;
+        const drainTime = Math.max(maxTime - minTime,1000);
 
         let chords = [];
         for (let i = 0; i < sortedTimeNotes.length - 1; ++i) {
@@ -246,10 +246,11 @@ starFormulas = {
             }
             for (let j = 0; j < chords[i].length; ++j) {
                 chordBuffForNote[chords[i][j]] = Math.max(chordDifficulty, 1);
+                if (chordDifficulty > 9)
+                    chordDifficulty = Math.pow(chordDifficulty-8, 0.01)+8;
                 noteDifficulties[chords[i][j]] *= Math.max(chordDifficulty, 1);
             }
         }
-
         let keyboardNotes = [
             [], [], [], [], [], [], [], [], [], [],
             [], [], [], [], [], [], [], [], [], [],
@@ -303,7 +304,10 @@ starFormulas = {
                         stackNotesIds.push(j);
                         for (let k = 0; k < stackNotesIds.length; ++k)
                         {
-                            noteDifficulties[keyboardSortedIds[i][stackNotesIds[k]]] *= Math.pow(40 / stackNotes[k] + 1, Math.pow(stackSize, 0.3));                            
+                            let stackBonus = Math.pow(40 / stackNotes[k] + 1, Math.pow(stackSize, 0.3));
+                            if (stackBonus > 3)
+                                stackBonus = Math.pow(stackBonus-2,0.01)+2;
+                            noteDifficulties[keyboardSortedIds[i][stackNotesIds[k]]] *= stackBonus;                            
                         }
                         stackNotes = [];
                         stackNotesIds = [];
@@ -389,18 +393,24 @@ starFormulas = {
             let selectedStartTime = getStartTime(notes[selectedNoteIndex]);
             if (selectedStartTime > previousEndTime)
                 timeDurationBonus = Math.max(OBJECTTIMEDIFFERENCE / (selectedStartTime - previousEndTime + REWARDTIMEDIFFERENCE),1.3);
+            
             let heldNoteBonus = Math.pow(heldNoteCounts[selectedNoteIndex] + 1, 0.80/Math.pow(chordBuffForNote[selectedNoteIndex],2));
             //let heldNoteBonus = Math.pow(heldNoteCounts[selectedNoteIndex] + 1, 0.8);
             timeDurationBonus = Math.max(0.9, timeDurationBonus);
-
+            if(timeDurationBonus> 2)
+            {
+                timeDurationBonus = Math.pow(timeDurationBonus-1, 0.1)+1;
+            }
+            
             objectDifficultySum += noteDifficulties[selectedNoteIndex] * timeDurationBonus * heldNoteBonus * lengthBonus * odbonus;
         }
+
         for (let i = 0; i < typingSectionDifficulties.length; ++i) {
             let uniqueLetters = new Set(typingSections[i].text);
             let letterLackNerf = Math.min((uniqueLetters.size / typingSections[i].text.length) + 0.5, 1);
             objectDifficultySum += typingSectionDifficulties[i] * letterLackNerf * 7;
         }
-        let difficultyDensity = objectDifficultySum / Math.max(drainTime, 1000);
+        let difficultyDensity = objectDifficultySum / drainTime;
         /*if (difficultyDensity > 8)
         {
           difficultyDensity =8*Math.pow(difficultyDensity/8,0.4);
