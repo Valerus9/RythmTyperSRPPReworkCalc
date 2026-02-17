@@ -111,8 +111,44 @@ starFormulas = {
         return core * lenBonus * odBonus * STAR_SCALE;
     },
     valerusRework(scoreData) {
-        const notes = scoreData.notes;
-        const typingSections = scoreData.typingSections;
+        let filteredNotes = [];
+        for (let i = 0; i < scoreData.notes.length; ++i)
+        {
+            if (scoreData.notes[i].type == "tap")
+            {
+                let tempNote = {
+                    key: scoreData.notes[i].key,
+                    time: scoreData.notes[i].time,
+                    type: scoreData.notes[i].type,
+                }
+                filteredNotes.push(tempNote);
+            }
+            else if(scoreData.notes[i].type == "hold")
+            {
+
+                let tempHoldNote = {
+                    key: scoreData.notes[i].key,
+                    startTime: scoreData.notes[i].startTime,
+                    endTime: scoreData.notes[i].endTime,
+                    type: scoreData.notes[i].type,
+                }
+                filteredNotes.push(tempHoldNote);
+            }
+        }
+
+        let filteredTypingSections = [];
+        for (let i = 0; i < scoreData.typingSections.length; ++i)
+        {
+            let tempTypingSection = {
+                endTime: scoreData.typingSections[i].endTime,
+                startTime: scoreData.typingSections[i].startTime,
+                text: scoreData.typingSections[i].text,
+            }
+            filteredTypingSections.push(tempTypingSection);
+            
+        }
+        const notes = filteredNotes;
+        const typingSections = filteredTypingSections;
         const KEYBOARDLAYOUT = [
             "q", "w", "e", "r", "t", "y", "u", "i", "o", "p",
             "a", "s", "d", "f", "g", "h", "j", "k", "l", ";",
@@ -401,8 +437,12 @@ starFormulas = {
             {
                 timeDurationBonus = Math.pow(timeDurationBonus-1, 0.1)+1;
             }
-            
-            objectDifficultySum += noteDifficulties[selectedNoteIndex] * timeDurationBonus * heldNoteBonus * lengthBonus * odbonus;
+            let trueODBonus = odbonus;
+            if (alreadyUsedForChord[selectedNoteIndex] && overallDifficulty > 9.8)
+            {
+                trueODBonus = Math.pow(odbonus, 0.4);
+            }
+            objectDifficultySum += noteDifficulties[selectedNoteIndex] * timeDurationBonus * heldNoteBonus * lengthBonus * trueODBonus;            
         }
 
         for (let i = 0; i < typingSectionDifficulties.length; ++i) {
@@ -411,10 +451,10 @@ starFormulas = {
             objectDifficultySum += typingSectionDifficulties[i] * letterLackNerf * 7;
         }
         let difficultyDensity = objectDifficultySum / drainTime;
-        /*if (difficultyDensity > 8)
+        if (difficultyDensity > 5)
         {
-          difficultyDensity =8*Math.pow(difficultyDensity/8,0.4);
-        }*/
+          difficultyDensity =5*Math.pow(difficultyDensity/5,0.4);
+        }
         return difficultyDensity;
 
     }

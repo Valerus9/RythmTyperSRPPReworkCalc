@@ -36,10 +36,14 @@ function CreateSelectContentUser() {
 }
 
 function LoadPlayerLeaderBoard() {
-    document.getElementById("container").innerHTML = "<select id=\"ppcalcselectfirst\">"
+    document.getElementById("container").innerHTML = "<div class=\"neededpadding\" style=\"display:flex; flex-direction:column;\">"
+    +"<p>PP rework (old)</p>"
+    +"<select id=\"ppcalcselectfirst\">"
         + "</select>"
+        + "<p>PP rework (new)</p>"
         + "<select id=\"ppcalcselectsecond\">"
         + "</select>"
+        + "</div>"
         + "<table id=\"playerleaderboard\"></table>"
     CreateSelectContentUser();
     CreateLeaderboard();

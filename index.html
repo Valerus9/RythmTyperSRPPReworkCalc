@@ -16,7 +16,7 @@
     <link rel="stylesheet" href="darklightmodestyle.css">
 </head>
 <body>    
-    <div id="topbar">
+    <div id="topbar" class="neededpadding">
         <input type="button" id="visualmodeswitch" value="Dark mode">    
         <input type="button" id="changemenuprofile" value="Leaderboard change">
         <input type="button" class="selected" id="changemenumaps" value="Map sr pp change">
@@ -24,32 +24,32 @@
         <input type="button" id="changemenugraphviewofrework" disabled value="Rework graph view">
         
     </div>
-    <div id="warningcacheonly" style="display:flex; justify-content:center; width:100%;"><div id="warningcacheonlycenter" >You need to upload .rtm files on the Map sr pp change menu in order to access Different OD calc and Rework graph view</div></div>
+    <div id="warningcacheonly" class="neededpadding" style="display:flex; justify-content:center; width:100%;"><div id="warningcacheonlycenter" class="neededpadding">You need to upload .rtm files on the Map sr pp change menu in order to access Different OD calc and Rework graph view</div></div>
     <h1 class="title">Rhythm typer SR/PP Rework site</h1>
     <h5 class="author">By Valerus9</h5>
-    <div id="container">
+    <div id="container" class="neededpadding">
         <p>Select .rtm file or select multiple .rtm files</p>
         <input type="file" id="zipInput" multiple accept=".rtm"/>
-        <div class="flexrowcenter">
-            <div class="flexcolumn">
-                <div class="flexcolumn lightmode">
+        <div class="flexrowcenter neededpadding">
+            <div class="flexcolumn neededpadding">
+                <div class="flexcolumn neededpadding">
                     <p>Star rating rework (old)</p>
                     <select id="srcalcselectfirst">
                     </select>
                 </div>
-                <div class="flexcolumn">
+                <div class="flexcolumn neededpadding">
                     <p>Star rating rework (new)</p>
                     <select id="srcalcselectsecond">
                     </select>
                 </div>
             </div>
-            <div class="flexcolumn">
-                <div class="flexcolumn">
+            <div class="flexcolumn neededpadding">
+                <div class="flexcolumn neededpadding">
                     <p>PP rework (old)</p>
                     <select id="ppcalcselectfirst">
                     </select>
                 </div>
-                <div class="flexcolumn">
+                <div class="flexcolumn neededpadding">
                     <p>PP rework (new)</p>
                     <select id="ppcalcselectsecond">
                     </select>

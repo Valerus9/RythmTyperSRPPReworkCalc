@@ -88,7 +88,7 @@ select
     display: flex;
     align-items: center;
 }
-div
+div.neededpadding
 {
     padding: 0.4em;
 }
@@ -107,11 +107,4 @@ input
 {
     margin-top: 0.2em;
     margin-bottom: 0.2em;
-}
-div#linegraph
-{
-    display:flex;
-    flex-direction:row;
-    align-items:flex-end;
-    width: max-content;
 }

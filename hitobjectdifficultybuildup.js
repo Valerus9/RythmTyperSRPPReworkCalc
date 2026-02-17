@@ -83,6 +83,7 @@ let builduptablePreviousFilteredText = "";
 let builduptableCursorPosition = 0;
 let buildupshowdistance = false;
 let buildupScaleValues = false;
+let buildupScaleColumnWidth = true;
 let buildupTimeMultiplier = 1.0;
 
 let buildupNoteMultiplierColors = [];
@@ -91,26 +92,28 @@ let buildupShowLessThanOne = true;
 
 function LoadDiffGraph() {
     document.getElementById("container").innerHTML = 
-    "<div style=\"display:flex; flex-direction:row; justify-content:center; width:100%;\">"
+    "<div style=\"display:flex; flex-direction:row; width:100%;\">"
+    +"<div>"
+    +"<div id=\"beatmapdiflist\"></div>"
+    +"</div>"
+    +"<div>"
+    +"<div class=\"neededpadding\" style=\"display:flex; flex-direction:row; justify-content:center; width:100%;\">"
     +"<input type=\"button\" id=\"applynomod\" value=\"No mod\">"
     +"<input type=\"button\" id=\"applydoubletimenightcore\" value=\"DT/NC\">"
     +"<input type=\"button\" id=\"applyhalftimedaycore\" value=\"HT/DC\">"
     +"</div>"
-    +"<div style=\"display:flex; flex-direction:column;\">"
+    +"<div class=\"neededpadding\" style=\"display:flex; flex-direction:column;\">"
     +"Speed (1.5 is DT/NC, 0.75 HT/DC)"
     +"<input type=\"number\" name=\"odtabletimescale\" id=\"builduptimescale\" step=\"0.05\" value=\"1\"></input>"    
     +"</div>"
-    +"<div style=\"display:flex; flex-direction:row;\"><input id=\"showdistance\" type=\"checkbox\"> Show distance</div>"
-    +"<div style=\"display:flex; flex-direction:row;\"><input id=\"scalegraphvalues\" type=\"checkbox\" checked> Scale values</div>"
-    +"<div id=\"diffgraphdatadisplay\" style=\"display:flex; align-items: flex-start; width:100%;\">"   
-    + "<div id=\"beatmapdiflist\" style=\"display:flex; flex-direction:column; align-self:left;\"></div>"
-    + "<div id=\"graphdisplay\" style=\" overflow-x: auto;\">"
-    + "<div id=\"beatmapdifdata\"></div>"
-    + "<div id=\"graphlabels\" style=\"display:flex; flex-wrap:wrap;\"></div>"
-    +"<div id=\"linegraph\"></div>"
+    +"<div class=\"neededpadding\" style=\"display:flex; flex-direction:row;\"><input id=\"scalecolumnwidth\" type=\"checkbox\" checked> Scale column widths</div>"
+    +"<div class=\"neededpadding\" style=\"display:flex; flex-direction:row;\"><input id=\"showdistance\" type=\"checkbox\"> Show distance</div>"
+    +"<div class=\"neededpadding\" style=\"display:flex; flex-direction:row;\"><input id=\"scalegraphvalues\" type=\"checkbox\" checked> Scale values</div>"
+    +"<div id=\"beatmapdifdata\" class\"neededpadding\"></div>"
+    +"<div id=\"graphlabels\" style=\"display:flex; flex-direction:row; flex-wrap:wrap;\"></div>"
     +"</div>"
-    
-    + "</div>";
+    +"</div>"
+    +"<div id=\"linegraph\" style=\"display:flex; flex-direction:row; overflow-x:auto; width:100%;\"></div>"
     LoadDiffGraphDifs();
     document.getElementById("showdistance").addEventListener("change", async (event) => {
         buildupshowdistance = document.getElementById("showdistance").checked;
@@ -128,6 +131,14 @@ function LoadDiffGraph() {
         }
     });
     document.getElementById("scalegraphvalues").checked = buildupScaleValues;
+    document.getElementById("scalecolumnwidth").addEventListener("change", async (event) => {
+        buildupScaleColumnWidth = document.getElementById("scalecolumnwidth").checked;
+        if (builduptableSelectedDif != -1)
+        {
+            Createbuilduptable();
+        }
+    });
+    document.getElementById("scalecolumnwidth").checked = buildupScaleColumnWidth;
     document.getElementById("builduptimescale").addEventListener("change", async (event) => {
         buildupTimeMultiplier = document.getElementById("builduptimescale").value;
         if (builduptableSelectedDif != -1)
@@ -166,16 +177,18 @@ function LoadDiffGraphDifs()
 {
     builduptableNotCachedDifIds = [];
     let diflisttext = "<input type=\"text\" name=\"builduptablemapsearch\" placeholder=\"Search for song titles...\" id=\"builduptablemapsearch\" value=\""+builduptableFilteredText+"\">";
+    diflisttext += "<div style=\"height:400px; overflow-y:auto;\">";
     for (let i = 0; i < isCache.length; ++i)
     {
         if (isCache[i] || (builduptableFilteredText != "" && !songNames[i].toLowerCase().includes(builduptableFilteredText.toLowerCase())))
             continue;
         builduptableNotCachedDifIds.push(i);
-        diflisttext += "<div id=\"mapdiff"+(builduptableNotCachedDifIds.length-1)+"\" class=\"buttonstyle\" style=\"width:400px; margin-top:5px\">";
+        diflisttext += "<div class=\"neededpadding buttonstyle\" id=\"mapdiff"+(builduptableNotCachedDifIds.length-1)+"\"  style=\"width:400px; margin-top:5px\">";
         diflisttext += "<div>"+songNames[i]+"</div>"
         diflisttext += "<div>"+difficultyNames[i]+"</div>"
         diflisttext += "</div>"
     }
+    diflisttext += "</div>";
     if (builduptableSelectedDif >= builduptableNotCachedDifIds.length)
         builduptableSelectedDif = -1;
     document.getElementById("beatmapdiflist").innerHTML = diflisttext;
@@ -227,35 +240,8 @@ function Createbuilduptable()
 
     let localNoteMultiplierNames = localbuildupvalues[2];
     let localNoteMultiplierValues = localbuildupvalues[3];
-    buildupNoteMultiplierColors = localbuildupvalues[4]
-    //if (buildupNoteMultiplierColors.length == 0)
-    //{
-    //    for (let i = 0; i < localNoteMultiplierNames.length+1; ++i)
-    //    {
-    //        buildupShowMultipliers.push(true);
-    //        let localColor = GenerateColor();
-    //        let localPossibleR = localColor[0];
-    //        let localPossibleG = localColor[1];
-    //        let localPossibleB = localColor[2];
-    //        let notGoodColor = false;
-    //        for (let j = 0; j < i; ++j)
-    //        {
-    //            let localR = buildupNoteMultiplierColors[0];
-    //            let localG = buildupNoteMultiplierColors[1];
-    //            let localB = buildupNoteMultiplierColors[2];
-    //            if (Math.abs(localR - localPossibleR) < 50 && Math.abs(localG - localPossibleG) < 50
-    //            && Math.abs(localB - localPossibleB) < 50)
-    //            {
-    //                i--;
-    //                notGoodColor = true;
-    //                break;
-    //            }
-    //        }
-    //        if (notGoodColor)
-    //            continue;
-    //        buildupNoteMultiplierColors.push(localColor);
-    //    }
-    //}
+    buildupNoteMultiplierColors = localbuildupvalues[4];
+
     if (buildupShowMultipliers.length == 0)
     {
         for (let i = 0; i < buildupNoteMultiplierColors.length; ++i)
@@ -287,76 +273,82 @@ function Createbuilduptable()
     let localTypingSectionMultiplierNames = localbuildupvalues[6];
     let localTypingSectionMultiplierValues = localbuildupvalues[7];
     let localTypingSectionMultiplierColors = [];    
-    //for (let i = 0; i < localTypingSectionMultiplierNames.length+1; ++i)
-    //{
-    //    let localColor = GenerateColor();
-    //    let localPossibleR = localColor[0];
-    //    let localPossibleG = localColor[1];
-    //    let localPossibleB = localColor[2];
-    //    let notGoodColor = false;
-    //    for (let j = 0; j < i; ++j)
-    //    {
-    //        let localR = localTypingSectionMultiplierColors[0];
-    //        let localG = localTypingSectionMultiplierColors[1];
-    //        let localB = localTypingSectionMultiplierColors[2];
-    //        if ((Math.abs(localR - localPossibleR) < 80 && Math.abs(localG - localPossibleG) < 80
-    //        && Math.abs(localB - localPossibleB) < 80) 
-    //        || (Math.abs(localR - localPossibleR) < 90 && Math.abs(localG - localPossibleG) < 90) 
-    //        || (Math.abs(localR - localPossibleR) < 90 && Math.abs(localB - localPossibleB) < 90) 
-    //        || (Math.abs(localG - localPossibleG) < 90 && Math.abs(localB - localPossibleB) < 90)
-    //        )
-    //        {
-    //            i--;
-    //            notGoodColor = true;
-    //            break;
-    //        }
-    //    }
-    //    if (notGoodColor)
-    //        continue;
-    //    localTypingSectionMultiplierColors.push(localColor);
-    //}
 
     
     let localNegateBorderWidths = 1;
     let labelText = "";
     let baseValueColor = buildupNoteMultiplierColors[0];
-    let stringBaseValueColor = baseValueColor[0] + ","+baseValueColor[1]+","+baseValueColor[2];
-    labelText += "<div id=\"basevalue\" style=\"display:flex; flex-direction:row;\"><div style=\"width:30px; height:30px; background-color:rgb("+stringBaseValueColor+")\"></div><div>baseValue</div></div>"
+
+    let stringBaseValueColor ="rgb(" + baseValueColor[0] + ","+baseValueColor[1]+","+baseValueColor[2] + ")";
+    
+    if (!buildupShowMultipliers[0])
+        stringBaseValueColor = "rgba(0,0,0,0)"
+    labelText += "<div id=\"graphbasevalue\" class=\"neededpadding\" style=\"display:flex; flex-direction:row;\"><div style=\"width:30px; height:30px; margin:5px; background-color:"+stringBaseValueColor+";\"></div><div id=\"basevaluelabel\" style=\"display:flex; flex-direction:column;\"><div>baseValue</div><div style=\"color:rgba(0,0,0,0);\">T</div><div style=\"color:rgba(0,0,0,0);\">T</div></div></div>"
     for (let i = 0; i < localNoteMultiplierNames.length; ++i)
     {
-        labelText += "<div id=\""+localNoteMultiplierNames[i]+"\" style=\"display:flex; flex-direction:row;\"><div style=\"width:30px; height:30px; background-color:rgb("+buildupNoteMultiplierColors[i+1]+")\"></div><div>"+localNoteMultiplierNames[i]+"</div></div>";
+        let labelSquateColor ="rgb("+buildupNoteMultiplierColors[i+1]+")";
+        if (!buildupShowMultipliers[i + 1])
+        {
+            labelSquateColor ="rgba(0,0,0,0)";
+        }
+        labelText += "<div id=\"graph"+localNoteMultiplierNames[i]+"\" class=\"neededpadding\" style=\"display:flex; flex-direction:row;\"><div style=\"width:30px; height:30px; margin:5px; background-color:"+labelSquateColor+";\"></div><div id=\""+localNoteMultiplierNames[i]+"label\" style=\"display:flex; flex-direction:column;\"><div>"+localNoteMultiplierNames[i]+"</div><div style=\"color:rgba(0,0,0,0);\">T</div><div style=\"color:rgba(0,0,0,0);\">T</div></div></div>";
     }
-    labelText += "<div id=\"lessthanonemultiplier\" style=\"display:flex; flex-direction:row;\"><div style=\"width:"+(30-2*localNegateBorderWidths)+"px; height:"+(30-2*localNegateBorderWidths)+"px; border: "+localNegateBorderWidths+"px solid rgb(230,60,60)\"></div><div>LessThanOneModifierEffect</div></div>"
+    let lessThanOneModifierBorder = " border: "+localNegateBorderWidths+"px solid rgb(230,60,60);";
+    if (!buildupShowLessThanOne)
+        lessThanOneModifierBorder = 0;
+    labelText += "<div class=\"neededpadding\" id=\"graphlessthanonemultiplier\" style=\"display:flex; flex-direction:row;\"><div style=\"width:"+(30-2*localNegateBorderWidths)+"px; margin:5px; height:"+(30-2*localNegateBorderWidths)+"px;"+lessThanOneModifierBorder+"\"></div><div>LessThanOneModifierEffect</div></div>"
     document.getElementById("graphlabels").innerHTML = labelText;
     for (let i = 0; i < localNoteMultiplierNames.length; ++i)
     {
-        document.getElementById(localNoteMultiplierNames[i]).addEventListener("click", async (event) => {
+        document.getElementById("graph"+localNoteMultiplierNames[i]).addEventListener("click", async (event) => {
             buildupShowMultipliers[i+1] = !buildupShowMultipliers[i+1];
             Createbuilduptable();
         });
     }
-    document.getElementById("basevalue").addEventListener("click", async (event) => {
+    document.getElementById("graphbasevalue").addEventListener("click", async (event) => {
         buildupShowMultipliers[0] = !buildupShowMultipliers[0];
         Createbuilduptable();
     });
-    document.getElementById("lessthanonemultiplier").addEventListener("click", async (event) => {
+    document.getElementById("graphlessthanonemultiplier").addEventListener("click", async (event) => {
         buildupShowLessThanOne = !buildupShowLessThanOne;
         Createbuilduptable();
     });
     let graphText = "";
-    let localMaxHeight = 300;
-    let localColumnWidths = 10;
-    if (!buildupshowdistance)
-        localColumnWidths = 8;
+    let localMaxHeight = 200;
+
+    let localMinTime = Infinity;
+    let localMaxTime = 0;
+
+    for (let i = 0; i < localNoteStartTimes.length; ++i)
+    {
+        if (localNoteStartTimes[i] < localMinTime)
+            localMinTime = localNoteStartTimes[i];
+        if (localMaxTime < localNoteStartTimes[i])
+            localMaxTime = localNoteStartTimes[i];
+    }
+
+    let linegraphwidth = document.getElementById("linegraph").clientWidth;
+    
+    let localColumnWidths = linegraphwidth / localNoteBaseValues.length;
+    let localColumnWidthsUnscaled = 6;
+    if (!buildupScaleColumnWidth)
+        localColumnWidths = localColumnWidthsUnscaled;
+
+    if (buildupshowdistance)
+    {
+        localColumnWidths = Math.min(localColumnWidths, 10);
+    }
+    let localColumnWidthSpace = localColumnWidths;
+
     for (let i = 0; i < localNoteBaseValues.length; ++i)
     {
-        if (i != 0 && buildupshowdistance)
+        if (i != 0 && buildupshowdistance && localColumnWidths >= localColumnWidthsUnscaled)
         {
-            let localDurationWidth = Math.floor((localNoteStartTimes[i] - localNoteStartTimes[i - 1])/1000 * localColumnWidths);
+            let localDurationWidth = Math.floor((localNoteStartTimes[i] - localNoteStartTimes[i - 1])/250 * localColumnWidthSpace);
             if (localDurationWidth > 0)
-                graphText += "<div style=\"height:"+localMaxHeight+"px; width:"+localDurationWidth+"px;\"></div>"; 
+                graphText += "<div style=\"height:"+localMaxHeight+"px; width:"+localDurationWidth+"px; flex: 0 0 "+localDurationWidth+"px;\"></div>"; 
         }
-        graphText += "<div style=\"height:"+localMaxHeight+"px; padding:0; width:"+localColumnWidths+"px; display:flex; flex-direction:column-reverse\">";
+        graphText += "<div id=\"buildupcolumn"+i+"\" style=\"height:"+localMaxHeight+"px; width:"+localColumnWidths+"px; display:flex; flex-direction:column-reverse\">";
         
         for (let j = 0; j < localNoteBuildUps[i].length; ++j)
         {
@@ -367,7 +359,7 @@ function Createbuilduptable()
             if (localNoteBuildUps[j] == 0)
                 continue;
             if (j == 0 || localNoteMultiplierValues[j-1][i] > 1)
-                graphText += "<div style=\"background-color:rgb("+localColorString+"); padding:0; width:"+localColumnWidths+"px; height:"+Math.round(localMaxHeight * (localNoteBuildUps[i][j]/localNoteBaseValueMax))+"px;\"></div>"
+                graphText += "<div style=\"background-color:rgb("+localColorString+"); width:"+localColumnWidths+"px; height:"+Math.round(localMaxHeight * (localNoteBuildUps[i][j]/localNoteBaseValueMax))+"px;\"></div>"
         }
         let isThereLessThanOneToShow = false;
         for (let j = 0; j < localNoteBuildUps[i].length; ++j)
@@ -383,7 +375,7 @@ function Createbuilduptable()
             }                
         }
         if (buildupShowLessThanOne && isThereLessThanOneToShow)
-            graphText += "<div style=\"display:flex; flex-wrap:nowrap; padding:0; flex-direction:column-reverse; border: "+localNegateBorderWidths+"px solid rgb(230,60,60);\">"
+            graphText += "<div style=\"display:flex; flex-wrap:nowrap; flex-direction:column-reverse; border: "+localNegateBorderWidths+"px solid rgb(230,60,60);\">"
         for (let j = 0; j < localNoteBuildUps[i].length; ++j)
         {
             let localColor = buildupNoteMultiplierColors[j];
@@ -399,13 +391,87 @@ function Createbuilduptable()
                 localmarginleft = localNegateBorderWidths;
             }
             if (j != 0 && localNoteMultiplierValues[j-1][i] < 1)
-                graphText += "<div style=\"background-color:rgb("+localColorString+");  padding:0; margin-left:"+localmarginleft+"px; width:"+localNoteWidth+"px; height:"+Math.round(localMaxHeight * (localNoteBuildUps[i][j]/localNoteBaseValueMax))+"px;\"></div>"
+                graphText += "<div style=\"background-color:rgb("+localColorString+"); margin-left:"+localmarginleft+"px; width:"+localNoteWidth+"px; height:"+Math.round(localMaxHeight * (localNoteBuildUps[i][j]/localNoteBaseValueMax))+"px;\"></div>"
         }
-        if (buildupShowLessThanOne)
+        if (buildupShowLessThanOne && isThereLessThanOneToShow)
             graphText += "</div>"
         graphText += "</div>"
     }
     document.getElementById("linegraph").innerHTML = graphText;
+
+    for (let i = 0; i < localNoteBaseValues.length; ++i)
+    {     
+        document.getElementById("buildupcolumn"+i).addEventListener("mouseenter", async (event) => {
+            for (let j = 0; j < localNoteBuildUps[i].length; ++j)
+            {
+                if (!buildupShowMultipliers[j])
+                    continue;
+                if (localNoteBuildUps[j] == 0)
+                    continue;            
+                if (j==0)
+                {
+                    document.getElementById("basevaluelabel").innerHTML = "<div style=\"display:flex; flex-direction:column;\"><div>baseValue</div><div>"+(Math.round(localNoteBuildUps[i][j]*100)/100)+"</div></div>";
+                    continue;
+                }
+                if (localNoteMultiplierValues[j-1][i] > 1)
+                {
+                    document.getElementById(localNoteMultiplierNames[j-1]+"label").innerHTML = "<div style=\"display:flex; flex-direction:column;\"><div>"+localNoteMultiplierNames[j-1]+"</div><div>"+(Math.round(localNoteBuildUps[i][j]*100)/100)+"</div><div>"+(Math.round(localNoteMultiplierValues[j-1][i]*100)/100)+"</div></div>";
+                }
+                else if (localNoteMultiplierValues[j-1][i] < 1)
+                {
+                    document.getElementById(localNoteMultiplierNames[j-1]+"label").innerHTML = "<div style=\"display:flex; flex-direction:column;\"><div>"+localNoteMultiplierNames[j-1]+"</div><div style=\"color:rgb(235,40,40);\">"+(Math.round(-localNoteBuildUps[i][j] * 100)/100)+"</div><div>"+(Math.round(localNoteMultiplierValues[j-1][i] * 100)/100)+"</div></div>";
+                }
+            }
+        });
+        document.getElementById("buildupcolumn"+i).addEventListener("mouseleave", async (event) => {
+            for (let j = 0; j < localNoteBuildUps[i].length; ++j)
+            {
+                if (!buildupShowMultipliers[j])
+                    continue;
+                if (localNoteBuildUps[j] == 0)
+                    continue;            
+                if (j==0)
+                {
+                    document.getElementById("basevaluelabel").innerHTML = "<div>baseValue</div><div style=\"color:rgba(0,0,0,0);\">T</div><div style=\"color:rgba(0,0,0,0);\">T</div>";
+                    continue;
+                }
+                document.getElementById(localNoteMultiplierNames[j-1]+"label").innerHTML = "<div>"+localNoteMultiplierNames[j-1]+"<div style=\"color:rgba(0,0,0,0);\">T</div><div style=\"color:rgba(0,0,0,0);\">T</div>";
+                
+            }
+        });
+        /*let isThereLessThanOneToShow = false;
+        for (let j = 0; j < localNoteBuildUps[i].length; ++j)
+        {
+            if (!buildupShowMultipliers[j])
+                continue;
+            if (localNoteBuildUps[j] == 0)
+                continue;
+            if (j != 0 && localNoteMultiplierValues[j-1][i] < 1)
+            {
+                isThereLessThanOneToShow = true;
+                break;
+            }                
+        }
+        if (buildupShowLessThanOne && isThereLessThanOneToShow)
+            graphText += "<div style=\"display:flex; flex-wrap:nowrap; flex-direction:column-reverse; border: "+localNegateBorderWidths+"px solid rgb(230,60,60);\">"
+        for (let j = 0; j < localNoteBuildUps[i].length; ++j)
+        {
+            let localColor = buildupNoteMultiplierColors[j];
+            let localColorString = localColor[0]+","+localColor[1]+","+localColor[2];
+            if (!buildupShowMultipliers[j])
+                continue;
+            if (localNoteBuildUps[j] == 0)
+                continue;
+            let localmarginleft = 0;
+            let localNoteWidth = localColumnWidths - 2* localNegateBorderWidths;
+            if (!buildupShowLessThanOne)
+            {
+                localmarginleft = localNegateBorderWidths;
+            }
+            if (j != 0 && localNoteMultiplierValues[j-1][i] < 1)
+                graphText += "<div style=\"background-color:rgb("+localColorString+"); margin-left:"+localmarginleft+"px; width:"+localNoteWidth+"px; height:"+Math.round(localMaxHeight * (localNoteBuildUps[i][j]/localNoteBaseValueMax))+"px;\"></div>"
+        }*/
+    }
 }
 
 

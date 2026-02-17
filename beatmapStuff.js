@@ -109,7 +109,7 @@ async function CreateMapData(files) {
     let localNoteCounts = [];
     let localTypingSectionCounts = [];
     let localODs = [];
-
+    
     for (const difficulty of localDifficultyList) {
         localDifficultyData.push(difficulty);
         let mapSongName = "";
@@ -252,23 +252,22 @@ function CreateDifficultyData(difficultyInput)
 
             let star = starFormulas[starFormulaKeys[i]](difficulty);
             localStars[i].push(star);
-
+            
             let StarDTNC = starFormulas[starFormulaKeys[i]](DifficultyDTNC);
             localStarDTNCs[i].push(StarDTNC);
-
+            
             let StarHTDC = starFormulas[starFormulaKeys[i]](DifficultyHTDC);
             localStarHTDCs[i].push(StarHTDC);
-
         }
 
         for (let i = 0; i < ppFormulaKeys.length; ++i) {
-
+            
             let pp = ppFormulas[ppFormulaKeys[i]](difficulty);
             localPPs[i].push(pp);
-
+            
             let PPDTNC = ppFormulas[ppFormulaKeys[i]](DifficultyDTNC);
             localPPDTNCs[i].push(PPDTNC);
-
+            
             let PPHTDC = ppFormulas[ppFormulaKeys[i]](DifficultyHTDC);
             localPPHTDCs[i].push(PPHTDC);
         }

@@ -17,8 +17,44 @@ function valerusReworkBuildup(scoreData) {
         typingSectionMultiplierValues.push([]);
     }
 
-    const notes = scoreData.notes;
-    const typingSections = scoreData.typingSections;
+    let filteredNotes = [];
+    for (let i = 0; i < scoreData.notes.length; ++i)
+    {
+        if (scoreData.notes[i].type == "tap")
+        {
+            let tempNote = {
+                key: scoreData.notes[i].key,
+                time: scoreData.notes[i].time,
+                type: scoreData.notes[i].type,
+            }
+            filteredNotes.push(tempNote);
+        }
+        else if(scoreData.notes[i].type == "hold")
+        {
+
+            let tempHoldNote = {
+                key: scoreData.notes[i].key,
+                startTime: scoreData.notes[i].startTime,
+                endTime: scoreData.notes[i].endTime,
+                type: scoreData.notes[i].type,
+            }
+            filteredNotes.push(tempHoldNote);
+        }
+    }
+    let filteredTypingSections = [];
+    for (let i = 0; i < scoreData.typingSections.length; ++i)
+    {
+        let tempTypingSection = {
+            endTime: scoreData.typingSections[i].endTime,
+            startTime: scoreData.typingSections[i].startTime,
+            text: scoreData.typingSections[i].text,
+        }
+        filteredTypingSections.push(tempTypingSection);
+        
+    }
+
+    const notes = filteredNotes;
+    const typingSections = filteredTypingSections;
     const KEYBOARDLAYOUT = [
         "q", "w", "e", "r", "t", "y", "u", "i", "o", "p",
         "a", "s", "d", "f", "g", "h", "j", "k", "l", ";",
@@ -329,11 +365,16 @@ function valerusReworkBuildup(scoreData) {
             timeDurationBonus = Math.pow(timeDurationBonus-1, 0.1)+1;
         }
         //"timeDurationBonus", "heldNoteBonus", "lengthBonus", "odbonus"
+        let trueODBonus = odbonus;
+        if (alreadyUsedForChord[selectedNoteIndex] && overallDifficulty > 9.8)
+        {
+            trueODBonus = Math.pow(odbonus, 0.4);
+        }
         noteMultiplierValues[4][selectedNoteIndex] = timeDurationBonus;
         noteMultiplierValues[5][selectedNoteIndex] = heldNoteBonus;
         noteMultiplierValues[6][selectedNoteIndex] = lengthBonus;
-        noteMultiplierValues[7][selectedNoteIndex] = odbonus;
-        objectDifficultySum += noteDifficulties[selectedNoteIndex] * timeDurationBonus * heldNoteBonus * lengthBonus * odbonus;
+        noteMultiplierValues[7][selectedNoteIndex] = trueODBonus;
+        objectDifficultySum += noteDifficulties[selectedNoteIndex] * timeDurationBonus * heldNoteBonus * lengthBonus * trueODBonus;
     }
     for (let i = 0; i < typingSectionDifficulties.length; ++i) {
         let uniqueLetters = new Set(typingSections[i].text);

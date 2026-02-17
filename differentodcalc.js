@@ -7,21 +7,26 @@ let odtableMultiplier = 1;
 
 function LoadDifODCalc() {
     document.getElementById("container").innerHTML =     
-    "<div style=\"display:flex; flex-direction:row; justify-content:center; width:100%;\">"
+    "<div style=\"display:flex; flex-direction:row;\">"
+    + "<div class=\"neededpadding\" id=\"beatmapdiflist\" style=\"display:flex; flex-direction:column; align-self:left;\"></div>"
+    + "<div>"
+    +"<div class=\"neededpadding\" style=\"display:flex; flex-direction:row; justify-content:center; width:100%;\">"
     +"<input type=\"button\" id=\"applynomod\" value=\"No mod\">"
     +"<input type=\"button\" id=\"applydoubletimenightcore\" value=\"DT/NC\">"
     +"<input type=\"button\" id=\"applyhalftimedaycore\" value=\"HT/DC\">"
     +"</div>"
-    +"<div style=\"display:flex; flex-direction:column;\">"
+    +"<div class=\"neededpadding\" style=\"display:flex; flex-direction:column;\">"
     +"Speed (1.5 is DT/NC, 0.75 HT/DC)"
     +"<input type=\"number\" name=\"odtabletimescale\" id=\"odtabletimescale\" step=\"0.05\" value=\"1\"></input>"
     +"</div>"
-    +"<div id=\"datadisplay\" style=\"display:flex; width:100%\">"
-    + "<div id=\"beatmapdiflist\" style=\"display:flex; flex-direction:column; align-self:left;\"></div>"
+    +"<div class=\"neededpadding\" id=\"datadisplay\" style=\"display:flex; width:100%\">"
     + "<div id=\"tabledisplay\">"
     + "<div id=\"beatmapdifdata\"></div>"
     +"<table id=\"odchangesdisplay\"></table>"
     +"</div>"
+    + "</div>"
+    + "</div>"
+    + "</div>"
     
     
     + "</div>";
@@ -64,17 +69,18 @@ function LoadDifs()
 {
     odtableNotCachedDifIds = [];
     let diflisttext = "<input type=\"text\" name=\"odtablemapsearch\" placeholder=\"Search for song titles...\" id=\"odtablemapsearch\" value=\""+odtableFilteredText+"\">";
-   
+    diflisttext += "<div style=\"height:400px; overflow-y:auto;\">";
     for (let i = 0; i < isCache.length; ++i)
     {
         if (isCache[i] || (odtableFilteredText != "" && !songNames[i].toLowerCase().includes(odtableFilteredText.toLowerCase())))
             continue;
         odtableNotCachedDifIds.push(i);
-        diflisttext += "<div id=\"mapdiff"+(odtableNotCachedDifIds.length-1)+"\" class=\"buttonstyle\" style=\"width:400px; margin-top:5px\">";
+        diflisttext += "<div class=\"neededpadding buttonstyle\" id=\"mapdiff"+(odtableNotCachedDifIds.length-1)+"\" style=\"width:400px; margin-top:5px\">";
         diflisttext += "<div>"+songNames[i]+"</div>"
         diflisttext += "<div>"+difficultyNames[i]+"</div>"
         diflisttext += "</div>"
     }
+    diflisttext += "</div>"
     if (odtableSelectedDif >= odtableNotCachedDifIds.length)
         odtableSelectedDif = -1;
     document.getElementById("beatmapdiflist").innerHTML = diflisttext;
