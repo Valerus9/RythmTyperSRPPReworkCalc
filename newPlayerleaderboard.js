@@ -61,8 +61,8 @@ function CreateLeaderboard()
     {
         leaderboardRowIds.push(i);
     }
-    CreateTable("playerleaderboard",leaderboardColumnNames,leaderboardColumnIds,leaderboardColumnWidths,leaderboardRowIds,CreateLeaderboardValues(),leaderboardColumnCompare,leaderboardColumnTypes, 50);
-    tableSubtablesHidden[createdTableIds.indexOf("playerleaderboard")] = true;
+    CreateTable("Player leaderboard", "playerleaderboard",leaderboardColumnNames,leaderboardColumnIds,leaderboardColumnWidths,leaderboardRowIds,CreateLeaderboardValues(),leaderboardColumnCompare,leaderboardColumnTypes, 50);
+    //tableSubtablesHidden[createdTableIds.indexOf("playerleaderboard")] = true;
     for (let i = 0; i < tableHidden.length;++i)
     {
         if (createdTableIds[i].includes("subtable") && createdTableIds[i].includes("playerleaderboard"))
@@ -70,7 +70,7 @@ function CreateLeaderboard()
             tableHidden[i] = true;
         }
     } 
-    CreateTable("playerleaderboard",leaderboardColumnNames,leaderboardColumnIds,leaderboardColumnWidths,leaderboardRowIds,CreateLeaderboardValues(),leaderboardColumnCompare,leaderboardColumnTypes, 50);
+    CreateTable("Player leaderboard", "playerleaderboard",leaderboardColumnNames,leaderboardColumnIds,leaderboardColumnWidths,leaderboardRowIds,CreateLeaderboardValues(),leaderboardColumnCompare,leaderboardColumnTypes, 50);
 }
 
 function CreateLeaderboardValues()
@@ -89,11 +89,11 @@ function CreateLeaderboardValues()
     let leaderboardPPdiff = [];
     let leaderboardActualPPdiff = [];
 
-    let subtableScoreColumnNames = ["Song name", "Diff name", "Old PP", "Old weighted PP", "New PP", "New weighted PP", "Accuracy", "Mods"];
-    let subtableScoreColumnIds = ["songName", "diffName", "oldPP", "oldcalcPP", "newPP", "newcalcPP", "acc", "mods"];
-    let subtableScoreColumnWidths = [300, 200, 40, 40, 40, 40, 40, 40];    
-    let subtableScoreColumnCompare = [-1, -1, -1, -1, 2, 3, -1, -1];
-    let subtableScoreColumnTypes = ["search", "string", "integer", "integer", "integer", "integer", "percentage", "string"];
+    let subtableScoreColumnNames = ["Song name", "Diff name", "Old PP", "Old weighted PP", "New PP", "New weighted PP", "PP diff", "Weighted PP diff", "Accuracy", "Mods"];
+    let subtableScoreColumnIds = ["songName", "diffName", "oldPP", "oldcalcPP", "newPP", "newcalcPP", "ppdiff", "weightedppdiff", "acc", "mods"];
+    let subtableScoreColumnWidths = [300, 200, 40, 40, 40, 40, 40, 40, 40, 40];    
+    let subtableScoreColumnCompare = [-1, -1, -1, -1, 2, 3, -1, -1, -1, -1];
+    let subtableScoreColumnTypes = ["search", "string", "integer", "integer", "integer", "integer", "integer", "integer", "percentage", "string"];
 
     let subtables = [];
     
@@ -113,6 +113,8 @@ function CreateLeaderboardValues()
         let scoreNewPP = [];
         let scoreOldNerfedPP = [];
         let scoreNewNerfedPP = [];
+        let scorePPdiff = [];
+        let scoreWeightedPPdiff = [];
         let scoreMods = [];
         let scoreAcc = [];
         for (let j = 0; j < playerLeaderboardData[i].plays.length; ++j)
@@ -123,6 +125,8 @@ function CreateLeaderboardValues()
             scoreOldNerfedPP.push(playerLeaderboardData[i].plays[j].PPs[ppReworkFirst]);
             scoreNewPP.push(playerLeaderboardData[i].plays[j].originalPPs[ppReworkSecond]);
             scoreNewNerfedPP.push(playerLeaderboardData[i].plays[j].PPs[ppReworkSecond]);
+            scorePPdiff.push(playerLeaderboardData[i].plays[j].originalPPs[ppReworkSecond] - playerLeaderboardData[i].plays[j].originalPPs[ppReworkFirst]);
+            scoreWeightedPPdiff.push(playerLeaderboardData[i].plays[j].PPs[ppReworkSecond] - playerLeaderboardData[i].plays[j].PPs[ppReworkFirst]);
             let scoreMod = "";
             for (let k = 0; k < playerLeaderboardData[i].plays[j].mods.length; ++k)
             {
@@ -132,7 +136,7 @@ function CreateLeaderboardValues()
             scoreAcc.push(playerLeaderboardData[i].plays[j].acc/100);
 
         }
-        let subtableScoreColumnValues = [scoreSongName, scoreDiffName, scoreOldPP, scoreOldNerfedPP, scoreNewPP, scoreNewNerfedPP, scoreAcc, scoreMods];
+        let subtableScoreColumnValues = [scoreSongName, scoreDiffName, scoreOldPP, scoreOldNerfedPP, scoreNewPP, scoreNewNerfedPP, scorePPdiff, scoreWeightedPPdiff, scoreAcc, scoreMods];
         subtables.push([subtableScoreColumnNames, subtableScoreColumnIds, subtableScoreColumnWidths, rowId, subtableScoreColumnValues, subtableScoreColumnCompare, subtableScoreColumnTypes, -1]);
     }
     let ppRowIds = DoSort([1], [leaderboardOldPP], ["integer"]);

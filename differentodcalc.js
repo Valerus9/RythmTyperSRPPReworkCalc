@@ -189,6 +189,6 @@ function CreateODTable()
     let localODTableValues = [localODs, localStars[srReworkFirst], localStars[srReworkSecond], localPPs[ppReworkFirst], localPPs[ppReworkSecond], oldSRPercentage, newSRPercentage, oldPPPercentage, newPPPercentage];
     let localODTableCompares = [-1, -1, 1, -1, 3, -1, 5, -1, 7];
     let localODTableTypes = ["float", "float", "float", "integer", "integer", "percentage", "percentage", "percentage", "percentage"];
-    CreateTable("odchangesdisplay", localODTableNames, localODTableIDs, localODTableWidths, localODTableRowIds, localODTableValues, localODTableCompares, localODTableTypes, 0);
+    CreateTable("Overall difficulty differences", "odchangesdisplay", localODTableNames, localODTableIDs, localODTableWidths, localODTableRowIds, localODTableValues, localODTableCompares, localODTableTypes, 0);
     modifiedDifficulty.overallDifficulty = originalOD;
 }

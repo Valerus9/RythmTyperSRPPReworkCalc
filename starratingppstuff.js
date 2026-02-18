@@ -26,6 +26,7 @@ let srReworkFirst = 0;
 let srReworkSecond = 1;
 
 let starFormulaKeys = Object.keys(starFormulas);
+let ppstarFormulaBuildUpKeys = Object.keys(ppstarFormulaBuildUps);
 let ppFormulaKeys = Object.keys(ppFormulas);
 
 let containerBody = document.getElementById("container").innerHTML;

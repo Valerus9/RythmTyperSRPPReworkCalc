@@ -57,7 +57,6 @@ function CreateSelectContentBeatmap() {
         else {
             selectpptextSecond += "<option value=\"" + (i + 1) + "\">" + ppReworkKeys[i] + "</option>\n";
         }
-
     }
     selectppSecond.innerHTML = selectpptextSecond;
     let modSelect = document.getElementById("modselect");
@@ -74,23 +73,23 @@ function CreateSelectContentBeatmap() {
     modSelect.innerHTML = modSelectText;
     document.getElementById("srcalcselectfirst").addEventListener("change", async (event) => {
         srReworkFirst = event.target.value - 1;
-        CreateTable("diffList", difTableColumnNames, difTableColumnIds, difTableColumnWidths, CreateDefaultRowIds(songNames.length), CreateDiffTableValues(true), difTableColumnCompare, difTableColumnTypes, 0);
+        CreateTable("Difficulty list", "diffList", difTableColumnNames, difTableColumnIds, difTableColumnWidths, CreateDefaultRowIds(songNames.length), CreateDiffTableValues(true), difTableColumnCompare, difTableColumnTypes, 0);
     });
     document.getElementById("srcalcselectsecond").addEventListener("change", async (event) => {
         srReworkSecond = event.target.value - 1;
-        CreateTable("diffList", difTableColumnNames, difTableColumnIds, difTableColumnWidths, CreateDefaultRowIds(songNames.length), CreateDiffTableValues(true), difTableColumnCompare, difTableColumnTypes, 0);
+        CreateTable("Difficulty list", "diffList", difTableColumnNames, difTableColumnIds, difTableColumnWidths, CreateDefaultRowIds(songNames.length), CreateDiffTableValues(true), difTableColumnCompare, difTableColumnTypes, 0);
     });
     document.getElementById("ppcalcselectfirst").addEventListener("change", async (event) => {
         ppReworkFirst = event.target.value - 1;
-        CreateTable("diffList", difTableColumnNames, difTableColumnIds, difTableColumnWidths, CreateDefaultRowIds(songNames.length), CreateDiffTableValues(true), difTableColumnCompare, difTableColumnTypes, 0);
+        CreateTable("Difficulty list", "diffList", difTableColumnNames, difTableColumnIds, difTableColumnWidths, CreateDefaultRowIds(songNames.length), CreateDiffTableValues(true), difTableColumnCompare, difTableColumnTypes, 0);
     });
     document.getElementById("ppcalcselectsecond").addEventListener("change", async (event) => {
         ppReworkSecond = event.target.value - 1;
-        CreateTable("diffList", difTableColumnNames, difTableColumnIds, difTableColumnWidths, CreateDefaultRowIds(songNames.length), CreateDiffTableValues(true), difTableColumnCompare, difTableColumnTypes, 0);
+        CreateTable("Difficulty list", "diffList", difTableColumnNames, difTableColumnIds, difTableColumnWidths, CreateDefaultRowIds(songNames.length), CreateDiffTableValues(true), difTableColumnCompare, difTableColumnTypes, 0);
     });
     document.getElementById("modselect").addEventListener("change", async (event) => {
         selectedMod = modList[event.target.value - 1];
-        CreateTable("diffList", difTableColumnNames, difTableColumnIds, difTableColumnWidths, CreateDefaultRowIds(songNames.length), CreateDiffTableValues(true), difTableColumnCompare, difTableColumnTypes, 0);
+        CreateTable("Difficulty list", "diffList", difTableColumnNames, difTableColumnIds, difTableColumnWidths, CreateDefaultRowIds(songNames.length), CreateDiffTableValues(true), difTableColumnCompare, difTableColumnTypes, 0);
     });
 }
 
@@ -123,22 +122,22 @@ function LoadMapDifLeaderboard() {
     }
     document.getElementById("srcalcselectfirst").addEventListener("change", async (event) => {
         srReworkFirst = event.target.value - 1;
-        CreateTable("diffList", difTableColumnNames, difTableColumnIds, difTableColumnWidths, CreateDefaultRowIds(songNames.length), CreateDiffTableValues(true), difTableColumnCompare, difTableColumnTypes, 0);
+        CreateTable("Difficulty list", "diffList", difTableColumnNames, difTableColumnIds, difTableColumnWidths, CreateDefaultRowIds(songNames.length), CreateDiffTableValues(true), difTableColumnCompare, difTableColumnTypes, 0);
     });
     document.getElementById("srcalcselectsecond").addEventListener("change", async (event) => {
         srReworkSecond = event.target.value - 1;
-        CreateTable("diffList", difTableColumnNames, difTableColumnIds, difTableColumnWidths, CreateDefaultRowIds(songNames.length), CreateDiffTableValues(true), difTableColumnCompare, difTableColumnTypes, 0);
+        CreateTable("Difficulty list", "diffList", difTableColumnNames, difTableColumnIds, difTableColumnWidths, CreateDefaultRowIds(songNames.length), CreateDiffTableValues(true), difTableColumnCompare, difTableColumnTypes, 0);
     });
     document.getElementById("ppcalcselectfirst").addEventListener("change", async (event) => {
         ppReworkFirst = event.target.value - 1;
-        CreateTable("diffList", difTableColumnNames, difTableColumnIds, difTableColumnWidths, CreateDefaultRowIds(songNames.length), CreateDiffTableValues(true), difTableColumnCompare, difTableColumnTypes, 0);
+        CreateTable("Difficulty list", "diffList", difTableColumnNames, difTableColumnIds, difTableColumnWidths, CreateDefaultRowIds(songNames.length), CreateDiffTableValues(true), difTableColumnCompare, difTableColumnTypes, 0);
     });
     document.getElementById("ppcalcselectsecond").addEventListener("change", async (event) => {
         ppReworkSecond = event.target.value - 1;        
-        CreateTable("diffList", difTableColumnNames, difTableColumnIds, difTableColumnWidths, CreateDefaultRowIds(songNames.length), CreateDiffTableValues(true), difTableColumnCompare, difTableColumnTypes, 0);
+        CreateTable("Difficulty list", "diffList", difTableColumnNames, difTableColumnIds, difTableColumnWidths, CreateDefaultRowIds(songNames.length), CreateDiffTableValues(true), difTableColumnCompare, difTableColumnTypes, 0);
     });
     CreateSelectContentBeatmap();
-    CreateTable("diffList", difTableColumnNames, difTableColumnIds, difTableColumnWidths, CreateDefaultRowIds(songNames.length), CreateDiffTableValues(true), difTableColumnCompare, difTableColumnTypes, 0);
+    CreateTable("Difficulty list", "diffList", difTableColumnNames, difTableColumnIds, difTableColumnWidths, CreateDefaultRowIds(songNames.length), CreateDiffTableValues(true), difTableColumnCompare, difTableColumnTypes, 0);
 
     document.getElementById("clearrtms").addEventListener("click", async (event) => {
         ClearLoadedRTMS();
@@ -147,7 +146,7 @@ function LoadMapDifLeaderboard() {
         document.getElementById("cacheMessage").style.display = "none";
         document.getElementById("changemenudifferentodCalc").disabled = true;
         document.getElementById("changemenugraphviewofrework").disabled = true;
-        CreateTable("diffList", difTableColumnNames, difTableColumnIds, difTableColumnWidths, CreateDefaultRowIds(songNames.length), CreateDiffTableValues(true), difTableColumnCompare, difTableColumnTypes, 0);
+        CreateTable("Difficulty list", "diffList", difTableColumnNames, difTableColumnIds, difTableColumnWidths, CreateDefaultRowIds(songNames.length), CreateDiffTableValues(true), difTableColumnCompare, difTableColumnTypes, 0);
     });
     document.getElementById("clearcachertms").addEventListener("click", async (event) => {
         ClearCachedRTMS();
@@ -171,7 +170,7 @@ function LoadMapDifLeaderboard() {
             document.getElementById("changemenudifferentodCalc").disabled = false;
             document.getElementById("changemenugraphviewofrework").disabled = false;
         }
-        CreateTable("diffList", difTableColumnNames, difTableColumnIds, difTableColumnWidths, CreateDefaultRowIds(songNames.length), CreateDiffTableValues(true), difTableColumnCompare, difTableColumnTypes, 0);
+        CreateTable("Difficulty list", "diffList", difTableColumnNames, difTableColumnIds, difTableColumnWidths, CreateDefaultRowIds(songNames.length), CreateDiffTableValues(true), difTableColumnCompare, difTableColumnTypes, 0);
     });
 
     document.getElementById("zipInput").addEventListener("change", async (event) => {
@@ -272,7 +271,7 @@ async function LoadMapDataValues(localValues)
         newPPRanks.push(0);
     }
 
-    CreateTable("diffList", difTableColumnNames, difTableColumnIds, difTableColumnWidths, CreateDefaultRowIds(songNames.length), CreateDiffTableValues(true), difTableColumnCompare, difTableColumnTypes, 0);
+    CreateTable("Difficulty list", "diffList", difTableColumnNames, difTableColumnIds, difTableColumnWidths, CreateDefaultRowIds(songNames.length), CreateDiffTableValues(true), difTableColumnCompare, difTableColumnTypes, 0);
     if (songNames.length == 0)
     {
         document.getElementById("clearrtms").style.display = "none";

@@ -89,6 +89,7 @@ let buildupTimeMultiplier = 1.0;
 let buildupNoteMultiplierColors = [];
 let buildupShowMultipliers = [];
 let buildupShowLessThanOne = true;
+let buildupSelectedBuildup = 0;
 
 function LoadDiffGraph() {
     document.getElementById("container").innerHTML = 
@@ -96,7 +97,11 @@ function LoadDiffGraph() {
     +"<div>"
     +"<div id=\"beatmapdiflist\"></div>"
     +"</div>"
-    +"<div>"
+    +"<div style=\"flex-grow: 1;\">"
+    +"<div class=\"neededpadding\" style=\"display:flex; flex-direction:row; justify-content:center; width:100%;\">"
+    +"<select id=\"ppsrbuildupselect\">"
+    +"</select>"
+    +"</div>"
     +"<div class=\"neededpadding\" style=\"display:flex; flex-direction:row; justify-content:center; width:100%;\">"
     +"<input type=\"button\" id=\"applynomod\" value=\"No mod\">"
     +"<input type=\"button\" id=\"applydoubletimenightcore\" value=\"DT/NC\">"
@@ -114,6 +119,24 @@ function LoadDiffGraph() {
     +"</div>"
     +"</div>"
     +"<div id=\"linegraph\" style=\"display:flex; flex-direction:row; overflow-x:auto; width:100%;\"></div>"
+    let ppsrbuildupselect = document.getElementById("ppsrbuildupselect");
+    let ppsrbuildupselectText = "<option value=\"\" disabled selected>Select a pp rework</option>\n";
+    for (let i = 0; i < ppstarFormulaBuildUps.length; ++i) {
+        if (i == 0) {
+            ppsrbuildupselectText += "<option value=\"" + (i + 1) + "\" selected>" + ppstarFormulaBuildUps[i] + "</option>\n";
+        }
+        else {
+            ppsrbuildupselectText += "<option value=\"" + (i + 1) + "\">" + ppstarFormulaBuildUps[i] + "</option>\n";
+        }
+    }
+    ppsrbuildupselect.innerHTML = ppsrbuildupselectText;
+    document.getElementById("ppsrbuildupselect").addEventListener("change", async (event) => {
+        buildupSelectedBuildup = event.target.value - 1;
+        if (builduptableSelectedDif != -1)
+        {
+            Createbuilduptable();
+        }
+    });
     LoadDiffGraphDifs();
     document.getElementById("showdistance").addEventListener("change", async (event) => {
         buildupshowdistance = document.getElementById("showdistance").checked;
@@ -234,7 +257,7 @@ function Createbuilduptable()
     document.getElementById("beatmapdifdata").innerHTML = songNames[builduptableSelectedDif] + "<br>"+ difficultyNames[builduptableSelectedDif] 
     + "<br>OD: " +Math.round(scaleDifficultySpeed(difficultyList[builduptableSelectedDif],buildupTimeMultiplier).overallDifficulty * 100) / 100;
     previousGraphRandomNumber = 0;
-    let localbuildupvalues=valerusReworkBuildup(scaleDifficultySpeed(difficultyList[builduptableSelectedDif],buildupTimeMultiplier));
+    let localbuildupvalues=ppstarFormulaBuildUps[ppstarFormulaBuildUpKeys[buildupSelectedBuildup]](scaleDifficultySpeed(difficultyList[builduptableSelectedDif],buildupTimeMultiplier));
     let localNoteStartTimes = localbuildupvalues[0];
     let localNoteBaseValues = localbuildupvalues[1];
 

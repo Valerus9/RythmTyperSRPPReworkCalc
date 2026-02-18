@@ -19,7 +19,7 @@ function GetHeaderSortText(sortBySomething) {
         return " (incr)";
 }
 
-function CreateTable(tableid, tableColumnNames, tableColumnIds, tableColumnWidths, tableRowIds, tableColumnValues, tableColumnCompare, tableColumnTypes, tableLimit) {
+function CreateTable(tableName, tableid, tableColumnNames, tableColumnIds, tableColumnWidths, tableRowIds, tableColumnValues, tableColumnCompare, tableColumnTypes, tableLimit) {
     /*console.log(tableColumnNames.length);
     console.log(tableColumnIds.length);
     console.log(tableColumnWidths.length);
@@ -61,10 +61,10 @@ function CreateTable(tableid, tableColumnNames, tableColumnIds, tableColumnWidth
     }
     if (tableHidden[tableGlobalArrayId])
     {
-        document.getElementById(tableid).innerHTML = "<tr><th  id=\""+ tableid+"hideshowtable\" colspan=\""+(tableColumnValues.length)+"\">Show table</th></tr>";
+        document.getElementById(tableid).innerHTML = "<tr><th  id=\""+ tableid+"hideshowtable\" colspan=\""+(tableColumnValues.length)+"\">Show "+tableName+"</th></tr>";
         document.getElementById(tableid+"hideshowtable").addEventListener("click", async (event) => {
             tableHidden[createdTableIds.indexOf(tableid)] = !tableHidden[createdTableIds.indexOf(tableid)];
-            CreateTable(tableid, tableColumnNames, tableColumnIds, tableColumnWidths, tableRowIds, tableColumnValues, tableColumnCompare, tableColumnTypes, tableLimit);
+            CreateTable(tableName, tableid, tableColumnNames, tableColumnIds, tableColumnWidths, tableRowIds, tableColumnValues, tableColumnCompare, tableColumnTypes, tableLimit);
         });
         return;
     }
@@ -112,6 +112,7 @@ function CreateTable(tableid, tableColumnNames, tableColumnIds, tableColumnWidth
     
 
     let searchTermColumn = 0;
+    console.log(tableName);
     if (tableColumnTypes.includes("search"))
     {
         searchTermColumn = tableColumnTypes.indexOf("search");
@@ -182,7 +183,7 @@ function CreateTable(tableid, tableColumnNames, tableColumnIds, tableColumnWidth
             tableText += "<tr><th id=\""+tableid+"previouspagetop\" colspan=\""+(tableColumnValues.length-subtableColumns.length)+"\">Previous page</th></tr>"
         }
     }
-    tableText += "<tr><th id=\""+ tableid+"hideshowtable\"  colspan=\""+(tableColumnValues.length-subtableColumns.length)+"\">Hide table</th></tr>";
+    tableText += "<tr><th id=\""+ tableid+"hideshowtable\"  colspan=\""+(tableColumnValues.length-subtableColumns.length)+"\">Hide "+tableName+"</th></tr>";
     if (tableColumnValues[0].length > 0)
     {
         tableText += "<tr style=\"height:75px\">";
@@ -381,7 +382,7 @@ function CreateTable(tableid, tableColumnNames, tableColumnIds, tableColumnWidth
     {
         document.getElementById(tableid+"enabledisablesubtables").addEventListener("click", async (event) => {
             tableSubtablesHidden[tableGlobalArrayId] = !tableSubtablesHidden[tableGlobalArrayId];
-            CreateTable(tableid, tableColumnNames, tableColumnIds, tableColumnWidths, tableRowIds, tableColumnValues, tableColumnCompare, tableColumnTypes, tableLimit);
+            CreateTable(tableName, tableid, tableColumnNames, tableColumnIds, tableColumnWidths, tableRowIds, tableColumnValues, tableColumnCompare, tableColumnTypes, tableLimit);
         });
     }
     
@@ -399,22 +400,22 @@ function CreateTable(tableid, tableColumnNames, tableColumnIds, tableColumnWidth
         {
             document.getElementById(tableid+"nextpagetop").addEventListener("click", async (event) => {
                 tableOffsets[tableGlobalArrayId] = tableOffsets[tableGlobalArrayId] + tableLimits[tableGlobalArrayId];
-                CreateTable(tableid, tableColumnNames, tableColumnIds, tableColumnWidths, tableRowIds, tableColumnValues, tableColumnCompare, tableColumnTypes, tableLimit);
+                CreateTable(tableName, tableid, tableColumnNames, tableColumnIds, tableColumnWidths, tableRowIds, tableColumnValues, tableColumnCompare, tableColumnTypes, tableLimit);
             });
             document.getElementById(tableid+"nextpagebottom").addEventListener("click", async (event) => {
                 tableOffsets[tableGlobalArrayId] = tableOffsets[tableGlobalArrayId] + tableLimits[tableGlobalArrayId];
-                CreateTable(tableid, tableColumnNames, tableColumnIds, tableColumnWidths, tableRowIds, tableColumnValues, tableColumnCompare, tableColumnTypes, tableLimit);
+                CreateTable(tableName, tableid, tableColumnNames, tableColumnIds, tableColumnWidths, tableRowIds, tableColumnValues, tableColumnCompare, tableColumnTypes, tableLimit);
             });
         }
         if (tableOffsets[tableGlobalArrayId] - tableLimits[tableGlobalArrayId] >= 0)
         {
             document.getElementById(tableid+"previouspagetop").addEventListener("click", async (event) => {
                 tableOffsets[tableGlobalArrayId] = tableOffsets[tableGlobalArrayId] - tableLimits[tableGlobalArrayId];
-                CreateTable(tableid, tableColumnNames, tableColumnIds, tableColumnWidths, tableRowIds, tableColumnValues, tableColumnCompare, tableColumnTypes, tableLimit);
+                CreateTable(tableName, tableid, tableColumnNames, tableColumnIds, tableColumnWidths, tableRowIds, tableColumnValues, tableColumnCompare, tableColumnTypes, tableLimit);
             });
             document.getElementById(tableid+"previouspagebottom").addEventListener("click", async (event) => {
                 tableOffsets[tableGlobalArrayId] = tableOffsets[tableGlobalArrayId] - tableLimits[tableGlobalArrayId];
-                CreateTable(tableid, tableColumnNames, tableColumnIds, tableColumnWidths, tableRowIds, tableColumnValues, tableColumnCompare, tableColumnTypes, tableLimit);
+                CreateTable(tableName, tableid, tableColumnNames, tableColumnIds, tableColumnWidths, tableRowIds, tableColumnValues, tableColumnCompare, tableColumnTypes, tableLimit);
             });
         }
     }
@@ -425,7 +426,7 @@ function CreateTable(tableid, tableColumnNames, tableColumnIds, tableColumnWidth
             tableSearchTerm[tableGlobalArrayId] = e.target.value;
             tableSearchCursorPosition[tableGlobalArrayId] = e.target.selectionStart;
             tableSearchCursorPositionEnd[tableGlobalArrayId] = e.target.selectionEnd;
-            CreateTable(tableid, tableColumnNames, tableColumnIds, tableColumnWidths, tableRowIds, tableColumnValues, tableColumnCompare, tableColumnTypes, tableLimit);
+            CreateTable(tableName, tableid, tableColumnNames, tableColumnIds, tableColumnWidths, tableRowIds, tableColumnValues, tableColumnCompare, tableColumnTypes, tableLimit);
         });
 
     if (subtableIds.length > 0)
@@ -460,7 +461,7 @@ function CreateTable(tableid, tableColumnNames, tableColumnIds, tableColumnWidth
                 //console.log(tableOffsets[tableGlobalArrayId]);
                 //console.log(subtableIds[i][j]);
                 //console.log(subtableIds);
-                CreateTable(subtableIds[i][j], subtableColumnNames, subtableColumnIds, subtableColumnWidths, subtableRowIds, subtableColumnValues, subtableColumnCompare, subtableColumnTypes, subtableColumnLimit);
+                CreateTable(tableColumnNames[subtableColumns[i]], subtableIds[i][j], subtableColumnNames, subtableColumnIds, subtableColumnWidths, subtableRowIds, subtableColumnValues, subtableColumnCompare, subtableColumnTypes, subtableColumnLimit);
             }
         }
         if (!tableSubtablesHidden[tableGlobalArrayId])
@@ -491,14 +492,14 @@ function CreateTable(tableid, tableColumnNames, tableColumnIds, tableColumnWidth
                         tableHidden[createdTableIds.indexOf(existingSubtables[i][j])] = subtableFlip;
                     }
                 }
-                CreateTable(tableid, tableColumnNames, tableColumnIds, tableColumnWidths, tableRowIds, tableColumnValues, tableColumnCompare, tableColumnTypes, tableLimit);
+                CreateTable(tableName, tableid, tableColumnNames, tableColumnIds, tableColumnWidths, tableRowIds, tableColumnValues, tableColumnCompare, tableColumnTypes, tableLimit);
             });
         }
     }
 
     document.getElementById(tableid+"hideshowtable").addEventListener("click", async (event) => {
         tableHidden[createdTableIds.indexOf(tableid)] = !tableHidden[createdTableIds.indexOf(tableid)];
-        CreateTable(tableid, tableColumnNames, tableColumnIds, tableColumnWidths, tableRowIds, tableColumnValues, tableColumnCompare, tableColumnTypes, tableLimit);
+        CreateTable(tableName, tableid, tableColumnNames, tableColumnIds, tableColumnWidths, tableRowIds, tableColumnValues, tableColumnCompare, tableColumnTypes, tableLimit);
     });
 
     if (tableColumnValues[0].length > 0)
@@ -510,7 +511,7 @@ function CreateTable(tableid, tableColumnNames, tableColumnIds, tableColumnWidth
             document.getElementById(tableid+tableColumnIds[i]).addEventListener("click", async (event) => {
                 columnSorts[tableGlobalArrayId] = ChangeSort(columnSorts[tableGlobalArrayId], i);
                 //let rowIds = DoSort(columnSorts[tableGlobalArrayId], tableColumnValues, tableColumnTypes);
-                CreateTable(tableid, tableColumnNames, tableColumnIds, tableColumnWidths, tableRowIds, tableColumnValues, tableColumnCompare, tableColumnTypes, tableLimit);
+                CreateTable(tableName, tableid, tableColumnNames, tableColumnIds, tableColumnWidths, tableRowIds, tableColumnValues, tableColumnCompare, tableColumnTypes, tableLimit);
             });
         }
     }

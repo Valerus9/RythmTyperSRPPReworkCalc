@@ -457,7 +457,409 @@ starFormulas = {
         }
         return difficultyDensity;
 
-    }
+    }/*,
 
+    valerusReworkV2(scoreData)
+    {
+        let filteredNotes = [];
+        for (let i = 0; i < scoreData.notes.length; ++i)
+        {
+            if (scoreData.notes[i].type == "tap")
+            {
+                let tempNote = {
+                    key: scoreData.notes[i].key,
+                    time: scoreData.notes[i].time,
+                    type: scoreData.notes[i].type,
+                }
+                filteredNotes.push(tempNote);
+            }
+            else if(scoreData.notes[i].type == "hold")
+            {
 
+                let tempHoldNote = {
+                    key: scoreData.notes[i].key,
+                    startTime: scoreData.notes[i].startTime,
+                    endTime: scoreData.notes[i].endTime,
+                    type: scoreData.notes[i].type,
+                }
+                filteredNotes.push(tempHoldNote);
+            }
+        }
+
+        let filteredTypingSections = [];
+        for (let i = 0; i < scoreData.typingSections.length; ++i)
+        {
+            let tempTypingSection = {
+                endTime: scoreData.typingSections[i].endTime,
+                startTime: scoreData.typingSections[i].startTime,
+                text: scoreData.typingSections[i].text,                
+                type: "typingsection",
+            }
+            filteredTypingSections.push(tempTypingSection);
+            
+        }
+        const notes = filteredNotes;
+        const typingSections = filteredTypingSections;
+        const KEYBOARDLAYOUT = [
+            "q", "w", "e", "r", "t", "y", "u", "i", "o", "p",
+            "a", "s", "d", "f", "g", "h", "j", "k", "l", ";",
+            "z", "x", "c", "v", "b", "n", "m", ",", ".", "/",
+        ];
+        const OBJECTTIMEDIFFERENCE = 500;
+        const REWARDTIMEDIFFERENCE = OBJECTTIMEDIFFERENCE / 2;
+        const getKeyboardRow = x => {
+            return (KEYBOARDLAYOUT.indexOf(x) - KEYBOARDLAYOUT.indexOf(x) % 10) / 10;
+        }
+        const getKeyboardColumn = x => {
+            return KEYBOARDLAYOUT.indexOf(x) % 10;
+        }
+        const getStartTime = x => {
+            if (x.type == "tap")
+                return x.time;
+            return x.startTime;
+        }
+        const getEndTime = x => {
+            if (x.type == "tap")
+                return x.time;
+            return x.endTime;
+        }
+        let minTime = Infinity;
+        let maxTime = 0;
+        for (let i = 0; i < typingSections.length; ++i) {
+            if (typingSections[i].startTime < minTime)
+                minTime = typingSections[i].startTime;
+            if (typingSections[i].endTime > maxTime)
+                maxTime = typingSections[i].endTime;
+        }
+        for (let i = 0; i < typingSections.length - 1; ++i) {
+            for (let j = i + 1; j < typingSections.length; ++j) {
+                if (getStartTime(typingSections[i]) > getStartTime(typingSections[j])) {
+                    let temp = {
+                        type: typingSections[i].type,
+                        startTime: typingSections[i].startTime,
+                        endTime: typingSections[i].endTime,
+                        text: typingSections[i].text,
+                    }
+                    typingSections[i].type = typingSections[j].type;
+                    typingSections[i].startTime = typingSections[j].startTime;
+                    typingSections[i].endTime = typingSections[j].endTime;
+                    typingSections[i].text = typingSections[j].text;
+                    
+                    typingSections[j].type = temp.type;
+                    typingSections[j].startTime = temp.startTime;
+                    typingSections[j].endTime = temp.endTime;
+                    typingSections[j].text = temp.text;
+                }
+            }
+        }
+        for (let i = 0; i < notes.length; ++i) {
+            if (getStartTime(notes[i]) < minTime)
+                minTime = getStartTime(notes[i]);
+            if (getEndTime(notes[i]) > maxTime)
+                maxTime = getEndTime(notes[i]);
+        }
+
+        
+        let convertedNoteObjects = [];
+        for (let i = 0; i < notes.length; ++i)
+        {
+            if (notes[i].type == "tap")
+            {
+                tempTap = {
+                    type: "tap",
+                    startTime: getStartTime(notes[i]),
+                    endTime: getEndTime(notes[i]),
+                    keyPosition:
+                    {
+                        row: getKeyboardRow(notes[i].key),
+                        column: getKeyboardColumn(notes[i].key),
+                    }
+                }
+                convertedNoteObjects.push(tempTap);
+            }
+            else if(notes[i].type == "hold")
+            {
+                tempHoldStart = {
+                    type: "hold",
+                    startTime: getStartTime(notes[i]),
+                    endTime: getStartTime(notes[i]),
+                    keyPosition:
+                    {
+                        row: getKeyboardRow(notes[i].key),
+                        column: getKeyboardColumn(notes[i].key),
+                    }
+                }
+                convertedNoteObjects.push(tempHoldStart);
+
+                tempHoldBody = {
+                    type: "anchor",
+                    startTime: getStartTime(notes[i]),
+                    endTime: getEndTime(notes[i]),
+                    keyPosition:
+                    {
+                        row: getKeyboardRow(notes[i].key),
+                        column: getKeyboardColumn(notes[i].key),
+                    }
+                }
+                convertedNoteObjects.push(tempHoldBody);
+
+                tempRelease = {
+                    type: "release",
+                    startTime: getEndTime(notes[i]),
+                    endTime: getEndTime(notes[i]),
+                    keyPosition:
+                    {
+                        row: getKeyboardRow(notes[i].key),
+                        column: getKeyboardColumn(notes[i].key),
+                    }
+                }
+                convertedNoteObjects.push(tempRelease);
+            }
+        }
+
+        for (let i = 0; i < convertedNoteObjects.length - 1; ++i) {
+            for (let j = i + 1; j < convertedNoteObjects.length; ++j) {
+                if (convertedNoteObjects[i].startTime > convertedNoteObjects[j].startTime 
+                    || (convertedNoteObjects[i].startTime == convertedNoteObjects[j].startTime 
+                    && convertedNoteObjects[i].type == "anchor")) {
+                    let temp = {
+                        type: convertedNoteObjects[i].type,
+                        startTime: convertedNoteObjects[i].startTime,
+                        endTime: convertedNoteObjects[i].endTime,
+                        keyPosition:
+                        {
+                            row: convertedNoteObjects[i].keyPosition.row,
+                            column: convertedNoteObjects[i].keyPosition.column,
+                        }
+                    };
+                    convertedNoteObjects[i].type = convertedNoteObjects[j].type
+                    convertedNoteObjects[i].startTime = convertedNoteObjects[j].startTime
+                    convertedNoteObjects[i].endTime = convertedNoteObjects[j].endTime
+                    convertedNoteObjects[i].keyPosition.row = convertedNoteObjects[j].keyPosition.row
+                    convertedNoteObjects[i].keyPosition.column = convertedNoteObjects[j].keyPosition.column
+                    
+                    convertedNoteObjects[j].type = temp.type
+                    convertedNoteObjects[j].startTime = temp.startTime
+                    convertedNoteObjects[j].endTime = temp.endTime
+                    convertedNoteObjects[j].keyPosition.row = temp.keyPosition.row
+                    convertedNoteObjects[j].keyPosition.column = temp.keyPosition.column
+                }
+            }
+        }
+
+        let mergedNoteObjects = [];
+        let merger = 0;
+        console.log(convertedNoteObjects);
+        for (let convertedIndexer = 1; convertedIndexer <convertedNoteObjects.length; ++convertedIndexer)
+        {
+            if (convertedNoteObjects[convertedIndexer].type == "anchor")
+            {    
+                if (convertedIndexer - merger > 1)
+                {
+                    let tempMergedNoteObject = {
+                        type: "",
+                        keyPositions: [],
+                        keyTypes: [],
+                        startTime: convertedNoteObjects[merger].startTime,
+                        endTime: convertedNoteObjects[merger].endTime,
+                    }           
+                    for (let mergeIndexer = merger; mergeIndexer < convertedIndexer; ++mergeIndexer)
+                    {
+                        if (tempMergedNoteObject.type == "")
+                        {
+                            tempMergedNoteObject.type = convertedNoteObjects[mergeIndexer].type + "chord";
+                        }
+                        else if (!tempMergedNoteObject.type.includes(convertedNoteObjects[mergeIndexer].type))
+                        {
+                            tempMergedNoteObject.type = "mixedchord";
+                        }
+                        let tempKeyPosition = 
+                        {
+                            row: convertedNoteObjects[mergeIndexer].keyPosition.row,
+                            column: convertedNoteObjects[mergeIndexer].keyPosition.column,
+                        }
+                        tempMergedNoteObject.keyPositions.push(tempKeyPosition);
+                        tempMergedNoteObject.keyTypes.push(convertedNoteObjects[mergeIndexer].type);
+                    }
+                    mergedNoteObjects.push(tempMergedNoteObject);
+                } 
+                else
+                {
+                    mergedNoteObjects.push(convertedNoteObjects[merger]);
+                }
+                mergedNoteObjects.push(convertedNoteObjects[convertedIndexer]);
+                merger = convertedIndexer+1;
+                convertedIndexer+=1;
+                continue;
+            }
+            if (convertedNoteObjects[merger].startTime != convertedNoteObjects[convertedIndexer].startTime)
+            {  
+                if (convertedIndexer - merger > 1)
+                {
+                    let tempMergedNoteObject = {
+                        type: "",
+                        keyPositions: [],
+                        keyTypes: [],
+                        startTime: convertedNoteObjects[merger].startTime,
+                        endTime: convertedNoteObjects[merger].endTime,
+                    }           
+                    for (let mergeIndexer = merger; mergeIndexer < convertedIndexer; ++mergeIndexer)
+                    {
+                        if (tempMergedNoteObject.type == "")
+                        {
+                            tempMergedNoteObject.type = convertedNoteObjects[mergeIndexer].type + "chord";
+                        }
+                        else if (!tempMergedNoteObject.type.includes(convertedNoteObjects[mergeIndexer].type))
+                        {
+                            tempMergedNoteObject.type = "mixedchord";
+                        }
+                        let tempKeyPosition = 
+                        {
+                            row: convertedNoteObjects[mergeIndexer].keyPosition.row,
+                            column: convertedNoteObjects[mergeIndexer].keyPosition.column,
+                        }
+                        tempMergedNoteObject.keyPositions.push(tempKeyPosition);
+                        tempMergedNoteObject.keyTypes.push(convertedNoteObjects[mergeIndexer].type);
+                    }
+                    mergedNoteObjects.push(tempMergedNoteObject);
+                } 
+                else
+                {
+                    mergedNoteObjects.push(convertedNoteObjects[merger]);
+                }
+                merger = convertedIndexer;
+            }
+        }
+        if (merger < convertedNoteObjects.length)
+        {
+            if (convertedNoteObjects.length - merger > 1)
+            {
+                let tempMergedNoteObject = {
+                    type: "",
+                    keyPositions: [],
+                    keyTypes: [],
+                    startTime: convertedNoteObjects[merger].startTime,
+                    endTime: convertedNoteObjects[merger].endTime,
+                }           
+                for (let mergeIndexer = merger; mergeIndexer < convertedNoteObjects.length; ++mergeIndexer)
+                {
+                    if (tempMergedNoteObject.type == "")
+                    {
+                        tempMergedNoteObject.type = convertedNoteObjects[mergeIndexer].type + "chord";
+                    }
+                    else if (!tempMergedNoteObject.type.includes(convertedNoteObjects[mergeIndexer].type))
+                    {
+                        tempMergedNoteObject.type = "mixedchord";
+                    }
+                    let tempKeyPosition = 
+                    {
+                        row: convertedNoteObjects[mergeIndexer].keyPosition.row,
+                        column: convertedNoteObjects[mergeIndexer].keyPosition.column,
+                    }
+                    tempMergedNoteObject.keyPositions.push(tempKeyPosition);
+                    tempMergedNoteObject.keyTypes.push(convertedNoteObjects[mergeIndexer].type);
+                }
+                mergedNoteObjects.push(tempMergedNoteObject);
+            } 
+            else
+            {
+                mergedNoteObjects.push(convertedNoteObjects[merger]);
+            }
+        }
+        console.log(mergedNoteObjects);
+        const createDifficultyObjectFromTS = (x) => {
+            let selectedTypingSection = x;
+            let tempDifficultyObject = {
+                type: "typingsection",
+                startTime: selectedTypingSection.startTime,
+                endTime: selectedTypingSection.endTime,
+                textUniqueKeys: [],
+                textKeysPositions: [],
+            }
+            for (let textIndexer = 0; textIndexer < selectedTypingSection.text.length; ++textIndexer)
+            {   
+                let tempKeyPosition=
+                {
+                    row: getKeyboardRow(selectedTypingSection.text[textIndexer]),
+                    column: getKeyboardColumn(selectedTypingSection.text[textIndexer]),
+                }
+                if (!tempDifficultyObject.textUniqueKeys.includes(selectedTypingSection.text[textIndexer]))
+                {
+                    tempDifficultyObject.textUniqueKeys.push(selectedTypingSection.text[textIndexer]);
+                }
+
+                tempDifficultyObject.textKeysPositions.push(tempKeyPosition);
+            }
+            return tempDifficultyObject;
+        }
+
+        let noteWhileIndexer = 0;
+        let typingSectionWhileIndexer = 0;
+        let difficultyObjects = [];
+        let consoleList  = [];
+        while (noteWhileIndexer < mergedNoteObjects.length || typingSectionWhileIndexer < typingSections.length)
+        {
+            consoleList.push(noteWhileIndexer);
+            consoleList.push(typingSectionWhileIndexer);
+            if (typingSections.length > typingSectionWhileIndexer && mergedNoteObjects.length > noteWhileIndexer)
+            {
+
+                if (mergedNoteObjects[noteWhileIndexer].startTime < typingSections[typingSectionWhileIndexer].startTime)
+                {
+                    difficultyObjects.push(mergedNoteObjects[noteWhileIndexer]);
+                    noteWhileIndexer++;
+                }
+                else if (mergedNoteObjects[noteWhileIndexer].startTime > typingSections[typingSectionWhileIndexer].startTime)
+                {
+                    let selectedTypingSection = typingSections[typingSectionWhileIndexer];
+                    selectedTypingSection.type = "typingsection";
+                    difficultyObjects.push(createDifficultyObjectFromTS(selectedTypingSection));
+                    typingSectionWhileIndexer++;
+                }
+                else
+                {
+                    difficultyObjects.push(mergedNoteObjects[noteWhileIndexer]);
+                    let selectedTypingSection = typingSections[typingSectionWhileIndexer];
+                    selectedTypingSection.type = "typingsection";
+                    difficultyObjects.push(createDifficultyObjectFromTS(selectedTypingSection));
+                    typingSectionWhileIndexer++;
+                    noteWhileIndexer++;
+                }
+
+            }
+            else if (typingSections.length <= typingSectionWhileIndexer && notes.length > noteWhileIndexer)
+            {                
+                difficultyObjects.push(mergedNoteObjects[noteWhileIndexer]);
+                noteWhileIndexer++;
+            }
+            else if (typingSections.length > typingSectionWhileIndexer && notes.length <= noteWhileIndexer)
+            {
+                let selectedTypingSection = typingSections[typingSectionWhileIndexer];
+                selectedTypingSection.type = "typingsection";
+                difficultyObjects.push(createDifficultyObjectFromTS(selectedTypingSection));
+                typingSectionWhileIndexer++;
+            }
+            else if (typingSections.length == 0 && notes.length > noteWhileIndexer)
+            {                
+                difficultyObjects.push(mergedNoteObjects[noteWhileIndexer]);
+                noteWhileIndexer++;
+            }
+            else if (typingSections.length > typingSectionWhileIndexer && notes.length == 0)
+            {
+                let selectedTypingSection = typingSections[typingSectionWhileIndexer];
+                selectedTypingSection.type = "typingsection";
+                difficultyObjects.push(createDifficultyObjectFromTS(selectedTypingSection));
+                typingSectionWhileIndexer++;
+            }
+            else
+                break;
+        }
+        console.log(consoleList);
+        console.log(difficultyObjects);
+        const getDuration = (x) => {
+            return x.endTime - x.startTime;
+        }
+
+        return -1;
+    }*/
 };
