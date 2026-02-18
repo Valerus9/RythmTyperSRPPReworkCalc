@@ -649,7 +649,6 @@ starFormulas = {
 
         let mergedNoteObjects = [];
         let merger = 0;
-        console.log(convertedNoteObjects);
         for (let convertedIndexer = 1; convertedIndexer <convertedNoteObjects.length; ++convertedIndexer)
         {
             if (convertedNoteObjects[convertedIndexer].type == "anchor")
@@ -766,7 +765,6 @@ starFormulas = {
                 mergedNoteObjects.push(convertedNoteObjects[merger]);
             }
         }
-        console.log(mergedNoteObjects);
         const createDifficultyObjectFromTS = (x) => {
             let selectedTypingSection = x;
             let tempDifficultyObject = {
@@ -796,11 +794,8 @@ starFormulas = {
         let noteWhileIndexer = 0;
         let typingSectionWhileIndexer = 0;
         let difficultyObjects = [];
-        let consoleList  = [];
         while (noteWhileIndexer < mergedNoteObjects.length || typingSectionWhileIndexer < typingSections.length)
         {
-            consoleList.push(noteWhileIndexer);
-            consoleList.push(typingSectionWhileIndexer);
             if (typingSections.length > typingSectionWhileIndexer && mergedNoteObjects.length > noteWhileIndexer)
             {
 
@@ -854,12 +849,14 @@ starFormulas = {
             else
                 break;
         }
-        console.log(consoleList);
-        console.log(difficultyObjects);
         const getDuration = (x) => {
             return x.endTime - x.startTime;
         }
+        let difficultySum = 0;
+        for (let difficultyIndexer = 0; difficultyIndexer < difficultyObjects.length; ++difficultyIndexer)
+        {
 
-        return -1;
+        }
+        return difficultyObjects.length;
     }*/
 };

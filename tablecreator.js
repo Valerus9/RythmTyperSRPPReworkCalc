@@ -112,7 +112,6 @@ function CreateTable(tableName, tableid, tableColumnNames, tableColumnIds, table
     
 
     let searchTermColumn = 0;
-    console.log(tableName);
     if (tableColumnTypes.includes("search"))
     {
         searchTermColumn = tableColumnTypes.indexOf("search");
