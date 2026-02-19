@@ -358,7 +358,7 @@ ppstarFormulaBuildUps = {
             let selectedStartTime = getStartTime(notes[selectedNoteIndex]);
             if (selectedStartTime > previousEndTime)
                 timeDurationBonus = Math.max(OBJECTTIMEDIFFERENCE / (selectedStartTime - previousEndTime + REWARDTIMEDIFFERENCE),1.3);
-            let heldNoteBonus = Math.pow(heldNoteCounts[selectedNoteIndex] + 1, 0.80/Math.pow(chordBuffForNote[selectedNoteIndex],2));
+            let heldNoteBonus = Math.pow(heldNoteCounts[selectedNoteIndex] + 1, 0.52/Math.pow(chordBuffForNote[selectedNoteIndex],2));
             //let heldNoteBonus = Math.pow(heldNoteCounts[selectedNoteIndex] + 1, 0.8);
             timeDurationBonus = Math.max(0.9, timeDurationBonus);
             if(timeDurationBonus> 2)
