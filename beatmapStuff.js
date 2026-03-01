@@ -73,6 +73,9 @@ async function CreateMapData(files) {
     for (const file of files) {
 
         const zip = await JSZip.loadAsync(file);
+        let beatmapId = "0";
+        if (String(file.name).includes('-'))
+          beatmapId = file.name.split('-')[0];
 
         for (const [filename, zipEntry] of Object.entries(zip.files)) {
             if (!zipEntry.dir) {
@@ -88,6 +91,7 @@ async function CreateMapData(files) {
                         break;
                     }
                 }
+                data.mapsetId = beatmapId;
                 if (hasKey) {
                     localDifficultyList.push(data);
                 }
@@ -110,6 +114,7 @@ async function CreateMapData(files) {
     let localTypingSectionCounts = [];
     let localODs = [];
     
+    let wrongODSum = 0;
     for (const difficulty of localDifficultyList) {
         localDifficultyData.push(difficulty);
         let mapSongName = "";
@@ -150,10 +155,33 @@ async function CreateMapData(files) {
 
         localNoteCounts.push(difficulty.notes.length);
         localTypingSectionCounts.push(difficulty.typingSections.length);
-        localODs.push(difficulty.overallDifficulty);
-        
-        
+        if (RankedBeatmapIds.includes(difficulty.mapsetId))
+        {
+          let rankedIndex = RankedBeatmapIds.indexOf(difficulty.mapsetId);
+          while(RankedDifficultyNames[rankedIndex] != difficulty.name)
+          {
+            rankedIndex = RankedBeatmapIds.indexOf(difficulty.mapsetId, rankedIndex + 1);
+          }
+          let diffRankedOd = RankedODs[rankedIndex];
+          if (difficulty.overallDifficulty != diffRankedOd)
+          {
+            console.log(mapSongName);
+            console.log(difficulty.name);
+            console.log("OD was overwritten with ranked data ("+difficulty.overallDifficulty+" -> "+diffRankedOd+")");
+            wrongODSum++;
+            localODs.push(diffRankedOd);
+          }
+          else
+          {
+            localODs.push(difficulty.overallDifficulty);
+          }
+        }
+        else
+        {
+          localODs.push(difficulty.overallDifficulty);
+        }
     }
+    console.log("Wrong OD count: "+wrongODSum);
     return [localBeatmapData, localDifficultyData, localLoadedBeatmapIds, localLoadedDifficultyIds, localSongNames, localDifficultyNames, localBPMs, localDrainTimes, localODs, localNoteCounts, localTypingSectionCounts];
 }
 

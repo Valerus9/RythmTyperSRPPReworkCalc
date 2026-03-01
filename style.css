@@ -108,3 +108,8 @@ input
     margin-top: 0.2em;
     margin-bottom: 0.2em;
 }
+#topbar
+{
+    display: flex;
+    flex-direction: row;
+}

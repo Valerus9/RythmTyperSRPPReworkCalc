@@ -114,10 +114,12 @@ function LoadDiffGraph() {
     +"<div class=\"neededpadding\" style=\"display:flex; flex-direction:row;\"><input id=\"scalecolumnwidth\" type=\"checkbox\" checked> Scale column widths</div>"
     +"<div class=\"neededpadding\" style=\"display:flex; flex-direction:row;\"><input id=\"showdistance\" type=\"checkbox\"> Show distance</div>"
     +"<div class=\"neededpadding\" style=\"display:flex; flex-direction:row;\"><input id=\"scalegraphvalues\" type=\"checkbox\" checked> Scale values</div>"
-    +"<div id=\"beatmapdifdata\" class\"neededpadding\"></div>"
+    +"<div id=\"beatmapdifdata\" class=\"neededpadding\"></div>"
+    +"<div id=\"beatmaptimehoverdata\" class=\"neededpadding\"></div>"
     +"<div id=\"graphlabels\" style=\"display:flex; flex-direction:row; flex-wrap:wrap;\"></div>"
     +"</div>"
     +"</div>"
+    +"<div class=\"neededpadding\">Each vertical line is one tap/hold note. Typing sections aren't shown.</div>"
     +"<div id=\"linegraph\" style=\"display:flex; flex-direction:row; overflow-x:auto; width:100%;\"></div>"
     let ppsrbuildupselect = document.getElementById("ppsrbuildupselect");
     let ppsrbuildupselectText = "<option value=\"\" disabled selected>Select a pp rework</option>\n";
@@ -257,6 +259,7 @@ function Createbuilduptable()
     document.getElementById("beatmapdifdata").innerHTML = songNames[builduptableSelectedDif] + "<br>"+ difficultyNames[builduptableSelectedDif] 
     + "<br>OD: " +Math.round(scaleDifficultySpeed(difficultyList[builduptableSelectedDif],buildupTimeMultiplier).overallDifficulty * 100) / 100;
     previousGraphRandomNumber = 0;
+    document.getElementById("beatmaptimehoverdata").innerHTML = "";
     let localbuildupvalues=ppstarFormulaBuildUps[ppstarFormulaBuildUpKeys[buildupSelectedBuildup]](scaleDifficultySpeed(difficultyList[builduptableSelectedDif],buildupTimeMultiplier));
     let localNoteStartTimes = localbuildupvalues[0];
     let localNoteBaseValues = localbuildupvalues[1];
@@ -274,6 +277,7 @@ function Createbuilduptable()
     }
     let localNoteBuildUps = [];
     let localNoteBaseValueMax = 0;
+    let localNoteStartTimeMax = 0;
     for (let i = 0; i < localNoteBaseValues.length; ++i)
     {
         let localSingleNoteMultiplierValues = [];
@@ -290,6 +294,8 @@ function Createbuilduptable()
         }
         if (sum > localNoteBaseValueMax)
             localNoteBaseValueMax = sum;
+        if (localNoteStartTimes[i] > localNoteStartTimeMax)
+          localNoteStartTimeMax = localNoteStartTimes[i];
     }
 
     let localTypingSectionBaseValues = localbuildupvalues[5];
@@ -445,8 +451,10 @@ function Createbuilduptable()
                     document.getElementById(localNoteMultiplierNames[j-1]+"label").innerHTML = "<div style=\"display:flex; flex-direction:column;\"><div>"+localNoteMultiplierNames[j-1]+"</div><div style=\"color:rgb(235,40,40);\">"+(Math.round(-localNoteBuildUps[i][j] * 100)/100)+"</div><div>"+(Math.round(localNoteMultiplierValues[j-1][i] * 100)/100)+"</div></div>";
                 }
             }
+            let localTimePercentage = Math.round(localNoteStartTimes[i] * 100 / localNoteStartTimeMax*100)/100;
+            document.getElementById("beatmaptimehoverdata").innerHTML = ConvertTimeToText(localNoteStartTimes[i])+" / "+ConvertTimeToText(localNoteStartTimeMax) + " ("+localTimePercentage+"%)<br>"+localNoteStartTimes[i]+"ms / "+localNoteStartTimeMax+"ms";
         });
-        document.getElementById("buildupcolumn"+i).addEventListener("mouseleave", async (event) => {
+        /*document.getElementById("buildupcolumn"+i).addEventListener("mouseleave", async (event) => {
             for (let j = 0; j < localNoteBuildUps[i].length; ++j)
             {
                 if (!buildupShowMultipliers[j])
@@ -461,78 +469,28 @@ function Createbuilduptable()
                 document.getElementById(localNoteMultiplierNames[j-1]+"label").innerHTML = "<div>"+localNoteMultiplierNames[j-1]+"<div style=\"color:rgba(0,0,0,0);\">T</div><div style=\"color:rgba(0,0,0,0);\">T</div>";
                 
             }
-        });
-        /*let isThereLessThanOneToShow = false;
-        for (let j = 0; j < localNoteBuildUps[i].length; ++j)
-        {
-            if (!buildupShowMultipliers[j])
-                continue;
-            if (localNoteBuildUps[j] == 0)
-                continue;
-            if (j != 0 && localNoteMultiplierValues[j-1][i] < 1)
-            {
-                isThereLessThanOneToShow = true;
-                break;
-            }                
-        }
-        if (buildupShowLessThanOne && isThereLessThanOneToShow)
-            graphText += "<div style=\"display:flex; flex-wrap:nowrap; flex-direction:column-reverse; border: "+localNegateBorderWidths+"px solid rgb(230,60,60);\">"
-        for (let j = 0; j < localNoteBuildUps[i].length; ++j)
-        {
-            let localColor = buildupNoteMultiplierColors[j];
-            let localColorString = localColor[0]+","+localColor[1]+","+localColor[2];
-            if (!buildupShowMultipliers[j])
-                continue;
-            if (localNoteBuildUps[j] == 0)
-                continue;
-            let localmarginleft = 0;
-            let localNoteWidth = localColumnWidths - 2* localNegateBorderWidths;
-            if (!buildupShowLessThanOne)
-            {
-                localmarginleft = localNegateBorderWidths;
-            }
-            if (j != 0 && localNoteMultiplierValues[j-1][i] < 1)
-                graphText += "<div style=\"background-color:rgb("+localColorString+"); margin-left:"+localmarginleft+"px; width:"+localNoteWidth+"px; height:"+Math.round(localMaxHeight * (localNoteBuildUps[i][j]/localNoteBaseValueMax))+"px;\"></div>"
-        }*/
+        });*/
     }
 }
 
+function ConvertTimeToText(timeInput)
+{
+  let localMilliseconds = timeInput % 1000;
+  if (localMilliseconds < 10)
+  {
+    localMilliseconds = "00"+localMilliseconds;
+  }
+  else
+  {
+    if (localMilliseconds < 100)
+    {
+      localMilliseconds = "0"+localMilliseconds;
+    }
+  }
+  let localSeconds = ((timeInput - localMilliseconds) / 1000) % 60;
+  if (localSeconds < 10)
+    localSeconds = "0" + localSeconds;
+  let localMinutes = ((((timeInput - localMilliseconds) / 1000) - localSeconds) / 60 ) % 60;
 
-/*let hashValue = 2;
-function HashFunction()
-{
-    hashValue *= 6408713;
-    hashValue ^= 5330797;
-    hashValue *= 4574741;
-    hashValue ^= 7192349;
-    hashValue = Math.abs(hashValue);
-    hashValue += 2663461;
-    return (hashValue % 8486771) / 8486771;
+  return localMinutes + ":" +localSeconds + "."+localMilliseconds;
 }
-for (let i = 0; i < 100;  ++i)
-{
-    HashFunction();
-}
-
-function GenerateColor()
-{
-    let g = 0;
-    let r = 0;
-    let b = 0;
-    let randomNumber = Math.floor(Math.random() * 1000);
-    if (randomNumber % 3 == 0)
-        g = Math.floor(HashFunction() * 70) + 185;
-    else
-        g = Math.floor(HashFunction() * 80) + 100;
-    if (randomNumber % 3 == 1)
-        r = Math.floor(HashFunction() * 70) + 185;
-    else
-        r = Math.floor(HashFunction() * 80) + 100;
-    if (randomNumber % 3 == 2)
-        b = Math.floor(HashFunction() * 70) + 185;
-    else
-        b = Math.floor(HashFunction() * 80) + 100;
-   
-    
-    return [r, g, b];
-}*/
