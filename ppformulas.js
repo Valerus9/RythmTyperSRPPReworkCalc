@@ -1,116 +1,5 @@
-ppFormulas = {
+ppFormulas = {  
   originalCalculate(scoreData) {
-    let convertedNotes = [];
-    for (const note of scoreData.notes) {
-      if (note.type == "hold") {
-        let convertedNote =
-        {
-          startTime: note.startTime / 1000,
-          endTime: note.endTime / 1000,
-          type: note.type,
-          key: note.key,
-        };
-        convertedNotes.push(convertedNote);
-      }
-      if (note.type == "tap") {
-        let convertedNote =
-        {
-          time: note.time / 1000,
-          startTime: note.time / 1000,
-          type: note.type,
-          key: note.key,
-        };
-        convertedNotes.push(convertedNote);
-      }
-
-    }
-
-    const notes = convertedNotes;
-    const od = scoreData.overallDifficulty;
-    const acc = scoreData.accuracy / 100;
-
-    const MIN_DT = 0.04;
-    const ALPHA = 0.85;
-    const HALF_LIFE = 0.25;
-    const TAIL_FRAC = 0.10;
-    const PP_PER_UNIT = 10;
-    const OD_SLOPE = 0.08;
-    const MAX_LEN_NOTES = 500;
-    const MAX_LEN_BONUS = 1.25;
-
-    const chordBonus = k =>
-      1 + 1.6 * (1 - Math.exp(-0.6 * Math.max(0, k - 1)));
-
-    const reusePenalty = d =>
-      0.55 * Math.exp(-0.7 * (d - 1));
-
-    /* build events */
-
-    const byTime = {};
-    for (const n of notes) {
-      (byTime[n.startTime] ??= []).push(n.key);
-    }
-
-    const times = Object.keys(byTime).map(Number).sort((a, b) => a - b);
-
-    const events = times.map(t => {
-      const keys = [...new Set(byTime[t])];
-      return { t, keys };
-    });
-
-    /* strain, EMA */
-
-    let ema = 0;
-    let lastT = times[0];
-    const emaVals = [];
-    const history = [];
-
-    for (const e of events) {
-      const dt = Math.max(MIN_DT, e.t - lastT);
-      let strain = Math.pow(1 / dt, ALPHA);
-
-      let reuse = 0;
-      for (let d = 1; d <= history.length; d++) {
-        if (e.keys.some(k => history[history.length - d].has(k))) {
-          reuse += reusePenalty(d);
-        }
-      }
-
-      strain *= Math.max(0.2, 1 - reuse);
-      strain *= chordBonus(e.keys.length);
-
-      const decay = Math.pow(0.5, dt / HALF_LIFE);
-      ema = ema * decay + strain * (1 - decay);
-      emaVals.push(ema);
-
-      history.push(new Set(e.keys));
-      if (history.length > 6) history.shift();
-
-      lastT = e.t;
-    }
-
-    /* aggregate difficulty */
-
-    emaVals.sort((a, b) => b - a);
-    const take = Math.max(1, Math.floor(emaVals.length * TAIL_FRAC));
-    const core =
-      emaVals.slice(0, take).reduce((s, v) => s + v, 0) / take;
-
-    /* final scaling */
-
-    const x = Math.min(notes.length, MAX_LEN_NOTES);
-    const lenBonus =
-      1 +
-      (MAX_LEN_BONUS - 1) *
-      Math.log(1 + x) /
-      Math.log(1 + MAX_LEN_NOTES);
-
-    const odBonus = 1 + OD_SLOPE * (od - 5);
-    const accBonus = Math.pow(acc, 5);
-
-    return core * lenBonus * PP_PER_UNIT * odBonus * accBonus;
-  },
-  valerusRework(scoreData) {
     const acc = scoreData.accuracy / 100;
     let filteredNotes = [];
     for (let i = 0; i < scoreData.notes.length; ++i) {
@@ -446,5 +335,590 @@ ppFormulas = {
     //  difficultyDensity =160*Math.pow(difficultyDensity/160,0.6);
     //}
     return difficultyDensity * Math.pow(acc, 5);
-  }
+  },
+  valerusReworkV2(scoreData)
+    {
+        const acc = scoreData.accuracy / 100;
+        let filteredNotes = [];
+        for (let i = 0; i < scoreData.notes.length; ++i)
+        {
+            if (scoreData.notes[i].type == "tap")
+            {
+                let tempNote = {
+                    key: scoreData.notes[i].key,
+                    time: scoreData.notes[i].time,
+                    type: scoreData.notes[i].type,
+                }
+                filteredNotes.push(tempNote);
+            }
+            else if(scoreData.notes[i].type == "hold")
+            {
+
+                let tempHoldNote = {
+                    key: scoreData.notes[i].key,
+                    startTime: scoreData.notes[i].startTime,
+                    endTime: scoreData.notes[i].endTime,
+                    type: scoreData.notes[i].type,
+                }
+                filteredNotes.push(tempHoldNote);
+            }
+        }
+
+        let filteredTypingSections = [];
+        for (let i = 0; i < scoreData.typingSections.length; ++i)
+        {
+            let tempTypingSection = {
+                endTime: scoreData.typingSections[i].endTime,
+                startTime: scoreData.typingSections[i].startTime,
+                text: scoreData.typingSections[i].text,                
+                type: "typingsection",
+            }
+            filteredTypingSections.push(tempTypingSection);
+            
+        }
+        const notes = filteredNotes;
+        const typingSections = filteredTypingSections;
+        const KEYBOARDLAYOUT = [
+            "q", "w", "e", "r", "t", "y", "u", "i", "o", "p",
+            "a", "s", "d", "f", "g", "h", "j", "k", "l", ";",
+            "z", "x", "c", "v", "b", "n", "m", ",", ".", "/",
+        ];
+        const getKeyboardRow = x => {
+            return (KEYBOARDLAYOUT.indexOf(x) - KEYBOARDLAYOUT.indexOf(x) % 10) / 10;
+        }
+        const getKeyboardColumn = x => {
+            return KEYBOARDLAYOUT.indexOf(x) % 10;
+        }
+        const getStartTime = x => {
+            if (x.type == "tap")
+                return x.time;
+            return x.startTime;
+        }
+        const getEndTime = x => {
+            if (x.type == "tap")
+                return x.time;
+            return x.endTime;
+        }
+        let minTime = Infinity;
+        let maxTime = 0;
+        for (let i = 0; i < typingSections.length; ++i) {
+            if (typingSections[i].startTime < minTime)
+                minTime = typingSections[i].startTime;
+            if (typingSections[i].endTime > maxTime)
+                maxTime = typingSections[i].endTime;
+        }
+        for (let i = 0; i < typingSections.length - 1; ++i) {
+            for (let j = i + 1; j < typingSections.length; ++j) {
+                if (getStartTime(typingSections[i]) > getStartTime(typingSections[j])) {
+                    let temp = {
+                        type: typingSections[i].type,
+                        startTime: typingSections[i].startTime,
+                        endTime: typingSections[i].endTime,
+                        text: typingSections[i].text,
+                    }
+                    typingSections[i].type = typingSections[j].type;
+                    typingSections[i].startTime = typingSections[j].startTime;
+                    typingSections[i].endTime = typingSections[j].endTime;
+                    typingSections[i].text = typingSections[j].text;
+                    
+                    typingSections[j].type = temp.type;
+                    typingSections[j].startTime = temp.startTime;
+                    typingSections[j].endTime = temp.endTime;
+                    typingSections[j].text = temp.text;
+                }
+            }
+        }
+        for (let i = 0; i < notes.length; ++i) {
+            if (getStartTime(notes[i]) < minTime)
+                minTime = getStartTime(notes[i]);
+            if (getEndTime(notes[i]) > maxTime)
+                maxTime = getEndTime(notes[i]);
+        }
+
+        
+        let convertedNoteObjects = [];
+        for (let i = 0; i < notes.length; ++i)
+        {
+            if (notes[i].type == "tap")
+            {
+                tempTap = {
+                    type: "tap",
+                    startTime: getStartTime(notes[i]),
+                    endTime: getEndTime(notes[i]),
+                    keyPosition:
+                    {
+                        row: getKeyboardRow(notes[i].key),
+                        column: getKeyboardColumn(notes[i].key),
+                    }
+                }
+                convertedNoteObjects.push(tempTap);
+            }
+            else if(notes[i].type == "hold")
+            {
+                tempHoldStart = {
+                    type: "hold",
+                    startTime: getStartTime(notes[i]),
+                    endTime: getStartTime(notes[i]),
+                    keyPosition:
+                    {
+                        row: getKeyboardRow(notes[i].key),
+                        column: getKeyboardColumn(notes[i].key),
+                    }
+                }
+                convertedNoteObjects.push(tempHoldStart);
+
+                tempHoldBody = {
+                    type: "anchor",
+                    startTime: getStartTime(notes[i]),
+                    endTime: getEndTime(notes[i]),
+                    keyPosition:
+                    {
+                        row: getKeyboardRow(notes[i].key),
+                        column: getKeyboardColumn(notes[i].key),
+                    }
+                }
+                convertedNoteObjects.push(tempHoldBody);
+
+                tempRelease = {
+                    type: "release",
+                    startTime: getEndTime(notes[i]),
+                    endTime: getEndTime(notes[i]),
+                    keyPosition:
+                    {
+                        row: getKeyboardRow(notes[i].key),
+                        column: getKeyboardColumn(notes[i].key),
+                    }
+                }
+                convertedNoteObjects.push(tempRelease);
+            }
+        }
+
+        for (let i = 0; i < convertedNoteObjects.length - 1; ++i) {
+            for (let j = i + 1; j < convertedNoteObjects.length; ++j) {
+                if (convertedNoteObjects[i].startTime > convertedNoteObjects[j].startTime 
+                    || (convertedNoteObjects[i].startTime == convertedNoteObjects[j].startTime 
+                    && convertedNoteObjects[i].type == "anchor")) {
+                    let temp = {
+                        type: convertedNoteObjects[i].type,
+                        startTime: convertedNoteObjects[i].startTime,
+                        endTime: convertedNoteObjects[i].endTime,
+                        keyPosition:
+                        {
+                            row: convertedNoteObjects[i].keyPosition.row,
+                            column: convertedNoteObjects[i].keyPosition.column,
+                        }
+                    };
+                    convertedNoteObjects[i].type = convertedNoteObjects[j].type
+                    convertedNoteObjects[i].startTime = convertedNoteObjects[j].startTime
+                    convertedNoteObjects[i].endTime = convertedNoteObjects[j].endTime
+                    convertedNoteObjects[i].keyPosition.row = convertedNoteObjects[j].keyPosition.row
+                    convertedNoteObjects[i].keyPosition.column = convertedNoteObjects[j].keyPosition.column
+                    
+                    convertedNoteObjects[j].type = temp.type
+                    convertedNoteObjects[j].startTime = temp.startTime
+                    convertedNoteObjects[j].endTime = temp.endTime
+                    convertedNoteObjects[j].keyPosition.row = temp.keyPosition.row
+                    convertedNoteObjects[j].keyPosition.column = temp.keyPosition.column
+                }
+            }
+        }
+
+        let mergedNoteObjects = [];
+        let merger = 0;
+        for (let convertedIndexer = 1; convertedIndexer <convertedNoteObjects.length; ++convertedIndexer)
+        {
+            if (convertedNoteObjects[convertedIndexer].type == "anchor")
+            {    
+                if (convertedIndexer - merger > 1)
+                {
+                    let tempMergedNoteObject = {
+                        type: "",
+                        keyPositions: [],
+                        keyTypes: [],
+                        startTime: convertedNoteObjects[merger].startTime,
+                        endTime: convertedNoteObjects[merger].endTime,
+                    }           
+                    for (let mergeIndexer = merger; mergeIndexer < convertedIndexer; ++mergeIndexer)
+                    {
+                        if (tempMergedNoteObject.type == "")
+                        {
+                            tempMergedNoteObject.type = convertedNoteObjects[mergeIndexer].type + "chord";
+                        }
+                        else if (!tempMergedNoteObject.type.includes(convertedNoteObjects[mergeIndexer].type))
+                        {
+                            tempMergedNoteObject.type = "mixedchord";
+                        }
+                        let tempKeyPosition = 
+                        {
+                            row: convertedNoteObjects[mergeIndexer].keyPosition.row,
+                            column: convertedNoteObjects[mergeIndexer].keyPosition.column,
+                        }
+                        tempMergedNoteObject.keyPositions.push(tempKeyPosition);
+                        tempMergedNoteObject.keyTypes.push(convertedNoteObjects[mergeIndexer].type);
+                    }
+                    mergedNoteObjects.push(tempMergedNoteObject);
+                } 
+                else
+                {
+                    mergedNoteObjects.push(convertedNoteObjects[merger]);
+                }
+                mergedNoteObjects.push(convertedNoteObjects[convertedIndexer]);
+                merger = convertedIndexer+1;
+                convertedIndexer+=1;
+                continue;
+            }
+            if (convertedNoteObjects[merger].startTime != convertedNoteObjects[convertedIndexer].startTime)
+            {  
+                if (convertedIndexer - merger > 1)
+                {
+                    let tempMergedNoteObject = {
+                        type: "",
+                        keyPositions: [],
+                        keyTypes: [],
+                        startTime: convertedNoteObjects[merger].startTime,
+                        endTime: convertedNoteObjects[merger].endTime,
+                    }           
+                    for (let mergeIndexer = merger; mergeIndexer < convertedIndexer; ++mergeIndexer)
+                    {
+                        if (tempMergedNoteObject.type == "")
+                        {
+                            tempMergedNoteObject.type = convertedNoteObjects[mergeIndexer].type + "chord";
+                        }
+                        else if (!tempMergedNoteObject.type.includes(convertedNoteObjects[mergeIndexer].type))
+                        {
+                            tempMergedNoteObject.type = "mixedchord";
+                        }
+                        let tempKeyPosition = 
+                        {
+                            row: convertedNoteObjects[mergeIndexer].keyPosition.row,
+                            column: convertedNoteObjects[mergeIndexer].keyPosition.column,
+                        }
+                        tempMergedNoteObject.keyPositions.push(tempKeyPosition);
+                        tempMergedNoteObject.keyTypes.push(convertedNoteObjects[mergeIndexer].type);
+                    }
+                    mergedNoteObjects.push(tempMergedNoteObject);
+                } 
+                else
+                {
+                    mergedNoteObjects.push(convertedNoteObjects[merger]);
+                }
+                merger = convertedIndexer;
+            }
+        }
+        if (merger < convertedNoteObjects.length)
+        {
+            if (convertedNoteObjects.length - merger > 1)
+            {
+                let tempMergedNoteObject = {
+                    type: "",
+                    keyPositions: [],
+                    keyTypes: [],
+                    startTime: convertedNoteObjects[merger].startTime,
+                    endTime: convertedNoteObjects[merger].endTime,
+                }           
+                for (let mergeIndexer = merger; mergeIndexer < convertedNoteObjects.length; ++mergeIndexer)
+                {
+                    if (tempMergedNoteObject.type == "")
+                    {
+                        tempMergedNoteObject.type = convertedNoteObjects[mergeIndexer].type + "chord";
+                    }
+                    else if (!tempMergedNoteObject.type.includes(convertedNoteObjects[mergeIndexer].type))
+                    {
+                        tempMergedNoteObject.type = "mixedchord";
+                    }
+                    let tempKeyPosition = 
+                    {
+                        row: convertedNoteObjects[mergeIndexer].keyPosition.row,
+                        column: convertedNoteObjects[mergeIndexer].keyPosition.column,
+                    }
+                    tempMergedNoteObject.keyPositions.push(tempKeyPosition);
+                    tempMergedNoteObject.keyTypes.push(convertedNoteObjects[mergeIndexer].type);
+                }
+                mergedNoteObjects.push(tempMergedNoteObject);
+            } 
+            else
+            {
+                mergedNoteObjects.push(convertedNoteObjects[merger]);
+            }
+        }
+        const createDifficultyObjectFromTS = (x) => {
+            let selectedTypingSection = x;
+            let tempDifficultyObject = {
+                type: "typingsection",
+                startTime: selectedTypingSection.startTime,
+                endTime: selectedTypingSection.endTime,
+                textUniqueKeys: [],
+                textKeysPositions: [],
+            }
+            for (let textIndexer = 0; textIndexer < selectedTypingSection.text.length; ++textIndexer)
+            {   
+                let tempKeyPosition=
+                {
+                    row: getKeyboardRow(selectedTypingSection.text[textIndexer]),
+                    column: getKeyboardColumn(selectedTypingSection.text[textIndexer]),
+                }
+                if (!tempDifficultyObject.textUniqueKeys.includes(selectedTypingSection.text[textIndexer]))
+                {
+                    tempDifficultyObject.textUniqueKeys.push(selectedTypingSection.text[textIndexer]);
+                }
+
+                tempDifficultyObject.textKeysPositions.push(tempKeyPosition);
+            }
+            return tempDifficultyObject;
+        }
+
+        let noteWhileIndexer = 0;
+        let typingSectionWhileIndexer = 0;
+        let difficultyObjects = [];
+        while (noteWhileIndexer < mergedNoteObjects.length || typingSectionWhileIndexer < typingSections.length)
+        {
+            if (typingSections.length > typingSectionWhileIndexer && mergedNoteObjects.length > noteWhileIndexer)
+            {
+
+                if (mergedNoteObjects[noteWhileIndexer].startTime < typingSections[typingSectionWhileIndexer].startTime)
+                {
+                    difficultyObjects.push(mergedNoteObjects[noteWhileIndexer]);
+                    noteWhileIndexer++;
+                }
+                else if (mergedNoteObjects[noteWhileIndexer].startTime > typingSections[typingSectionWhileIndexer].startTime)
+                {
+                    let selectedTypingSection = typingSections[typingSectionWhileIndexer];
+                    selectedTypingSection.type = "typingsection";
+                    difficultyObjects.push(createDifficultyObjectFromTS(selectedTypingSection));
+                    typingSectionWhileIndexer++;
+                }
+                else
+                {
+                    difficultyObjects.push(mergedNoteObjects[noteWhileIndexer]);
+                    let selectedTypingSection = typingSections[typingSectionWhileIndexer];
+                    selectedTypingSection.type = "typingsection";
+                    difficultyObjects.push(createDifficultyObjectFromTS(selectedTypingSection));
+                    typingSectionWhileIndexer++;
+                    noteWhileIndexer++;
+                }
+
+            }
+            else if (typingSections.length <= typingSectionWhileIndexer && notes.length > noteWhileIndexer)
+            {                
+                difficultyObjects.push(mergedNoteObjects[noteWhileIndexer]);
+                noteWhileIndexer++;
+            }
+            else if (typingSections.length > typingSectionWhileIndexer && notes.length <= noteWhileIndexer)
+            {
+                let selectedTypingSection = typingSections[typingSectionWhileIndexer];
+                selectedTypingSection.type = "typingsection";
+                difficultyObjects.push(createDifficultyObjectFromTS(selectedTypingSection));
+                typingSectionWhileIndexer++;
+            }
+            else if (typingSections.length == 0 && notes.length > noteWhileIndexer)
+            {                
+                difficultyObjects.push(mergedNoteObjects[noteWhileIndexer]);
+                noteWhileIndexer++;
+            }
+            else if (typingSections.length > typingSectionWhileIndexer && notes.length == 0)
+            {
+                let selectedTypingSection = typingSections[typingSectionWhileIndexer];
+                selectedTypingSection.type = "typingsection";
+                difficultyObjects.push(createDifficultyObjectFromTS(selectedTypingSection));
+                typingSectionWhileIndexer++;
+            }
+            else
+                break;
+        }
+        const getDuration = (x) => {
+            return x.endTime - x.startTime;
+        }
+        const drainTime = Math.max(maxTime - minTime, 1000);
+
+        const TAPNOTEDIFFICULTY = 500;      
+        const HOLDNOTEDIFFICULTY = 400;  
+        const RELEASEDIFFICULTY = 400;
+
+        const overallDifficulty = Math.min(scoreData.overallDifficulty, 11);
+        const odnerf = 1 / (Math.pow(Math.max(9 - overallDifficulty, 0), 1.6) / 100 + 1);
+        const odbonus = Math.pow(Math.max(overallDifficulty - 7, 0), 1.6) / 100 + 1;
+        const odFactor = odbonus * odnerf;
+
+        const calculateChordDifficulty = (x) => {
+            let chordObject = x;
+            let tempPositions = [];
+            //for (let i = 0; i < chordObject.keyPositions.length; ++i)
+            //{
+            //    tempPositions.push({
+            //
+            //    });
+            //}
+            return 1;
+        }
+        const calculateDistance= (x1,y1,x2,y2)=>{
+            return Math.sqrt(Math.pow(Math.abs(x1-x2),2)+Math.pow(Math.abs(y1-y2),2));
+        }
+        const distanceBetweenObjects = (difficultyObject1, difficultyObject2) => {
+            let rowDistance = 0;
+            let columnDistance = 0;
+            let distance = 1;
+            //console.log(difficultyObject1);
+            //console.log(difficultyObject2);
+            if (!difficultyObject1.type.includes("chord") && !difficultyObject2.type.includes("chord"))
+            {                 
+                let x1 = difficultyObject1.keyPosition.row;
+                let x2 = difficultyObject2.keyPosition.row;
+                let y1 = difficultyObject1.keyPosition.column;
+                let y2 = difficultyObject2.keyPosition.column;
+                distance = calculateDistance(x1, x2, y1, y2);
+            }
+            else if (!difficultyObject1.type.includes("chord") && difficultyObject2.type.includes("chord"))
+            {
+                let minDistance = Infinity;
+                for (let i = 0; i < difficultyObject2.keyPositions.length; ++i)
+                {
+                    let x1 = difficultyObject1.keyPosition.row;
+                    let x2 = difficultyObject2.keyPositions[i].row;
+                    let y1 = difficultyObject1.keyPosition.column;
+                    let y2 = difficultyObject2.keyPositions[i].column;
+                    distance = calculateDistance(x1, x2, y1, y2);
+                    if (minDistance > distance)
+                        minDistance = distance;
+                }
+                distance = minDistance;
+            }
+            else if (difficultyObject1.type.includes("chord") && !difficultyObject2.type.includes("chord"))
+            {
+                let minDistance = Infinity;
+                for (let i = 0; i < difficultyObject1.keyPositions.length; ++i)
+                {
+                    let x1 = difficultyObject2.keyPosition.row;
+                    let x2 = difficultyObject1.keyPositions[i].row;
+                    let y1 = difficultyObject2.keyPosition.column;
+                    let y2 = difficultyObject1.keyPositions[i].column;
+                    distance = calculateDistance(x1, x2, y1, y2);
+                    if (minDistance > distance)
+                        minDistance = distance;
+                }
+                distance = minDistance;
+            }
+            else
+            {
+                let minDistance = Infinity;
+                for (let i = 0; i < difficultyObject1.keyPositions.length; ++i)
+                {
+                    for (let j = 0; j < difficultyObject2.keyPositions.length; ++j)
+                    {
+                        let x1 = difficultyObject2.keyPositions[j].row;
+                        let x2 = difficultyObject1.keyPositions[i].row;
+                        let y1 = difficultyObject2.keyPositions[j].column;
+                        let y2 = difficultyObject1.keyPositions[i].column;
+                        distance = calculateDistance(x1, x2, y1, y2);
+                        if (minDistance > distance)
+                            minDistance = distance;
+
+                    }
+                }
+                distance = minDistance;
+            }
+            return distance;
+        }
+
+        const lengthBonusStart = 60000
+        const lengthBonusStrength = 400000;
+        let lengthBonus = Math.max(1, (drainTime - lengthBonusStart + lengthBonusStrength) / lengthBonusStrength);
+        if (drainTime < lengthBonusStart)
+            lengthBonus = Math.pow(drainTime / lengthBonusStart, 1.20) / (drainTime / lengthBonusStart);
+
+        let activeAnchorIds = [];
+        let activeAnchorPositions = [];
+        let lastLeftHandId = -1;
+        let lastRightHandId = -1;
+        let lastNonTypingSectionIndex = -1;
+
+        let consoleList = [];
+        let difficultySum = 0;
+        for (let difficultyIndexer = 0; difficultyIndexer < difficultyObjects.length; ++difficultyIndexer)
+        {
+            let selectedObject = difficultyObjects[difficultyIndexer];
+            let calculatedDifficulty = 0;
+            for (let anchorIndexer = 0; anchorIndexer < activeAnchorIds.length; ++anchorIndexer)
+            {
+                if (activeAnchorIds[anchorIndexer].endTime <= selectedObject.startTime)
+                {
+                    activeAnchorIds.splice(anchorIndexer, 1);
+                    anchorIndexer--;
+                }
+            }
+
+            if (selectedObject.type == "anchor")
+            {
+                activeAnchorIds.push(difficultyIndexer);
+                activeAnchorPositions.push({
+                    row: selectedObject.keyPosition.row,
+                    column: selectedObject.keyPosition.column,
+                });
+                continue;
+            }
+
+            let reactionFactor = 1;
+            if (difficultyIndexer != 0)
+            {
+                let previousNonAnchorIndexer = difficultyIndexer - 1;
+                while (difficultyObjects[previousNonAnchorIndexer].type == "anchor")
+                {
+                    previousNonAnchorIndexer--;
+                }
+                reactionFactor = selectedObject.startTime
+            }
+            if (selectedObject.type.includes("mixedchord"))
+            {
+                chordDifficulty = 0;
+                for (let i = 0; i < selectedObject.keyTypes.length; ++i)
+                {
+                    if (selectedObject.type=="tap")
+                        chordDifficulty += TAPNOTEDIFFICULTY;
+                    if (selectedObject.type=="hold")
+                        cchordDifficulty += HOLDNOTEDIFFICULTY;
+                    if (selectedObject.type=="release")
+                        chordDifficulty += RELEASEDIFFICULTY;
+                }
+                calculatedDifficulty += chordDifficulty/selectedObject.keyTypes.length;
+            }
+            if (selectedObject.type.includes("chord") && !selectedObject.type.includes("mixedchord"))
+            {
+                let chordDifficulty = 1
+                if (selectedObject.type.includes("tap"))
+                    chordDifficulty = TAPNOTEDIFFICULTY;
+                if (selectedObject.type.includes("hold"))
+                    chordDifficulty = HOLDNOTEDIFFICULTY;
+                if (selectedObject.type.includes("release"))
+                    chordDifficulty = RELEASEDIFFICULTY;
+                calculatedDifficulty += chordDifficulty * calculateChordDifficulty(selectedObject);
+            }
+            if (selectedObject.type=="tap")
+                calculatedDifficulty += TAPNOTEDIFFICULTY * odFactor;
+            if (selectedObject.type=="hold")
+                calculatedDifficulty += HOLDNOTEDIFFICULTY * odFactor;
+            if (selectedObject.type=="release")
+                calculatedDifficulty += RELEASEDIFFICULTY * odFactor;
+            let distanceFactor = 1;
+            let speedFactor = 1;
+            if (lastNonTypingSectionIndex >= 0 && selectedObject.type != "typingsection")
+            {
+                let previousObject = difficultyObjects[lastNonTypingSectionIndex];
+                let previousEndTime = previousObject.endTime;
+                let currentStartTime = selectedObject.startTime;
+                //distanceFactor = Math.max(distanceBetweenObjects(selectedObject, previousObject), 1) / ((currentStartTime - previousEndTime)/20);
+                speedFactor = 225/(currentStartTime - previousEndTime);
+            }
+            if (selectedObject.type!="typingsection")
+            {
+                lastNonTypingSectionIndex = difficultyIndexer
+            }
+            difficultySum += calculatedDifficulty * distanceFactor * speedFactor * lengthBonus;
+        }
+        //console.log(consoleList);
+        let difficultyDensity = difficultySum / drainTime;
+        //if (difficultyDensity > 5) {
+        //    difficultyDensity = 5 * Math.pow(difficultyDensity / 5, 0.4);
+        //}
+        difficultyDensity = Math.pow(difficultyDensity * 12.27, 1.02);
+        return difficultyDensity * Math.pow(acc, 5);
+    }
 };
