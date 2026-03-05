@@ -848,22 +848,101 @@ starFormulas = {
         const calculateChordDifficulty = (x) => {
             let chordObject = x;
             let tempPositions = [];
-            for (let i = 0; i < chordObject.keyPositions.length; ++i)
-            {
-                tempPositions.push({
-
-                })
-            }
+            //for (let i = 0; i < chordObject.keyPositions.length; ++i)
+            //{
+            //    tempPositions.push({
+            //
+            //    });
+            //}
             return 1;
         }
+        const calculateDistance= (x1,y1,x2,y2)=>{
+            return Math.sqrt(Math.pow(Math.abs(x1-x2),2)+Math.pow(Math.abs(y1-y2),2));
+        }
+        const distanceBetweenObjects = (difficultyObject1, difficultyObject2) => {
+            let rowDistance = 0;
+            let columnDistance = 0;
+            let distance = 1;
+            //console.log(difficultyObject1);
+            //console.log(difficultyObject2);
+            if (!difficultyObject1.type.includes("chord") && !difficultyObject2.type.includes("chord"))
+            {                 
+                let x1 = difficultyObject1.keyPosition.row;
+                let x2 = difficultyObject2.keyPosition.row;
+                let y1 = difficultyObject1.keyPosition.column;
+                let y2 = difficultyObject2.keyPosition.column;
+                distance = calculateDistance(x1, x2, y1, y2);
+            }
+            else if (!difficultyObject1.type.includes("chord") && difficultyObject2.type.includes("chord"))
+            {
+                let minDistance = Infinity;
+                for (let i = 0; i < difficultyObject2.keyPositions.length; ++i)
+                {
+                    let x1 = difficultyObject1.keyPosition.row;
+                    let x2 = difficultyObject2.keyPositions[i].row;
+                    let y1 = difficultyObject1.keyPosition.column;
+                    let y2 = difficultyObject2.keyPositions[i].column;
+                    distance = calculateDistance(x1, x2, y1, y2);
+                    if (minDistance > distance)
+                        minDistance = distance;
+                }
+                distance = minDistance;
+            }
+            else if (difficultyObject1.type.includes("chord") && !difficultyObject2.type.includes("chord"))
+            {
+                let minDistance = Infinity;
+                for (let i = 0; i < difficultyObject1.keyPositions.length; ++i)
+                {
+                    let x1 = difficultyObject2.keyPosition.row;
+                    let x2 = difficultyObject1.keyPositions[i].row;
+                    let y1 = difficultyObject2.keyPosition.column;
+                    let y2 = difficultyObject1.keyPositions[i].column;
+                    distance = calculateDistance(x1, x2, y1, y2);
+                    if (minDistance > distance)
+                        minDistance = distance;
+                }
+                distance = minDistance;
+            }
+            else
+            {
+                let minDistance = Infinity;
+                for (let i = 0; i < difficultyObject1.keyPositions.length; ++i)
+                {
+                    for (let j = 0; j < difficultyObject2.keyPositions.length; ++j)
+                    {
+                        let x1 = difficultyObject2.keyPositions[j].row;
+                        let x2 = difficultyObject1.keyPositions[i].row;
+                        let y1 = difficultyObject2.keyPositions[j].column;
+                        let y2 = difficultyObject1.keyPositions[i].column;
+                        distance = calculateDistance(x1, x2, y1, y2);
+                        if (minDistance > distance)
+                            minDistance = distance;
+
+                    }
+                }
+                distance = minDistance;
+            }
+            return distance;
+        }
+
+        const lengthBonusStart = 60000
+        const lengthBonusStrength = 400000;
+        let lengthBonus = Math.max(1, (drainTime - lengthBonusStart + lengthBonusStrength) / lengthBonusStrength);
+        if (drainTime < lengthBonusStart)
+            lengthBonus = Math.pow(drainTime / lengthBonusStart, 1.20) / (drainTime / lengthBonusStart);
 
         let activeAnchorIds = [];
         let activeAnchorPositions = [];
+        let lastLeftHandId = -1;
+        let lastRightHandId = -1;
+        let lastNonTypingSectionIndex = -1;
 
+        let consoleList = [];
         let difficultySum = 0;
         for (let difficultyIndexer = 0; difficultyIndexer < difficultyObjects.length; ++difficultyIndexer)
         {
             let selectedObject = difficultyObjects[difficultyIndexer];
+            let calculatedDifficulty = 0;
             for (let anchorIndexer = 0; anchorIndexer < activeAnchorIds.length; ++anchorIndexer)
             {
                 if (activeAnchorIds[anchorIndexer].endTime <= selectedObject.startTime)
@@ -895,10 +974,19 @@ starFormulas = {
             }
             if (selectedObject.type.includes("mixedchord"))
             {
-
-                continue;
+                chordDifficulty = 0;
+                for (let i = 0; i < selectedObject.keyTypes.length; ++i)
+                {
+                    if (selectedObject.type=="tap")
+                        chordDifficulty += TAPNOTEDIFFICULTY;
+                    if (selectedObject.type=="hold")
+                        cchordDifficulty += HOLDNOTEDIFFICULTY;
+                    if (selectedObject.type=="release")
+                        chordDifficulty += RELEASEDIFFICULTY;
+                }
+                calculatedDifficulty += chordDifficulty/selectedObject.keyTypes.length;
             }
-            if (selectedObject.type.includes("chord"))
+            if (selectedObject.type.includes("chord") && !selectedObject.type.includes("mixedchord"))
             {
                 let chordDifficulty = 1
                 if (selectedObject.type.includes("tap"))
@@ -907,16 +995,35 @@ starFormulas = {
                     chordDifficulty = HOLDNOTEDIFFICULTY;
                 if (selectedObject.type.includes("release"))
                     chordDifficulty = RELEASEDIFFICULTY;
-                difficultySum += chordDifficulty * calculateChordDifficulty(selectedObject);
-                continue;
+                calculatedDifficulty += chordDifficulty * calculateChordDifficulty(selectedObject);
             }
             if (selectedObject.type=="tap")
-                difficultySum += TAPNOTEDIFFICULTY * odFactor;
+                calculatedDifficulty += TAPNOTEDIFFICULTY * odFactor;
             if (selectedObject.type=="hold")
-                difficultySum += HOLDNOTEDIFFICULTY * odFactor;
+                calculatedDifficulty += HOLDNOTEDIFFICULTY * odFactor;
             if (selectedObject.type=="release")
-                difficultySum += RELEASEDIFFICULTY * odFactor;
+                calculatedDifficulty += RELEASEDIFFICULTY * odFactor;
+            let distanceFactor = 1;
+            let speedFactor = 1;
+            if (lastNonTypingSectionIndex >= 0 && selectedObject.type != "typingsection")
+            {
+                let previousObject = difficultyObjects[lastNonTypingSectionIndex];
+                let previousEndTime = previousObject.endTime;
+                let currentStartTime = selectedObject.startTime;
+                //distanceFactor = Math.max(distanceBetweenObjects(selectedObject, previousObject), 1) / ((currentStartTime - previousEndTime)/20);
+                speedFactor = 225/(currentStartTime - previousEndTime);
+            }
+            if (selectedObject.type!="typingsection")
+            {
+                lastNonTypingSectionIndex = difficultyIndexer
+            }
+            difficultySum += calculatedDifficulty * distanceFactor * speedFactor * lengthBonus;
         }
-        return difficultySum / drainTime;
+        //console.log(consoleList);
+        let difficultyDensity = difficultySum / drainTime;
+        if (difficultyDensity > 5) {
+            difficultyDensity = 5 * Math.pow(difficultyDensity / 5, 0.4);
+        }
+        return difficultyDensity;
     }*/
 };
