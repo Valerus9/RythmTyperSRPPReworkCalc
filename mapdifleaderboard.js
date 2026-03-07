@@ -175,15 +175,17 @@ function LoadMapDifLeaderboard() {
 
     document.getElementById("zipInput").addEventListener("change", async (event) => {
         const files = [...event.target.files].filter(f => f.name.endsWith(".rtm"));
-        await LoadMapDataValues(await CreateMapData(files));
+        loadMapDataIndexer = 0;
+        await ClearCachIfMapIsInThem(await CreateMapData(files));
+        await LoadMapDataValues(await CreateMapData(files))
+            
         document.getElementById("warningcacheonly").style.display = "none";
         document.getElementById("changemenudifferentodCalc").disabled = false;
         document.getElementById("changemenugraphviewofrework").disabled = false;
     });
 }
-
-async function LoadMapDataValues(localValues)
-{   
+async function ClearCachIfMapIsInThem(localValues)
+{
     for (let i = 0; i < localValues[0].length; ++i)
     {
         if (songNames.includes(localValues[4][i]) && isCache[songNames.indexOf(localValues[4][i])])
@@ -192,94 +194,106 @@ async function LoadMapDataValues(localValues)
             break;
         }
     }
-    for (let i = 0; i < localValues[0].length; ++i)
+}
+let loadMapDataIndexer = 0;
+async function LoadMapDataValues(localValues)
+{   
+    let loadingProgress = document.getElementById("loadingprogress");
+    loadingProgress.innerHTML = "Progress: "+(loadMapDataIndexer+1)+"/"+localValues[0].length+" ("+(Math.round((loadMapDataIndexer+1)/localValues[0].length*10000)/100)+"%)";
+    /*if (LoadedBeatmapIds.includes(localValues[0][i].mapsetId))
     {
-        /*if (LoadedBeatmapIds.includes(localValues[0][i].mapsetId))
+        for (let j = 0; j < LoadedBeatmapIds.length; ++j)
         {
-            for (let j = 0; j < LoadedBeatmapIds.length; ++j)
+            if ((LoadedBeatmapIds[j] != localValues[0][i].mapsetId && LoadedDifficultyIds[j] != localValues[1][i].diffId) || !isCache[j])
+                continue;
+            LoadedBeatmapIds.splice(j, 1);
+            LoadedDifficultyIds.splice(j, 1);
+            beatmapList.splice(j, 1);
+            difficultyList.splice(j, 1);
+            LoadedBeatmapIds.splice(j, 1);
+            LoadedDifficultyIds.splice(j, 1);
+            songNames.splice(j, 1);
+            difficultyNames.splice(j, 1);
+            BPMs.splice(j, 1);
+            DrainTimes.splice(j, 1);
+            ODs.splice(j, 1);
+            NoteCounts.splice(j, 1);
+            TypingSectionCounts.splice(j, 1);
+            isCache.splice(j, 1);
+            oldStarRanks.splice(j, 1);
+            newStarRanks.splice(j, 1);
+            oldPPRanks.splice(j, 1);
+            newPPRanks.splice(j, 1);
+            for (let k = 0; k < Stars.length; ++k)
             {
-                if ((LoadedBeatmapIds[j] != localValues[0][i].mapsetId && LoadedDifficultyIds[j] != localValues[1][i].diffId) || !isCache[j])
-                    continue;
-                LoadedBeatmapIds.splice(j, 1);
-                LoadedDifficultyIds.splice(j, 1);
-                beatmapList.splice(j, 1);
-                difficultyList.splice(j, 1);
-                LoadedBeatmapIds.splice(j, 1);
-                LoadedDifficultyIds.splice(j, 1);
-                songNames.splice(j, 1);
-                difficultyNames.splice(j, 1);
-                BPMs.splice(j, 1);
-                DrainTimes.splice(j, 1);
-                ODs.splice(j, 1);
-                NoteCounts.splice(j, 1);
-                TypingSectionCounts.splice(j, 1);
-                isCache.splice(j, 1);
-                oldStarRanks.splice(j, 1);
-                newStarRanks.splice(j, 1);
-                oldPPRanks.splice(j, 1);
-                newPPRanks.splice(j, 1);
-                for (let k = 0; k < Stars.length; ++k)
-                {
-                    Stars[k].splice(j, 1);
-                    StarHTDCs[k].splice(j, 1);
-                    StarDTNCs[k].splice(j, 1);
-                }
-                for (let k = 0; k < PPs.length; ++k)
-                {
-                    PPs[k].splice(j, 1);
-                    PPHTDCs[k].splice(j, 1);
-                    PPDTNCs[k].splice(j, 1);                        
-                }
+                Stars[k].splice(j, 1);
+                StarHTDCs[k].splice(j, 1);
+                StarDTNCs[k].splice(j, 1);
             }
-        }*/
-        LoadedBeatmapIds.push(localValues[0][i].mapsetId);
-        LoadedDifficultyIds.push(localValues[1][i].diffId);
-        localDifficultyValues = CreateDifficultyData([localValues[1][i]]);
-        for (let i = 0; i < localDifficultyValues[0].length; ++i)
-        {
-            for (let j = 0; j < localDifficultyValues[0][i].length; ++j)
+            for (let k = 0; k < PPs.length; ++k)
             {
-                Stars[i].push(localDifficultyValues[0][i][j]);
-                StarDTNCs[i].push(localDifficultyValues[1][i][j]);
-                StarHTDCs[i].push(localDifficultyValues[2][i][j]);
+                PPs[k].splice(j, 1);
+                PPHTDCs[k].splice(j, 1);
+                PPDTNCs[k].splice(j, 1);                        
             }
         }
-        for (let i = 0; i < localDifficultyValues[3].length; ++i)
-        {    
-            for (let j = 0; j < localDifficultyValues[3][i].length; ++j)
-            {
-                PPs[i].push(localDifficultyValues[3][i][j]);
-                PPDTNCs[i].push(localDifficultyValues[4][i][j]);
-                PPHTDCs[i].push(localDifficultyValues[5][i][j]);
-            }
+    }*/
+    //console.log(loadMapDataIndexer);
+    //console.log(localValues);
+    //console.log(localValues[0][loadMapDataIndexer]);
+    LoadedBeatmapIds.push(localValues[0][loadMapDataIndexer].mapsetId);
+    LoadedDifficultyIds.push(localValues[1][loadMapDataIndexer].diffId);
+    let localDifficultyValues = CreateDifficultyData([localValues[1][loadMapDataIndexer]]);
+    for (let j = 0; j < localDifficultyValues[0].length; ++j)
+    {
+        for (let k = 0; k < localDifficultyValues[0][j].length; ++k)
+        {
+            Stars[j].push(localDifficultyValues[0][j][k]);
+            StarDTNCs[j].push(localDifficultyValues[1][j][k]);
+            StarHTDCs[j].push(localDifficultyValues[2][j][k]);
         }
-        beatmapList.push(localValues[0][i]);
-        difficultyList.push(localValues[1][i]);
-        LoadedBeatmapIds.push(localValues[2][i]);
-        LoadedDifficultyIds.push(localValues[3][i]);
-        songNames.push(localValues[4][i]);
-        difficultyNames.push(localValues[5][i]);
-        BPMs.push(localValues[6][i]);
-        DrainTimes.push(localValues[7][i]);
-        ODs.push(localValues[8][i]);
-        NoteCounts.push(localValues[9][i]);
-        TypingSectionCounts.push(localValues[10][i]);
-        isCache.push(false);
-        oldStarRanks.push(0);
-        newStarRanks.push(0);
-        oldPPRanks.push(0);
-        newPPRanks.push(0);
+    }
+    for (let j = 0; j < localDifficultyValues[3].length; ++j)
+    {    
+        for (let k = 0; k < localDifficultyValues[3][j].length; ++k)
+        {
+            PPs[j].push(localDifficultyValues[3][j][k]);
+            PPDTNCs[j].push(localDifficultyValues[4][j][k]);
+            PPHTDCs[j].push(localDifficultyValues[5][j][k]);
+        }
+    }
+    beatmapList.push(localValues[0][loadMapDataIndexer]);
+    difficultyList.push(localValues[1][loadMapDataIndexer]);
+    LoadedBeatmapIds.push(localValues[2][loadMapDataIndexer]);
+    LoadedDifficultyIds.push(localValues[3][loadMapDataIndexer]);
+    songNames.push(localValues[4][loadMapDataIndexer]);
+    difficultyNames.push(localValues[5][loadMapDataIndexer]);
+    BPMs.push(localValues[6][loadMapDataIndexer]);
+    DrainTimes.push(localValues[7][loadMapDataIndexer]);
+    ODs.push(localValues[8][loadMapDataIndexer]);
+    NoteCounts.push(localValues[9][loadMapDataIndexer]);
+    TypingSectionCounts.push(localValues[10][loadMapDataIndexer]);
+    isCache.push(false);
+    oldStarRanks.push(0);
+    newStarRanks.push(0);
+    oldPPRanks.push(0);
+    newPPRanks.push(0);
+    loadMapDataIndexer++;
+    if (loadMapDataIndexer < localValues[0].length)
+        setTimeout(() => { LoadMapDataValues(localValues) }, 0);
+    else
+    {
+        CreateTable("Difficulty list", "diffList", difTableColumnNames, difTableColumnIds, difTableColumnWidths, CreateDefaultRowIds(songNames.length), CreateDiffTableValues(true), difTableColumnCompare, difTableColumnTypes, 0);
+        if (songNames.length == 0)
+        {
+            document.getElementById("clearrtms").style.display = "none";
+        }
+        else if (songNames.length > 0)
+        {
+            document.getElementById("clearrtms").style.display = "inline";
+        }
     }
 
-    CreateTable("Difficulty list", "diffList", difTableColumnNames, difTableColumnIds, difTableColumnWidths, CreateDefaultRowIds(songNames.length), CreateDiffTableValues(true), difTableColumnCompare, difTableColumnTypes, 0);
-    if (songNames.length == 0)
-    {
-        document.getElementById("clearrtms").style.display = "none";
-    }
-    else if (songNames.length > 0)
-    {
-        document.getElementById("clearrtms").style.display = "inline";
-    }
     
 }
 

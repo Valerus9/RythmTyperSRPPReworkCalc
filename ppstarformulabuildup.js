@@ -1,5 +1,5 @@
 ppstarFormulaBuildUps = {
-    valerusSrReworkBuildup(scoreData) {
+    originalCalculateSrBuildup(scoreData) {
         let noteBaseValuesForBuildUp = [];
         let noteStartTimesForBuildUp = [];
         let noteMultiplierNames = ["noteAmountNerfBuff", "chordBuff", "stackBuff", "distanceFactor", "timeDurationBonus", "heldNoteBonus", "lengthBonus", "odbonus"];
@@ -25,7 +25,7 @@ ppstarFormulaBuildUps = {
             {
                 let tempNote = {
                     key: scoreData.notes[i].key,
-                    time: scoreData.notes[i].time,
+                    startTime: scoreData.notes[i].startTime * 1000,
                     type: scoreData.notes[i].type,
                 }
                 filteredNotes.push(tempNote);
@@ -35,8 +35,8 @@ ppstarFormulaBuildUps = {
 
                 let tempHoldNote = {
                     key: scoreData.notes[i].key,
-                    startTime: scoreData.notes[i].startTime,
-                    endTime: scoreData.notes[i].endTime,
+                    startTime: scoreData.notes[i].startTime * 1000,
+                    endTime: scoreData.notes[i].endTime * 1000,
                     type: scoreData.notes[i].type,
                 }
                 filteredNotes.push(tempHoldNote);
@@ -46,8 +46,8 @@ ppstarFormulaBuildUps = {
         for (let i = 0; i < scoreData.typingSections.length; ++i)
         {
             let tempTypingSection = {
-                endTime: scoreData.typingSections[i].endTime,
-                startTime: scoreData.typingSections[i].startTime,
+                endTime: scoreData.typingSections[i].endTime * 1000,
+                startTime: scoreData.typingSections[i].startTime * 1000,
                 text: scoreData.typingSections[i].text,
             }
             filteredTypingSections.push(tempTypingSection);
@@ -69,16 +69,8 @@ ppstarFormulaBuildUps = {
         const getKeyboardColumn = x => {
             return KEYBOARDLAYOUT.indexOf(x.key) % 10;
         }
-        const getStartTime = x => {
-            if (x.type == "tap")
-                return x.time;
-            return x.startTime;
-        }
-        const getEndTime = x => {
-            if (x.type == "tap")
-                return x.time;
-            return x.endTime;
-        }
+        const getStartTime = x => x.startTime;
+        const getEndTime = x => x.endTime || x.startTime;
         let minTime = Infinity;
         let maxTime = 0;
         let typingSectionDifficulties = [];

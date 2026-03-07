@@ -187,6 +187,48 @@ async function CreateMapData(files) {
 
 function CreateDifficultyData(difficultyInput)
 {
+    let tempDifficulties = [];
+    for (let i = 0; i < difficultyInput.length; ++i)
+    {
+        let tempDifficulty = {
+            overallDifficulty: difficultyInput[i].overallDifficulty,
+            notes: [],
+            typingSections: [],
+        };
+        for (let j = 0; j < difficultyInput[i].notes.length; ++j)
+        {
+            if (difficultyInput[i].notes[j].type == "tap")
+            {
+                let tempNote = {
+                    type: difficultyInput[i].notes[j].type,
+                    key: difficultyInput[i].notes[j].key,
+                    startTime: difficultyInput[i].notes[j].time/1000,
+                    time: difficultyInput[i].notes[j].time/1000,
+                }
+                tempDifficulty.notes.push(tempNote);
+            }
+            else
+            {
+                let tempNote = {
+                    type: difficultyInput[i].notes[j].type,
+                    key: difficultyInput[i].notes[j].key,
+                    startTime: difficultyInput[i].notes[j].startTime/1000,
+                    endTime: difficultyInput[i].notes[j].endTime/1000,
+                }
+                tempDifficulty.notes.push(tempNote);
+            }
+        }
+        for (let j = 0; j < difficultyInput[i].typingSections.length; ++j) {
+            let tempSection = {
+                startTime: difficultyInput[i].typingSections[j].startTime/1000,
+                endTime: difficultyInput[i].typingSections[j].endTime/1000,    
+                text: difficultyInput[i].typingSections[j].text,    
+            }
+            tempDifficulty.typingSections.push(tempSection);
+        }
+        tempDifficulties.push(tempDifficulty);
+    }
+    
     let localStars = [];
     let localStarDTNCs = [];
     let localStarHTDCs = [];
@@ -206,7 +248,7 @@ function CreateDifficultyData(difficultyInput)
         localPPHTDCs.push([]);
     }
 
-    for (const difficulty of difficultyInput) {
+    for (const difficulty of tempDifficulties) {
         let ms = 80 - 6 * difficulty.overallDifficulty;
         let overallDifficultyDTNC = (80 - (ms / 1.5)) / 6;
         let DifficultyDTNC = {
@@ -228,12 +270,14 @@ function CreateDifficultyData(difficultyInput)
                     key: note.key,
                     type: note.type,
                     time: note.time / 1.5,
+                    startTime: note.startTime / 1.5,
                 };
                 DifficultyDTNC.notes.push(tempNoteDTNC);
                 let tempNoteHTDC = {
                     key: note.key,
                     type: note.type,
                     time: note.time / 0.75,
+                    startTime: note.startTime / 0.75,
                 };
                 DifficultyHTDC.notes.push(tempNoteHTDC);
             }

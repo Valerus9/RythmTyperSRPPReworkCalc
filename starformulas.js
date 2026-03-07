@@ -5,7 +5,7 @@ starFormulas = {
       if (scoreData.notes[i].type == "tap") {
         let tempNote = {
           key: scoreData.notes[i].key,
-          time: scoreData.notes[i].time,
+          startTime: scoreData.notes[i].startTime * 1000,
           type: scoreData.notes[i].type,
         }
         filteredNotes.push(tempNote);
@@ -14,8 +14,8 @@ starFormulas = {
 
         let tempHoldNote = {
           key: scoreData.notes[i].key,
-          startTime: scoreData.notes[i].startTime,
-          endTime: scoreData.notes[i].endTime,
+          startTime: scoreData.notes[i].startTime * 1000,
+          endTime: scoreData.notes[i].endTime * 1000,
           type: scoreData.notes[i].type,
         }
         filteredNotes.push(tempHoldNote);
@@ -25,8 +25,8 @@ starFormulas = {
     let filteredTypingSections = [];
     for (let i = 0; i < scoreData.typingSections.length; ++i) {
       let tempTypingSection = {
-        endTime: scoreData.typingSections[i].endTime,
-        startTime: scoreData.typingSections[i].startTime,
+        endTime: scoreData.typingSections[i].endTime * 1000,
+        startTime: scoreData.typingSections[i].startTime * 1000,
         text: scoreData.typingSections[i].text,
       }
       filteredTypingSections.push(tempTypingSection);
@@ -47,16 +47,8 @@ starFormulas = {
     const getKeyboardColumn = x => {
       return KEYBOARDLAYOUT.indexOf(x.key) % 10;
     }
-    const getStartTime = x => {
-      if (x.type == "tap")
-        return x.time;
-      return x.startTime;
-    }
-    const getEndTime = x => {
-      if (x.type == "tap")
-        return x.time;
-      return x.endTime;
-    }
+    const getStartTime = x => x.startTime;
+    const getEndTime = x => x.endTime || x.startTime;
     let minTime = Infinity;
     let maxTime = 0;
     let typingSectionDifficulties = [];
@@ -341,7 +333,7 @@ starFormulas = {
             {
                 let tempNote = {
                     key: scoreData.notes[i].key,
-                    time: scoreData.notes[i].time,
+                    startTime: scoreData.notes[i].time * 1000,
                     type: scoreData.notes[i].type,
                 }
                 filteredNotes.push(tempNote);
@@ -351,8 +343,8 @@ starFormulas = {
 
                 let tempHoldNote = {
                     key: scoreData.notes[i].key,
-                    startTime: scoreData.notes[i].startTime,
-                    endTime: scoreData.notes[i].endTime,
+                    startTime: scoreData.notes[i].startTime * 1000,
+                    endTime: scoreData.notes[i].endTime * 1000,
                     type: scoreData.notes[i].type,
                 }
                 filteredNotes.push(tempHoldNote);
@@ -363,8 +355,8 @@ starFormulas = {
         for (let i = 0; i < scoreData.typingSections.length; ++i)
         {
             let tempTypingSection = {
-                endTime: scoreData.typingSections[i].endTime,
-                startTime: scoreData.typingSections[i].startTime,
+                endTime: scoreData.typingSections[i].endTime * 1000,
+                startTime: scoreData.typingSections[i].startTime * 1000,
                 text: scoreData.typingSections[i].text,                
                 type: "typingsection",
             }
@@ -378,22 +370,26 @@ starFormulas = {
             "a", "s", "d", "f", "g", "h", "j", "k", "l", ";",
             "z", "x", "c", "v", "b", "n", "m", ",", ".", "/",
         ];
+        const getKeyboardLowerCase = x => {
+            if (x =="<")
+                return ",";
+            if (x ==">")
+                return ".";
+            if (x=="?")
+                return "/";
+            if (x==":")
+                return ";";
+            return String(x).toLowerCase();
+        }
+
         const getKeyboardRow = x => {
-            return (KEYBOARDLAYOUT.indexOf(x) - KEYBOARDLAYOUT.indexOf(x) % 10) / 10;
+            return (KEYBOARDLAYOUT.indexOf(getKeyboardLowerCase(x)) - KEYBOARDLAYOUT.indexOf(getKeyboardLowerCase(x)) % 10) / 10;
         }
         const getKeyboardColumn = x => {
-            return KEYBOARDLAYOUT.indexOf(x) % 10;
+            return KEYBOARDLAYOUT.indexOf(getKeyboardLowerCase(x)) % 10;
         }
-        const getStartTime = x => {
-            if (x.type == "tap")
-                return x.time;
-            return x.startTime;
-        }
-        const getEndTime = x => {
-            if (x.type == "tap")
-                return x.time;
-            return x.endTime;
-        }
+        const getStartTime = x => x.startTime;
+        const getEndTime = x => x.endTime || x.startTime;
         let minTime = Infinity;
         let maxTime = 0;
         for (let i = 0; i < typingSections.length; ++i) {
@@ -446,6 +442,8 @@ starFormulas = {
                         column: getKeyboardColumn(notes[i].key),
                     }
                 }
+                if (tempTap.keyPosition.column == -1)
+                    continue;
                 convertedNoteObjects.push(tempTap);
             }
             else if(notes[i].type == "hold")
@@ -460,6 +458,8 @@ starFormulas = {
                         column: getKeyboardColumn(notes[i].key),
                     }
                 }
+                if (tempHoldStart.keyPosition.column == -1)
+                    continue;
                 convertedNoteObjects.push(tempHoldStart);
 
                 tempHoldBody = {
@@ -656,7 +656,8 @@ starFormulas = {
                 {
                     tempDifficultyObject.textUniqueKeys.push(selectedTypingSection.text[textIndexer]);
                 }
-
+                if (tempKeyPosition.column == -1)
+                    continue;
                 tempDifficultyObject.textKeysPositions.push(tempKeyPosition);
             }
             return tempDifficultyObject;
@@ -725,10 +726,6 @@ starFormulas = {
         }
         const drainTime = Math.max(maxTime - minTime, 1000);
 
-        const TAPNOTEDIFFICULTY = 500;      
-        const HOLDNOTEDIFFICULTY = 400;  
-        const RELEASEDIFFICULTY = 400;
-
         const overallDifficulty = Math.min(scoreData.overallDifficulty, 11);
         const odnerf = 1 / (Math.pow(Math.max(9 - overallDifficulty, 0), 1.6) / 100 + 1);
         const odbonus = Math.pow(Math.max(overallDifficulty - 7, 0), 1.6) / 100 + 1;
@@ -736,14 +733,47 @@ starFormulas = {
 
         const calculateChordDifficulty = (x) => {
             let chordObject = x;
-            let tempPositions = [];
-            //for (let i = 0; i < chordObject.keyPositions.length; ++i)
-            //{
-            //    tempPositions.push({
-            //
-            //    });
-            //}
-            return 1;
+            let tempPositions = [
+                0, 0, 0, 0, 0,  0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0,  0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0,  0, 0, 0, 0, 0
+            ];
+            for (let i = 0; i < chordObject.keyPositions.length; ++i)
+            {
+                let column = chordObject.keyPositions[i].column;
+                let row = chordObject.keyPositions[i].row;
+                tempPositions[row * 10 + column] = 1;
+            }
+            let chordDiff = 1;
+            for (let i = 0; i < 10; ++i)
+            {                
+                let counter = 0;
+                let minPosition = Infinity;
+                let maxPosition = -1;
+                for (let j = 0; j < 3; ++j)
+                {
+                    let position = j * 10 + i
+                    if (tempPositions[position] != 1)
+                        continue;
+                    counter++;
+                    if (tempPositions[position] == 1 && minPosition > j)
+                    {
+                        minPosition = j;
+                    }
+                    if (tempPositions[position] == 1 && maxPosition < j)
+                    {
+                        maxPosition = j;
+                    }
+                }
+                let chordHeight = maxPosition + 1 - (minPosition + 1);
+                if (chordHeight == 2)
+                    chordDiff += 0.5;
+                if (chordHeight == 3 && counter == 3)
+                    chordDiff += 1.5;
+                if (chordHeight == 3 && counter == 2)
+                    chordDiff += 2;
+            }
+            return chordDiff;
         }
         const calculateDistance= (x1,y1,x2,y2)=>{
             return Math.sqrt(Math.pow(Math.abs(x1-x2),2)+Math.pow(Math.abs(y1-y2),2));
@@ -813,18 +843,453 @@ starFormulas = {
             }
             return distance;
         }
+        const distanceBetweenObjectsVector = (difficultyObject1, difficultyObject2) => {
+            let rowDistance = 0;
+            let columnDistance = 0;
+            let distance = 1;
+            let vector = {
+                x: 1,
+                y: 1
+            }
+            //console.log(difficultyObject1);
+            //console.log(difficultyObject2);
+            if (!difficultyObject1.type.includes("chord") && !difficultyObject2.type.includes("chord"))
+            {                 
+                let x1 = difficultyObject1.keyPosition.row;
+                let x2 = difficultyObject2.keyPosition.row;
+                let y1 = difficultyObject1.keyPosition.column;
+                let y2 = difficultyObject2.keyPosition.column;
+                vector.x = x1-x2;
+                vector.y = y1-y2;
+                //distance = calculateDistance(x1, x2, y1, y2);
+            }
+            else if (!difficultyObject1.type.includes("chord") && difficultyObject2.type.includes("chord"))
+            {
+                let minDistance = Infinity;
+                for (let i = 0; i < difficultyObject2.keyPositions.length; ++i)
+                {
+                    let x1 = difficultyObject1.keyPosition.row;
+                    let x2 = difficultyObject2.keyPositions[i].row;
+                    let y1 = difficultyObject1.keyPosition.column;
+                    let y2 = difficultyObject2.keyPositions[i].column;
+                    distance = calculateDistance(x1, x2, y1, y2);
+                    if (minDistance > distance)
+                    {
+                        minDistance = distance;
+                        vector.x = x1-x2;
+                        vector.y = y1-y2;
+                    }                        
+                }
+                //distance = minDistance;
+            }
+            else if (difficultyObject1.type.includes("chord") && !difficultyObject2.type.includes("chord"))
+            {
+                let minDistance = Infinity;
+                for (let i = 0; i < difficultyObject1.keyPositions.length; ++i)
+                {
+                    let x1 = difficultyObject2.keyPosition.row;
+                    let x2 = difficultyObject1.keyPositions[i].row;
+                    let y1 = difficultyObject2.keyPosition.column;
+                    let y2 = difficultyObject1.keyPositions[i].column;
+                    distance = calculateDistance(x1, x2, y1, y2);
+                    if (minDistance > distance)
+                    {
+                        minDistance = distance;
+                        vector.x = x1-x2;
+                        vector.y = y1-y2;
+                    }
+                        
+                }
+                //distance = minDistance;
+            }
+            else
+            {
+                let minDistance = Infinity;
+                for (let i = 0; i < difficultyObject1.keyPositions.length; ++i)
+                {
+                    for (let j = 0; j < difficultyObject2.keyPositions.length; ++j)
+                    {
+                        let x1 = difficultyObject2.keyPositions[j].row;
+                        let x2 = difficultyObject1.keyPositions[i].row;
+                        let y1 = difficultyObject2.keyPositions[j].column;
+                        let y2 = difficultyObject1.keyPositions[i].column;
+                        distance = calculateDistance(x1, x2, y1, y2);
+                        if (minDistance > distance)
+                        {
+                            minDistance = distance;
+                            vector.x = x1-x2;
+                            vector.y = y1-y2;
+                        }
+                            
+
+                    }
+                }
+                //distance = minDistance;
+            }
+            return vector;
+        }
+        const distanceBetweenPositionsVector = (position1, position2) => {
+            let vector = {
+                x: 1,
+                y: 1
+            }
+
+            let x1 = position1.row;
+            let x2 = position2.row;
+            let y1 = position1.column;
+            let y2 = position2.column;
+            vector.x = x1-x2;
+            vector.y = y1-y2;
+
+            return vector;
+        }
+        let keyPositionMatrix = [
+            [], [], [], [], [],  [], [], [], [], [], 
+            [], [], [], [], [],  [], [], [], [], [],
+            [], [], [], [], [],  [], [], [], [], [],
+        ];
+        let layerAlreadyUsed = [];
+        let repeatedPatternNerf = [];
+        for (let i = 0; i < difficultyObjects.length; ++i)
+        {
+            for (let j = 0; j < keyPositionMatrix.length; ++j)
+            {
+                repeatedPatternNerf.push(1);
+                layerAlreadyUsed.push(false);
+                keyPositionMatrix[j].push(-1);
+            }
+            let lastLayer = keyPositionMatrix[0].length - 1;
+            if (difficultyObjects[i].type.includes("chord"))
+            {
+                for (let j = 0; j < difficultyObjects[i].keyPositions.length; ++j)
+                {
+                    let row = difficultyObjects[i].keyPositions[j].row;
+                    let column = difficultyObjects[i].keyPositions[j].column;
+                    keyPositionMatrix[row * 10 + column][lastLayer] = difficultyObjects[i].startTime;
+                }
+            }
+            else if (difficultyObjects[i].type != "typingsection" && difficultyObjects[i].type != "anchor")
+            {
+                let row = difficultyObjects[i].keyPosition.row;
+                let column = difficultyObjects[i].keyPosition.column;
+                keyPositionMatrix[row * 10 + column][lastLayer] = difficultyObjects[i].startTime;
+            }
+        }
+
+        const matrixLayerContainsKey = (matrix, layer)=>{
+            for (let j = 0; j < matrix.length; ++j)
+            {
+                if (matrix[j][layer] != -1)
+                {
+                    return true;
+                }
+            }
+            return false;
+        };
+        const matrixLayerGetKeyValue = (matrix, layer)=>{
+            for (let j = 0; j < matrix.length; ++j)
+            {
+                if (matrix[j][layer] != -1)
+                {
+                    return matrix[j][layer];
+                }
+            }
+            return -1;
+        };
+        const matrixLayerGetKeyPosition = (matrix, layer)=>{
+            for (let j = 0; j < matrix.length; ++j)
+            {
+                if (matrix[j][layer] != -1)
+                {
+                    let tempVector = {
+                        column: j % 10,
+                        row: (j - j%10) /10
+                    }
+                    return tempVector;
+                }
+            }
+            return { column: -1, row: -1};
+        };
+
+        let testMatrixConsoleList = [];
+        for (let i = 0; i < keyPositionMatrix[0].length; ++i)
+        {
+            if (!matrixLayerContainsKey(keyPositionMatrix, i))
+                continue;
+            if (layerAlreadyUsed[i])
+                continue;
+            let selectedKeyValue = matrixLayerGetKeyValue(keyPositionMatrix, i);
+            let selectedKeyPosition = matrixLayerGetKeyPosition(keyPositionMatrix, i);
+            let couldntExtendPatterns = false;
+            let patternLength = 2;
+            let candidates = [];
+            let candidatesFailed = [];
+            let offsets = [];            
+            let offsetsPositions = [];
+            let offsetsTypes = [];
+            let offsetsValues = [];
+            let offsetsValuesTimes = [];
+            let offsetsIds = [];
+            offsets.push(selectedKeyPosition);
+            offsetsPositions.push(selectedKeyPosition);
+            offsetsIds.push(i);
+            offsetsValues.push(selectedKeyValue);
+            offsetsValuesTimes.push(selectedKeyValue);
+            offsetsTypes.push(difficultyObjects[i].type);
+            while (!couldntExtendPatterns)
+            {
+                let previousKeyValue = offsetsValuesTimes[offsets.length - 1];
+                let previousKeyPosition = offsetsPositions[offsetsPositions.length - 1];
+                for (let j = offsetsIds[offsetsIds.length - 1] + 1; offsets.length < patternLength && j < keyPositionMatrix[0].length; ++j)
+                {
+                    if (!matrixLayerContainsKey(keyPositionMatrix, j))
+                        continue;
+                    if (layerAlreadyUsed[j])
+                        continue;
+                    let nextKeyValue = matrixLayerGetKeyValue(keyPositionMatrix, j);
+                    let nextKeyPosition = matrixLayerGetKeyPosition(keyPositionMatrix, j);
+                    if (distanceBetweenPositionsVector(previousKeyPosition, nextKeyPosition) > 3)
+                        continue;
+                    offsets.push(distanceBetweenPositionsVector(previousKeyPosition, nextKeyPosition));
+                    offsetsPositions.push(nextKeyPosition);
+                    offsetsValues.push(nextKeyValue - previousKeyValue);
+                    offsetsValuesTimes.push(nextKeyValue);
+                    offsetsTypes.push(difficultyObjects[j].type);
+                    offsetsIds.push(j);
+                }
+                if (candidates.length == 0)
+                {
+                    for (let j = offsetsIds[offsetsIds.length - 1] + 1; j < keyPositionMatrix[0].length; ++j)
+                    {
+                        if (!matrixLayerContainsKey(keyPositionMatrix, j))
+                            continue;
+                        if (layerAlreadyUsed[j])
+                            continue;
+                        
+                        let candidateKeyValue = matrixLayerGetKeyValue(keyPositionMatrix, j);
+                        let candidateKeyPosition = matrixLayerGetKeyPosition(keyPositionMatrix, j);
+                        if (difficultyObjects[j].type != offsetsTypes[0])
+                            continue;
+                        let tempCandidateData = {
+                            offsets: [],
+                            offsetsPositions: [],
+                            offsetsIds: [],
+                            offsetsValues: [],
+                            offsetsValuesTimes: [],
+                            offsetsTypes: [],
+                        }
+                        tempCandidateData.offsets.push(candidateKeyPosition);
+                        tempCandidateData.offsetsPositions.push(candidateKeyPosition);
+                        tempCandidateData.offsetsIds.push(j);
+                        tempCandidateData.offsetsValues.push(candidateKeyValue);
+                        tempCandidateData.offsetsValuesTimes.push(candidateKeyValue);
+                        tempCandidateData.offsetsTypes.push(difficultyObjects[j].type);
+                        candidates.push(tempCandidateData);
+                        candidatesFailed.push(false);
+                    }
+                }
+                for (let j = 0; j <candidates.length && candidates.length > 1; ++j)
+                {
+                    if (candidates[j].offsetsIds[0] > offsetsIds[0] && candidates[j].offsetsIds[0] <= offsetsIds[offsetsIds.length - 1])
+                    {
+                        candidates.splice(j, 1);
+                        candidatesFailed.splice(j, 1);
+                        --j;
+                    }
+                }
+                for (let j = 0; j < candidates.length; ++j)
+                {
+                    let candidateStartPosition = candidates[j].offsetsIds[candidates[j].offsetsIds.length - 1] + 1;
+                    let candidatePreviousKeyPosition = candidates[j].offsetsPositions[candidates[j].offsetsPositions.length - 1];
+                    let candidatePreviousKeyValue = candidates[j].offsetsValuesTimes[candidates[j].offsetsValuesTimes.length - 1]
+                    for (let k = candidateStartPosition; k < keyPositionMatrix[0].length && candidates[j].offsets.length < patternLength; ++k)
+                    {
+                        if (!matrixLayerContainsKey(keyPositionMatrix, k))
+                            continue;
+                        if (layerAlreadyUsed[k])
+                            continue;
+                        let nextKeyValue = matrixLayerGetKeyValue(keyPositionMatrix, k);
+                        let nextKeyPosition = matrixLayerGetKeyPosition(keyPositionMatrix, k);
+                        if (distanceBetweenPositionsVector(candidatePreviousKeyPosition, nextKeyPosition) > 3)
+                            continue;
+                        candidates[j].offsets.push(distanceBetweenPositionsVector(candidatePreviousKeyPosition, nextKeyPosition));
+                        candidates[j].offsetsPositions.push(nextKeyPosition);
+                        candidates[j].offsetsValues.push(nextKeyValue - candidatePreviousKeyValue);
+                        candidates[j].offsetsValuesTimes.push(nextKeyValue);
+                        candidates[j].offsetsTypes.push(difficultyObjects[k].type);
+                        candidates[j].offsetsIds.push(k);
+                    }
+                    if (candidates[j].offsets.length < patternLength)
+                    {
+                        candidatesFailed[j] = true;
+                    }
+                }
+                let thereIsNotFailedCandidate = false;
+                for (let j = 0; j < candidates.length; ++j)
+                {
+                    if (candidatesFailed[j])
+                        continue;
+                    for (let k = 0; k < patternLength; ++k)
+                    {
+                        if (k == 0)
+                        {
+                            if (candidates[j].offsetsTypes[k] != offsetsTypes[k])
+                            {
+                                //testMatrixConsoleList.push(candidates[j].offsetsTypes[k]);
+                                //testMatrixConsoleList.push(offsetsTypes[k]);
+                                candidatesFailed[j] = true;
+                                break;
+                            }
+                            continue;
+                        }
+                        //let testConsoleTestList = [];
+                        //testConsoleTestList.push(j + " "+k);
+                        //testConsoleTestList.push(candidates[j].offsets[k].x != offsets[k].x) 
+                        //testConsoleTestList.push(candidates[j].offsets[k].y != offsets[k].y)
+                        //testConsoleTestList.push(candidates[j].offsetsValues[k] > offsetsValues[k] + 5)
+                        //testConsoleTestList.push(candidates[j].offsetsValues[k] < offsetsValues[k] - 5)
+                        //testConsoleTestList.push(candidates[j].offsetsTypes[k] != offsetsTypes[k])
+                        //testMatrixConsoleList.push(testConsoleTestList);
+                        if (candidates[j].offsets[k].x != offsets[k].x || candidates[j].offsets[k].y != offsets[k].y 
+                            || candidates[j].offsetsValues[k] > offsetsValues[k] + 5 || candidates[j].offsetsValues[k] < offsetsValues[k] - 5
+                            || candidates[j].offsetsTypes[k] != offsetsTypes[k])
+                        {
+                            //testMatrixConsoleList.push(candidates[j]);
+                            //testMatrixConsoleList.push({
+                            //    localOffsets: offsets,
+                            //    localOfffsetsTypes: offsetsTypes,
+                            //    localOffsetsValues: offsetsValues,
+                            //    localOffsetsValueTimes: offsetsValuesTimes,
+                            //    localOffsetsIds: offsetsIds,
+                            //});
+                            candidatesFailed[j] = true;
+                            break;
+                        }
+                    }
+                    if (!candidatesFailed[j])
+                        thereIsNotFailedCandidate = true;
+                }
+                if (thereIsNotFailedCandidate)
+                {
+                    for (let j = 0; j < candidates.length; ++j)
+                    {
+                        if (!candidatesFailed[j])
+                            continue;
+                        candidatesFailed.splice(j, 1);
+                        candidates.splice(j, 1);
+                        --j;
+                    }
+                    patternLength++;
+                }
+                else
+                {
+                    couldntExtendPatterns = true;
+                    for (let j = 0; j < candidates.length; ++j)
+                    {
+                        let lastOne = candidates[j].offsets.length -1;
+                        candidates[j].offsets.splice(lastOne, 1);
+                        candidates[j].offsetsPositions.splice(lastOne, 1);
+                        candidates[j].offsetsTypes.splice(lastOne, 1);
+                        candidates[j].offsetsValues.splice(lastOne, 1);
+                        candidates[j].offsetsValuesTimes.splice(lastOne, 1);
+                        candidates[j].offsetsIds.splice(lastOne, 1);
+                    }
+                    let testedLastOne = offsets.length -1;
+                    offsets.splice(testedLastOne, 1);
+                    offsetsPositions.splice(testedLastOne, 1);
+                    offsetsTypes.splice(testedLastOne, 1);
+                    offsetsValues.splice(testedLastOne, 1);
+                    offsetsValuesTimes.splice(testedLastOne, 1);
+                    offsetsIds.splice(testedLastOne, 1);
+                    patternLength--;
+                    break;
+                }
+            }
+            if (candidates.length == 0)
+                continue;
+            for (let j = 0; j < candidates.length; ++j)
+            {
+                for (let k = 0; k < candidates[j].offsets.length; ++k)
+                {
+                    layerAlreadyUsed[candidates[j].offsetsIds[k]] = true;
+                }
+            }
+            let appliedRepeatedPatternNerf =Math.min(Math.pow(1 / Math.pow(candidates.length, 0.5), Math.max(patternLength-2,1)),1);
+            if (patternLength - 1 > 2)
+            {  
+                for (let j = 0; j < candidates.length; ++j)
+                {
+                    for (let k = 0; k <candidates[j].offsets.length; ++k)
+                    {
+                        repeatedPatternNerf[candidates[j].offsetsIds[k]] = appliedRepeatedPatternNerf;
+                    }
+                }
+            }  
+            if (patternLength - 1 > 2)
+            {
+                testMatrixConsoleList.push(i);
+                testMatrixConsoleList.push(patternLength - 1);
+                testMatrixConsoleList.push({
+                    localOffsets: offsets,
+                    localOffsetsPositions: offsetsPositions,
+                    localOffsetsTypes: offsetsTypes,
+                    localOffsetsValues: offsetsValues,
+                    localOffsetsValuesTimes: offsetsValuesTimes,
+                    localOffsetsIds: offsetsIds,
+                });
+                testMatrixConsoleList.push(candidates);
+                testMatrixConsoleList.push(appliedRepeatedPatternNerf);
+            }
+            
+            
+        }
+        //console.log(testMatrixConsoleList);
+            
+        let lastNonTypingSectionIndex = -1;
+
+        let difficultyObjectOffsets = [];
+        for (let difficultyIndexer = 0; difficultyIndexer < difficultyObjects.length; ++difficultyIndexer)
+        {
+            let selectedObject = difficultyObjects[difficultyIndexer];
+            if (difficultyIndexer == 0)
+            {
+                difficultyObjectOffsets.push(Infinity);
+                continue;
+            }
+            if (selectedObject.type == "typingsection")
+            {
+                difficultyObjectOffsets.push(Infinity);
+                continue;
+            }
+            if (lastNonTypingSectionIndex != -1)
+            {
+                let previousObject = difficultyObjects[lastNonTypingSectionIndex];
+                difficultyObjectOffsets.push(distanceBetweenObjectsVector(selectedObject, previousObject));
+            }
+            
+            lastNonTypingSectionIndex = difficultyIndexer;
+        }
+        //console.log(difficultyObjectOffsets);
+
+        
+        //console.log(repeatedValues.length+" "+80+" "+repeatBonus)
+
+        const TAPNOTEDIFFICULTY = 800;      
+        const HOLDNOTEDIFFICULTY = 1600;  
+        const RELEASEDIFFICULTY = 1600;
+        const TYPINGSECTIONDIFFICULTY = 150;
 
         const lengthBonusStart = 60000
-        const lengthBonusStrength = 400000;
+        const lengthBonusStrength = 200000;
         let lengthBonus = Math.max(1, (drainTime - lengthBonusStart + lengthBonusStrength) / lengthBonusStrength);
         if (drainTime < lengthBonusStart)
-            lengthBonus = Math.pow(drainTime / lengthBonusStart, 1.20) / (drainTime / lengthBonusStart);
+            lengthBonus = Math.pow(drainTime / lengthBonusStart, 1.1) / (drainTime / lengthBonusStart);
 
         let activeAnchorIds = [];
         let activeAnchorPositions = [];
         let lastLeftHandId = -1;
         let lastRightHandId = -1;
-        let lastNonTypingSectionIndex = -1;
+        lastNonTypingSectionIndex = -1;
 
         let consoleList = [];
         let difficultySum = 0;
@@ -839,6 +1304,22 @@ starFormulas = {
                     activeAnchorIds.splice(anchorIndexer, 1);
                     anchorIndexer--;
                 }
+            }
+            //type
+            //startTime
+            //endTime
+            //textUniqueKeys
+            //textKeysPositions
+            if (selectedObject.type == "typingsection")
+            {
+                let totalDistance = 0;
+                for (let i = 1; i < selectedObject.textKeysPositions.length; ++i)
+                {
+                    let distanceVector =distanceBetweenPositionsVector(selectedObject.textKeysPositions[i-1],selectedObject.textKeysPositions[i]);
+                    totalDistance += Math.sqrt(Math.pow(distanceVector.x, 2) + Math.pow(distanceVector.y, 2));
+                }
+                if (selectedObject.textKeysPositions.length > 0)
+                    calculatedDifficulty = TYPINGSECTIONDIFFICULTY * totalDistance / selectedObject.textKeysPositions.length;
             }
 
             if (selectedObject.type == "anchor")
@@ -900,19 +1381,27 @@ starFormulas = {
                 let previousEndTime = previousObject.endTime;
                 let currentStartTime = selectedObject.startTime;
                 //distanceFactor = Math.max(distanceBetweenObjects(selectedObject, previousObject), 1) / ((currentStartTime - previousEndTime)/20);
-                speedFactor = 225/(currentStartTime - previousEndTime);
+                speedFactor = Math.max(475/(currentStartTime - previousEndTime),1);
+                if (speedFactor > 1)
+                    speedFactor = Math.pow(speedFactor, 0.63);
             }
             if (selectedObject.type!="typingsection")
             {
                 lastNonTypingSectionIndex = difficultyIndexer
             }
-            difficultySum += calculatedDifficulty * distanceFactor * speedFactor * lengthBonus;
+            consoleList.push(distanceFactor)
+            consoleList.push(speedFactor)
+            consoleList.push(lengthBonus)
+            consoleList.push("last:"+repeatedPatternNerf[difficultyIndexer])
+            difficultySum += calculatedDifficulty * distanceFactor * speedFactor * lengthBonus * repeatedPatternNerf[difficultyIndexer];
         }
         //console.log(consoleList);
         let difficultyDensity = difficultySum / drainTime;
         if (difficultyDensity > 5) {
-            difficultyDensity = 5 * Math.pow(difficultyDensity / 5, 0.4);
+            difficultyDensity = 5 * Math.pow(difficultyDensity / 5, 0.2);
         }
+        
+        //console.log("SEPARATOR");
         return difficultyDensity;
     }
 };
