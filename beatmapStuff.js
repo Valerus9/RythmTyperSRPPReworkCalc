@@ -169,7 +169,8 @@ async function CreateMapData(files) {
             console.log(difficulty.name);
             console.log("OD was overwritten with ranked data ("+difficulty.overallDifficulty+" -> "+diffRankedOd+")");
             wrongODSum++;
-            localODs.push(diffRankedOd);
+            localODs.push(diffRankedOd);   
+            difficulty.overallDifficulty = diffRankedOd;
           }
           else
           {
@@ -356,7 +357,6 @@ function scaleDifficultySpeed(difficultyInput, speedInput)
     let DifficultyResult = {
         notes: [],
         overallDifficulty: overallDifficultyResult,
-        typingSections: [],
         accuracy: 100,
     };
     for (const note of difficultyInput.notes) {
@@ -364,7 +364,7 @@ function scaleDifficultySpeed(difficultyInput, speedInput)
             let tempNoteResult = {
                 key: note.key,
                 type: note.type,
-                time: note.time / speedInput,
+                time: note.time/1000 / speedInput,
             };
             DifficultyResult.notes.push(tempNoteResult);
         }
@@ -372,16 +372,20 @@ function scaleDifficultySpeed(difficultyInput, speedInput)
             let tempNoteResult = {
                 key: note.key,
                 type: note.type,
-                startTime: note.startTime / speedInput,
-                endTime: note.endTime / speedInput,
+                startTime: note.startTime/1000 / speedInput,
+                endTime: note.endTime /1000/ speedInput,
             };
             DifficultyResult.notes.push(tempNoteResult);
         }
     }
+    if (difficultyInput.typingSections.length > 0)
+    {
+        DifficultyResult.typingSections = [];
+    }
     for (const typingSection of difficultyInput.typingSections) {
         let tempTypingSectionResult = {
-            startTime: typingSection.startTime / speedInput,
-            endTime: typingSection.endTime / speedInput,
+            startTime: typingSection.startTime /1000/ speedInput,
+            endTime: typingSection.endTime/1000 / speedInput,
             text: typingSection.text,
         };
         DifficultyResult.typingSections.push(tempTypingSectionResult);

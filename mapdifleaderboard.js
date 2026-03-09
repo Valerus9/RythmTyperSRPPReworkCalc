@@ -176,8 +176,12 @@ function LoadMapDifLeaderboard() {
     document.getElementById("zipInput").addEventListener("change", async (event) => {
         const files = [...event.target.files].filter(f => f.name.endsWith(".rtm"));
         loadMapDataIndexer = 0;
-        await ClearCachIfMapIsInThem(await CreateMapData(files));
-        await LoadMapDataValues(await CreateMapData(files))
+        await CreateMapData(files).then(data => {
+            ClearCachIfMapIsInThem(data).then(data2 => {
+                console.log(data);
+                LoadMapDataValues(data);
+            });
+        });
             
         document.getElementById("warningcacheonly").style.display = "none";
         document.getElementById("changemenudifferentodCalc").disabled = false;

@@ -123,12 +123,12 @@ function LoadDiffGraph() {
     +"<div id=\"linegraph\" style=\"display:flex; flex-direction:row; overflow-x:auto; width:100%;\"></div>"
     let ppsrbuildupselect = document.getElementById("ppsrbuildupselect");
     let ppsrbuildupselectText = "<option value=\"\" disabled selected>Select a pp rework</option>\n";
-    for (let i = 0; i < ppstarFormulaBuildUps.length; ++i) {
+    for (let i = 0; i < ppstarFormulaBuildUpKeys.length; ++i) {
         if (i == 0) {
-            ppsrbuildupselectText += "<option value=\"" + (i + 1) + "\" selected>" + ppstarFormulaBuildUps[i] + "</option>\n";
+            ppsrbuildupselectText += "<option value=\"" + (i + 1) + "\" selected>" + ppstarFormulaBuildUpKeys[i] + "</option>\n";
         }
         else {
-            ppsrbuildupselectText += "<option value=\"" + (i + 1) + "\">" + ppstarFormulaBuildUps[i] + "</option>\n";
+            ppsrbuildupselectText += "<option value=\"" + (i + 1) + "\">" + ppstarFormulaBuildUpKeys[i] + "</option>\n";
         }
     }
     ppsrbuildupselect.innerHTML = ppsrbuildupselectText;
@@ -450,16 +450,20 @@ function Createbuilduptable()
                 {
                     document.getElementById(localNoteMultiplierNames[j-1]+"label").innerHTML = "<div style=\"display:flex; flex-direction:column;\"><div>"+localNoteMultiplierNames[j-1]+"</div><div style=\"color:rgb(235,40,40);\">"+(Math.round(-localNoteBuildUps[i][j] * 100)/100)+"</div><div>"+(Math.round(localNoteMultiplierValues[j-1][i] * 100)/100)+"</div></div>";
                 }
+                else
+                {
+                    document.getElementById(localNoteMultiplierNames[j-1]+"label").innerHTML = "<div>"+localNoteMultiplierNames[j-1]+"<div style=\"color:rgba(0,0,0,0);\">T</div><div style=\"color:rgba(0,0,0,0);\">T</div>";
+                }
             }
             let localTimePercentage = Math.round(localNoteStartTimes[i] * 100 / localNoteStartTimeMax*100)/100;
-            document.getElementById("beatmaptimehoverdata").innerHTML = ConvertTimeToText(localNoteStartTimes[i])+" / "+ConvertTimeToText(localNoteStartTimeMax) + " ("+localTimePercentage+"%)<br>"+localNoteStartTimes[i]+"ms / "+localNoteStartTimeMax+"ms";
+            document.getElementById("beatmaptimehoverdata").innerHTML = ConvertTimeToText(localNoteStartTimes[i])+" / "+ConvertTimeToText(localNoteStartTimeMax) + " ("+localTimePercentage+"%)<br>"+Math.round(localNoteStartTimes[i])+"ms / "+Math.round(localNoteStartTimeMax)+"ms";
         });
         /*document.getElementById("buildupcolumn"+i).addEventListener("mouseleave", async (event) => {
             for (let j = 0; j < localNoteBuildUps[i].length; ++j)
             {
                 if (!buildupShowMultipliers[j])
                     continue;
-                if (localNoteBuildUps[j] == 0)
+                if (localNoteBuildUps[j] != 0)
                     continue;            
                 if (j==0)
                 {
@@ -492,5 +496,5 @@ function ConvertTimeToText(timeInput)
     localSeconds = "0" + localSeconds;
   let localMinutes = ((((timeInput - localMilliseconds) / 1000) - localSeconds) / 60 ) % 60;
 
-  return localMinutes + ":" +localSeconds + "."+localMilliseconds;
+  return localMinutes + ":" +localSeconds + "."+Math.round(localMilliseconds);
 }
