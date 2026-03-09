@@ -1322,7 +1322,8 @@ starFormulas = {
             }
             if (rightHandLastPressedCount > Math.ceil(NOTECOUNTLIMIT / 2)
                 && leftHandLastPressedCount > Math.ceil(NOTECOUNTLIMIT / 2)) {
-                handOverwhelmingBuff = (rightHandLastPressed.length + leftHandLastPressed.length) / NOTECOUNTLIMIT;
+                handOverwhelmingBuff = Math.pow(rightHandLastPressed.length + leftHandLastPressed.length,0.9) / NOTECOUNTLIMIT;
+                handOverwhelmingBuff = Math.max(1, handOverwhelmingBuff);
             }
             let distanceFactor = 1;
             let speedFactor = 1;
@@ -1335,7 +1336,7 @@ starFormulas = {
                 const SPEEDLOWERLIMIT = 25;
                 speedFactor = Math.max(SPEEDUPPERLIMIT / (SPEEDLOWERLIMIT + (currentStartTime - previousEndTime) * ((SPEEDUPPERLIMIT - SPEEDLOWERLIMIT) / SPEEDUPPERLIMIT)), 1);
                 if (speedFactor > 1)
-                    speedFactor = Math.pow(speedFactor, 0.668);
+                    speedFactor = Math.pow(speedFactor, 0.2);
             }
             if (selectedObject.type != "typingsection") {
                 lastNonTypingSectionIndex = difficultyIndexer
