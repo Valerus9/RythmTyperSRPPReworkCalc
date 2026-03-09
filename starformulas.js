@@ -1042,10 +1042,36 @@ starFormulas = {
                 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
             ];
+            let isVerticalChord = [
+                false, false, false, false, false,  false, false, false, false, false,
+                false, false, false, false, false,  false, false, false, false, false,
+                false, false, false, false, false,  false, false, false, false, false
+            ]
             for (let i = 0; i < chordObject.keyPositions.length; ++i) {
                 let column = chordObject.keyPositions[i].column;
                 let row = chordObject.keyPositions[i].row;
                 tempPositions[row * 10 + column] = 1;
+            }
+            let verticalChordCounter = 0;
+            
+            for (let i = 0; i < 10; ++i) {
+                let localCounter = 0;
+                for (let j = 0; j < 3; ++j) {
+                    let position = j * 10 + i
+                    if (tempPositions[position] != 1)
+                        continue;
+                    localCounter++;
+                }
+                if (localCounter > 1)
+                {
+                    verticalChordCounter+=localCounter;
+                    for (let j = 0; j < 3; ++j) {
+                        let position = j * 10 + i
+                        if (tempPositions[position] != 1)
+                            continue;
+                        isVerticalChord[position] = true;
+                    }   
+                }
             }
             let chordDiff = 1;
             let horizontalPosition = -1;
@@ -1078,20 +1104,22 @@ starFormulas = {
                     }
                 }
                 let chordHeight = maxPosition + 1 - minPosition;
+                
                 if (chordHeight == 2)
                     chordDiff += 3;
                 if (chordHeight == 3 && counter == 3)
                     chordDiff += 5;
                 if (chordHeight == 3 && counter == 2)
                 {
-                    chordDiff += 45;
-                    if (chordObject.keyPositions.length < 3)
+                    chordDiff += 30;
+                    if (chordObject.keyPositions.length - verticalChordCounter < 1)
                     {
-                        chordDiff -= 43;
+                        chordDiff -= 29.75;
                     }
                 }
+                    
             }
-            return chordDiff + chordObject.keyPositions.length / 5 + 0.2 * Math.max(horizontalCounter - 2, 1);
+            return chordDiff + chordObject.keyPositions.length / 10 + 0.2 * Math.max(horizontalCounter - 2, 1);
         }
         const TAPNOTEDIFFICULTY = 1000;
         const HOLDNOTEDIFFICULTY = 1700;

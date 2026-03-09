@@ -1039,10 +1039,36 @@ ppFormulas = {
                 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
             ];
+            let isVerticalChord = [
+                false, false, false, false, false,  false, false, false, false, false,
+                false, false, false, false, false,  false, false, false, false, false,
+                false, false, false, false, false,  false, false, false, false, false
+            ]
             for (let i = 0; i < chordObject.keyPositions.length; ++i) {
                 let column = chordObject.keyPositions[i].column;
                 let row = chordObject.keyPositions[i].row;
                 tempPositions[row * 10 + column] = 1;
+            }
+            let verticalChordCounter = 0;
+            
+            for (let i = 0; i < 10; ++i) {
+                let localCounter = 0;
+                for (let j = 0; j < 3; ++j) {
+                    let position = j * 10 + i
+                    if (tempPositions[position] != 1)
+                        continue;
+                    localCounter++;
+                }
+                if (localCounter > 1)
+                {
+                    verticalChordCounter+=localCounter;
+                    for (let j = 0; j < 3; ++j) {
+                        let position = j * 10 + i
+                        if (tempPositions[position] != 1)
+                            continue;
+                        isVerticalChord[position] = true;
+                    }   
+                }
             }
             let chordDiff = 1;
             let horizontalPosition = -1;
@@ -1082,10 +1108,10 @@ ppFormulas = {
                     chordDiff += 5;
                 if (chordHeight == 3 && counter == 2)
                 {
-                    chordDiff += 45;
-                    if (chordObject.keyPositions.length < 3)
+                    chordDiff += 30;
+                    if (chordObject.keyPositions.length - verticalChordCounter < 1)
                     {
-                        chordDiff -= 43;
+                        chordDiff -= 29.75;
                     }
                 }
                     
@@ -1327,7 +1353,7 @@ ppFormulas = {
             }
             if (rightHandLastPressedCount > Math.ceil(NOTECOUNTLIMIT / 2)
                 && leftHandLastPressedCount > Math.ceil(NOTECOUNTLIMIT / 2)) {
-                handOverwhelmingBuff = Math.pow(rightHandLastPressed.length + leftHandLastPressed.length,0.8) / NOTECOUNTLIMIT;
+                handOverwhelmingBuff = Math.pow(rightHandLastPressed.length + leftHandLastPressed.length,0.95) / NOTECOUNTLIMIT;
                 handOverwhelmingBuff = Math.max(1, handOverwhelmingBuff);
             }
             let distanceFactor = 1;
