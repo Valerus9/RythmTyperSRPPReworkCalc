@@ -5,28 +5,26 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rhythm Typer SR PP Rework</title>
+    <script src="datalocalstorage.js"></script>
+    <script src="apicalls.js"></script>
     <script src="zipcode.js"></script>
-    <script src="ppformulas.js"></script>
-    <script src="starformulas.js"></script>
-    <script src="rankedmaps.js"></script>
     <script src="ppaccuracies.js"></script>
-    <script src="leaderboardData.js"></script>
-    <script src="ppstarformulabuildup.js"></script>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="darklightmodestyle.css">
 </head>
 <body>    
     <div id="topbar" class="neededpadding">
         <input type="button" id="visualmodeswitch" value="Dark mode">    
-        <input type="button" id="changemenuprofile" value="Leaderboard change">
+        <input type="button" id="changemenuprofile" disabled value="Leaderboard change">
         <input type="button" class="selected" id="changemenumaps" value="Map sr pp change">
         <input type="button" id="changemenudifferentodCalc" disabled value="Different OD calc">
         <input type="button" id="changemenugraphviewofrework" disabled value="Rework graph view">
+        <input type="button" id="changemenubuildupleaderboard" disabled value="Build up leaderboard">
+        <input type="button" id="leftrighthandmenu" disabled value="Left/Right hand">
     </div>
     <div id="warningcacheonly" class="neededpadding" style="display:flex; justify-content:center; width:100%;"><div id="warningcacheonlycenter" class="neededpadding">You need to upload .rtm files on the Map sr pp change menu in order to access Different OD calc and Rework graph view</div></div>
     <h1 class="title">Rhythm typer SR/PP Rework site</h1>
     <h5 class="author">By Valerus9</h5>
-    <p style="text-align: center;">Last updated: 2026.03.09.</p>
     <div id="container" class="neededpadding">
         <p>Select .rtm file or select multiple .rtm files</p>
         <input type="file" id="zipInput" multiple accept=".rtm"/>
@@ -66,6 +64,9 @@
         <table id="diffList">
         </table>
     </div>     
+    <script src="reworklist.js"></script>
+    <script src="formulas/ingameformula.js"></script>
+    <script src="formulas/valerus9reworkv2_1.js"></script>
     <script src="beatmapStuff.js"></script>   
     <script src="tablecreator.js"></script>
     <script src="starratingppstuff.js"></script>
@@ -73,6 +74,8 @@
     <script src="newPlayerleaderboard.js"></script>
     <script src="mapdifleaderboard.js"></script>
     <script src="hitobjectdifficultybuildup.js"></script>
+    <script src="buildupleaderboard.js"></script>
+    <script src="leftrighthandmapdivision.js"></script>
     <script src="main.js" defer></script>    
 </body>
 </html>

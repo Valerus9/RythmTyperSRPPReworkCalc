@@ -1,25 +1,28 @@
 function CreateSelectContentUser() {
     let selectppFirst = document.getElementById("ppcalcselectfirst");
     let selectpptextFirst = "<option value=\"\" disabled selected>Select a pp rework</option>\n";
-    let ppReworkKeys = Object.keys(ppFormulas);
-    for (let i = 0; i < ppReworkKeys.length; ++i) {
+    for (let i = 0; i < reworks.length; ++i) {
+        if (!ObjectHasVariable(reworks[i], "pp"))
+            continue;
         if (i == 0) {
-            selectpptextFirst += "<option selected value=\"" + (i + 1) + "\">" + ppReworkKeys[i] + "</option>\n";
+            selectpptextFirst += "<option selected value=\"" + (i + 1) + "\">" + reworks[i].name + "</option>\n";
         }
         else {
-            selectpptextFirst += "<option value=\"" + (i + 1) + "\">" + ppReworkKeys[i] + "</option>\n";
+            selectpptextFirst += "<option value=\"" + (i + 1) + "\">" + reworks[i].name + "</option>\n";
         }
 
     }
     selectppFirst.innerHTML = selectpptextFirst;
     let selectppSecond = document.getElementById("ppcalcselectsecond");
     let selectpptextSecond = "<option value=\"\" disabled selected>Select a pp rework</option>\n";
-    for (let i = 0; i < ppReworkKeys.length; ++i) {
+    for (let i = 0; i < reworks.length; ++i) {
+        if (!ObjectHasVariable(reworks[i], "pp"))
+            continue;
         if (i == 1) {
-            selectpptextSecond += "<option selected value=\"" + (i + 1) + "\">" + ppReworkKeys[i] + "</option>\n";
+            selectpptextSecond += "<option selected value=\"" + (i + 1) + "\">" + reworks[i].name + "</option>\n";
         }
         else {
-            selectpptextSecond += "<option value=\"" + (i + 1) + "\">" + ppReworkKeys[i] + "</option>\n";
+            selectpptextSecond += "<option value=\"" + (i + 1) + "\">" + reworks[i].name + "</option>\n";
         }
 
     }
@@ -46,7 +49,7 @@ function LoadPlayerLeaderBoard() {
         + "</div>"
         + "<table id=\"playerleaderboard\"></table>"
     CreateSelectContentUser();
-    CreateLeaderboard();
+    //CreateLeaderboard();
 }
 
 function CreateLeaderboard()
@@ -154,4 +157,10 @@ function CreateLeaderboardValues()
         leaderboardNewRank[ppRowIds[i]] = i + 1;
     }
     return [leaderboardUsername, leaderboardOldRank, leaderboardNewRank, leaderboardOldPP, leaderboardNewPP, leaderboardPPdiff, leaderboardActualPPdiff, subtables];
+}
+
+CreatePlayerLeaderboardData();
+function CreatePlayerLeaderboardData()
+{
+    
 }

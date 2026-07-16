@@ -28,18 +28,24 @@ CreateSelectContentBeatmap();
 function ChangeMenu(elementId) {
     let changeMenuButton = document.getElementById(elementId);
     selectedId = elementId;
-    if (changeMenuButton.value == "Leaderboard change") {
+    if (selectedId == "changemenuprofile") {
         LoadPlayerLeaderBoard();
     }
 
-    else if (changeMenuButton.value == "Map sr pp change") {
+    else if (selectedId == "changemenumaps") {
         LoadMapDifLeaderboard();
     }
-    else if (changeMenuButton.value == "Different OD calc") {
+    else if (selectedId == "changemenudifferentodCalc") {
         LoadDifODCalc();
     }
-    else if (changeMenuButton.value == "Rework graph view") {
+    else if (selectedId == "changemenugraphviewofrework") {
         LoadDiffGraph();
+    }
+    else if (selectedId == "changemenubuildupleaderboard") {
+        LoadBuildUpLeaderboard();
+    }
+    else if (selectedId == "leftrighthandmenu") {
+        loadLeftRightHand();
     }
     RefreshSelectedButton();
 }
@@ -56,12 +62,19 @@ document.getElementById("changemenudifferentodCalc").addEventListener("click", a
 document.getElementById("changemenugraphviewofrework").addEventListener("click", async (event) => {
     ChangeMenu("changemenugraphviewofrework");
 });
+document.getElementById("changemenubuildupleaderboard").addEventListener("click", async (event) => {
+    ChangeMenu("changemenubuildupleaderboard");
+});
+document.getElementById("leftrighthandmenu").addEventListener("click", async (event) => {
+    ChangeMenu("leftrighthandmenu");
+});
 
 function RefreshSelectedButton() {
     document.getElementById("changemenuprofile").className = document.getElementById("changemenuprofile").className.replace("selected", "").trim(" ");
     document.getElementById("changemenumaps").className = document.getElementById("changemenumaps").className.replace("selected", "").trim(" ");
     document.getElementById("changemenudifferentodCalc").className = document.getElementById("changemenudifferentodCalc").className.replace("selected", "").trim(" ");
     document.getElementById("changemenugraphviewofrework").className = document.getElementById("changemenugraphviewofrework").className.replace("selected", "").trim(" ");
+    document.getElementById("changemenubuildupleaderboard").className = document.getElementById("changemenubuildupleaderboard").className.replace("selected", "").trim(" ");
     if (selectedId == "changemenuprofile") {
         document.getElementById("changemenuprofile").className += " selected";
     }
@@ -74,7 +87,11 @@ function RefreshSelectedButton() {
     if (selectedId == "changemenugraphviewofrework") {
         document.getElementById("changemenugraphviewofrework").className += " selected";
     }
+    if (selectedId == "changemenubuildupleaderboard") {
+        document.getElementById("changemenubuildupleaderboard").className += " selected";
+    }
 }
 
+//localStorage.clear();
 LoadMapDifLeaderboard();
-
+GetDataForMapLeaderboard(0,10);

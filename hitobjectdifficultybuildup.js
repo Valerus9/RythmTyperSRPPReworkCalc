@@ -48,12 +48,12 @@ function calculateDifficultyObjectBuildUp(baseValue, multipliers) {
     }
     let positiveDifference = maximumBaseValue - baseValue;
     let negativeDifference = maximumBaseValue;
-    let caulculatedValue = maximumBaseValue;
+    let calculatedValue = maximumBaseValue;
     for (let i = 0; i < multipliers.length; ++i) {
         if (multipliers[i] < 1) {
             negativeDifference *= multipliers[i];
             positiveDifference *= multipliers[i];
-            caulculatedValue *= multipliers[i];
+            calculatedValue *= multipliers[i];
         }
     }
     negativeDifference = maximumBaseValue - negativeDifference;
@@ -63,11 +63,11 @@ function calculateDifficultyObjectBuildUp(baseValue, multipliers) {
             //buildUp[i + 1] = buildUp[i + 1] * (caulculatedValue / maximumBaseValue)
         }
         if (multipliers[i] < 1) {
-            buildUp[i + 1] = ((1 - multipliers[i]) / negativeSum) * negativeDifference;
+            buildUp[i + 1] = -(((1 - multipliers[i]) / negativeSum) * negativeDifference);
             //buildUp[i + 1] = buildUp[i + 1] * (negativeDifference / caulculatedValue)
         }
     }
-    buildUp[0] = caulculatedValue;
+    buildUp[0] = calculatedValue;
     for (let i = 1; i < buildUp.length;++i)
     {
         if (multipliers[i - 1] > 1)
@@ -123,12 +123,14 @@ function LoadDiffGraph() {
     +"<div id=\"linegraph\" style=\"display:flex; flex-direction:row; overflow-x:auto; width:100%;\"></div>"
     let ppsrbuildupselect = document.getElementById("ppsrbuildupselect");
     let ppsrbuildupselectText = "<option value=\"\" disabled selected>Select a pp rework</option>\n";
-    for (let i = 0; i < ppstarFormulaBuildUpKeys.length; ++i) {
+    for (let i = 0; i < reworks.length; ++i) {
+        if (!ObjectHasVariable(reworks[i], "buildup"))
+            continue;
         if (i == 0) {
-            ppsrbuildupselectText += "<option value=\"" + (i + 1) + "\" selected>" + ppstarFormulaBuildUpKeys[i] + "</option>\n";
+            ppsrbuildupselectText += "<option value=\"" + (i + 1) + "\" selected>" + reworks[i].name + "</option>\n";
         }
         else {
-            ppsrbuildupselectText += "<option value=\"" + (i + 1) + "\">" + ppstarFormulaBuildUpKeys[i] + "</option>\n";
+            ppsrbuildupselectText += "<option value=\"" + (i + 1) + "\">" + reworks[i].name + "</option>\n";
         }
     }
     ppsrbuildupselect.innerHTML = ppsrbuildupselectText;
@@ -260,13 +262,13 @@ function Createbuilduptable()
     + "<br>OD: " +Math.round(scaleDifficultySpeed(difficultyList[builduptableSelectedDif],buildupTimeMultiplier).overallDifficulty * 100) / 100;
     previousGraphRandomNumber = 0;
     document.getElementById("beatmaptimehoverdata").innerHTML = "";
-    let localbuildupvalues=ppstarFormulaBuildUps[ppstarFormulaBuildUpKeys[buildupSelectedBuildup]](scaleDifficultySpeed(difficultyList[builduptableSelectedDif],buildupTimeMultiplier));
-    let localNoteStartTimes = localbuildupvalues[0];
-    let localNoteBaseValues = localbuildupvalues[1];
+    let localbuildupvalues=reworks[buildupSelectedBuildup].buildup.calculate(scaleDifficultySpeed(difficultyList[builduptableSelectedDif],buildupTimeMultiplier));
+    let localNoteStartTimes = localbuildupvalues.noteStartTimesForBuildUp;
+    let localNoteBaseValues = localbuildupvalues.noteBaseValuesForBuildUp;
 
-    let localNoteMultiplierNames = localbuildupvalues[2];
-    let localNoteMultiplierValues = localbuildupvalues[3];
-    buildupNoteMultiplierColors = localbuildupvalues[4];
+    let localNoteMultiplierNames = localbuildupvalues.noteMultiplierNames;
+    let localNoteMultiplierValues = localbuildupvalues.noteMultiplierValues;
+    let buildupNoteMultiplierColors = localbuildupvalues.notecolors;
 
     if (buildupShowMultipliers.length == 0)
     {
@@ -298,9 +300,9 @@ function Createbuilduptable()
           localNoteStartTimeMax = localNoteStartTimes[i];
     }
 
-    let localTypingSectionBaseValues = localbuildupvalues[5];
-    let localTypingSectionMultiplierNames = localbuildupvalues[6];
-    let localTypingSectionMultiplierValues = localbuildupvalues[7];
+    let localTypingSectionBaseValues = localbuildupvalues.typingSectionBaseValuesForBuildUp;
+    let localTypingSectionMultiplierNames = localbuildupvalues.typingSectionMultiplierNames;
+    let localTypingSectionMultiplierValues = localbuildupvalues.typingSectionMultiplierValues;
     let localTypingSectionMultiplierColors = [];    
 
     

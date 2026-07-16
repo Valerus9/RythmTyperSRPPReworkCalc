@@ -25,24 +25,50 @@ let ppReworkSecond = 1;
 let srReworkFirst = 0;
 let srReworkSecond = 1;
 
-let starFormulaKeys = Object.keys(starFormulas);
-let ppstarFormulaBuildUpKeys = Object.keys(ppstarFormulaBuildUps);
-let ppFormulaKeys = Object.keys(ppFormulas);
 
 let containerBody = document.getElementById("container").innerHTML;
 
 let selectedMod = "";
-LoadRankedBeatmaps();
+SetUpStarPPArrays();
 
 
-
-function LoadRankedBeatmaps() {
-    for (let i = 0; i < ppFormulaKeys.length; ++i) {
+function SetUpStarPPArrays()
+{
+    for (let i = 0; i < reworks.length; ++i) {
+        let keysOfRework = Object.keys(reworks[i]);
+        if (!keysOfRework.includes("pp"))
+            continue;
         PPs.push([]);
         PPDTNCs.push([]);
         PPHTDCs.push([]);
     }
-    for (let i = 0; i < starFormulaKeys.length; ++i) {
+    for (let i = 0; i < reworks.length; ++i) {
+        let keysOfRework = Object.keys(reworks[i]);
+        if (!keysOfRework.includes("sr"))
+            continue;
+        Stars.push([]);
+        StarDTNCs.push([]);
+        StarHTDCs.push([]);
+    }
+}
+/*LoadRankedBeatmaps();
+
+
+
+function LoadRankedBeatmaps() {
+    
+    for (let i = 0; i < reworks.length; ++i) {
+        let keysOfRework = Object.keys(reworks[i]);
+        if (!keysOfRework.includes("pp"))
+            continue;
+        PPs.push([]);
+        PPDTNCs.push([]);
+        PPHTDCs.push([]);
+    }
+    for (let i = 0; i < reworks.length; ++i) {
+        let keysOfRework = Object.keys(reworks[i]);
+        if (!keysOfRework.includes("sr"))
+            continue;
         Stars.push([]);
         StarDTNCs.push([]);
         StarHTDCs.push([]);
@@ -77,7 +103,7 @@ function LoadRankedBeatmaps() {
             PPHTDCs[i].push(RankedPPHTDCs[i][j])
         }
     }
-}
+}*/
 
 function GetModdedStar(diffIdSingle, reworkId, mod) {
     if (mod.includes("NC") || mod.includes("DT")) {

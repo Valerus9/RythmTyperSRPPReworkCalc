@@ -15,47 +15,53 @@ let newPPRanks = [];
 function CreateSelectContentBeatmap() {
     let selectsrFirst = document.getElementById("srcalcselectfirst");
     let selectsrtextFirst = "<option value=\"\" disabled selected>Select a sr rework</option>\n";
-    let srReworkKeys = Object.keys(starFormulas);
-    for (let i = 0; i < srReworkKeys.length; ++i) {
+    for (let i = 0; i < reworks.length; ++i) {
+        if (!ObjectHasVariable(reworks[i],"sr"))
+            continue;
         if (i == 0) {
-            selectsrtextFirst += "<option selected value=\"" + (i + 1) + "\">" + srReworkKeys[i] + "</option>\n";
+            selectsrtextFirst += "<option selected value=\"" + (i + 1) + "\">" + reworks[i].name + "</option>\n";
         }
         else {
-            selectsrtextFirst += "<option value=\"" + (i + 1) + "\">" + srReworkKeys[i] + "</option>\n";
+            selectsrtextFirst += "<option value=\"" + (i + 1) + "\">" + reworks[i].name + "</option>\n";
         }
     }
     selectsrFirst.innerHTML = selectsrtextFirst;
     let selectsrSecond = document.getElementById("srcalcselectsecond");
     let selectsrtextSecond = "<option value=\"\" disabled selected>Select a sr rework</option>\n";
-    for (let i = 0; i < srReworkKeys.length; ++i) {
+    for (let i = 0; i < reworks.length; ++i) {
+        if (!ObjectHasVariable(reworks[i],"sr"))
+            continue;
         if (i == 1) {
-            selectsrtextSecond += "<option value=\"" + (i + 1) + "\" selected>" + srReworkKeys[i] + "</option>\n";
+            selectsrtextSecond += "<option value=\"" + (i + 1) + "\" selected>" + reworks[i].name + "</option>\n";
         }
         else {
-            selectsrtextSecond += "<option value=\"" + (i + 1) + "\">" + srReworkKeys[i] + "</option>\n";
+            selectsrtextSecond += "<option value=\"" + (i + 1) + "\">" + reworks[i].name + "</option>\n";
         }
     }
     selectsrSecond.innerHTML = selectsrtextSecond;
     let selectppFirst = document.getElementById("ppcalcselectfirst");
     let selectpptextFirst = "<option value=\"\" disabled selected>Select a pp rework</option>\n";
-    let ppReworkKeys = Object.keys(ppFormulas);
-    for (let i = 0; i < ppReworkKeys.length; ++i) {
+    for (let i = 0; i < reworks.length; ++i) {
+        if (!ObjectHasVariable(reworks[i],"pp"))
+            continue;
         if (i == 0) {
-            selectpptextFirst += "<option selected value=\"" + (i + 1) + "\">" + ppReworkKeys[i] + "</option>\n";
+            selectpptextFirst += "<option selected value=\"" + (i + 1) + "\">" + reworks[i].name + "</option>\n";
         }
         else {
-            selectpptextFirst += "<option value=\"" + (i + 1) + "\">" + ppReworkKeys[i] + "</option>\n";
+            selectpptextFirst += "<option value=\"" + (i + 1) + "\">" + reworks[i].name + "</option>\n";
         }
     }
     selectppFirst.innerHTML = selectpptextFirst;
     let selectppSecond = document.getElementById("ppcalcselectsecond");
     let selectpptextSecond = "<option value=\"\" disabled selected>Select a pp rework</option>\n";
-    for (let i = 0; i < ppReworkKeys.length; ++i) {
+    for (let i = 0; i < reworks.length; ++i) {
+        if (!ObjectHasVariable(reworks[i],"pp"))
+            continue;
         if (i == 1) {
-            selectpptextSecond += "<option value=\"" + (i + 1) + "\" selected>" + ppReworkKeys[i] + "</option>\n";
+            selectpptextSecond += "<option value=\"" + (i + 1) + "\" selected>" + reworks[i].name + "</option>\n";
         }
         else {
-            selectpptextSecond += "<option value=\"" + (i + 1) + "\">" + ppReworkKeys[i] + "</option>\n";
+            selectpptextSecond += "<option value=\"" + (i + 1) + "\">" + reworks[i].name + "</option>\n";
         }
     }
     selectppSecond.innerHTML = selectpptextSecond;
@@ -150,103 +156,87 @@ function LoadMapDifLeaderboard() {
     });
     document.getElementById("clearcachertms").addEventListener("click", async (event) => {
         ClearCachedRTMS();
-        document.getElementById("clearcachertms").style.display = "none";
-        document.getElementById("cacheMessage").style.display = "none";
-        if (songNames.length == 0)
-        {
-            document.getElementById("clearrtms").style.display = "none";
-        }
-        let isThereNotCache = false;
-        for (let i = 0; i < isCache.length; ++i)
-        {
-            if (!isCache[i])
-            {
-                isThereNotCache = true;
-                break;
-            }
-        }
-        if (!isThereNotCache && songNames.length > 0)
-        {
-            document.getElementById("changemenudifferentodCalc").disabled = false;
-            document.getElementById("changemenugraphviewofrework").disabled = false;
-        }
+        UpdateClearButtons();
         CreateTable("Difficulty list", "diffList", difTableColumnNames, difTableColumnIds, difTableColumnWidths, CreateDefaultRowIds(songNames.length), CreateDiffTableValues(true), difTableColumnCompare, difTableColumnTypes, 0);
     });
 
     document.getElementById("zipInput").addEventListener("change", async (event) => {
         const files = [...event.target.files].filter(f => f.name.endsWith(".rtm"));
-        loadMapDataIndexer = 0;
-        await CreateMapData(files).then(data => {
-            ClearCachIfMapIsInThem(data).then(data2 => {
-                console.log(data);
+        await CreateMapDataFromFiles(files).then(data => {
+            ClearCacheIfMapIsInThem(data).then(data2=>{
                 LoadMapDataValues(data);
             });
+            
         });
             
         document.getElementById("warningcacheonly").style.display = "none";
         document.getElementById("changemenudifferentodCalc").disabled = false;
         document.getElementById("changemenugraphviewofrework").disabled = false;
+        document.getElementById("changemenubuildupleaderboard").disabled = false;
     });
 }
-async function ClearCachIfMapIsInThem(localValues)
+
+function UpdateClearButtons()
+{   
+    
+    if (songNames.length == 0)
+    {
+        document.getElementById("clearrtms").style.display = "none";
+    }
+    let isThereCache = false;
+    let isThereNotCache = false;
+    for (let i = 0; i < isCache.length; ++i)
+    {
+        if (!isCache[i])
+        {
+            isThereNotCache = true;
+            break;
+        }
+    }
+    for (let i = 0; i < isCache.length; ++i)
+    {
+        if (isCache[i])
+        {
+            isThereCache = true;
+            break;
+        }
+    }
+    if (isThereCache)
+    {
+        document.getElementById("clearcachertms").style.display = "inline";
+        document.getElementById("cacheMessage").style.display = "inline";
+    }
+    else
+    {
+        document.getElementById("clearcachertms").style.display = "none";
+        document.getElementById("cacheMessage").style.display = "none";
+    }
+    if (isThereNotCache && songNames.length > 0)
+    {
+        document.getElementById("changemenudifferentodCalc").disabled = false;
+        document.getElementById("changemenugraphviewofrework").disabled = false;
+        //document.getElementById("leftrighthandmenu").disabled = false;
+    }
+}
+
+async function ClearCacheIfMapIsInThem(localValues)
 {
     for (let i = 0; i < localValues[0].length; ++i)
     {
         if (songNames.includes(localValues[4][i]) && isCache[songNames.indexOf(localValues[4][i])])
         {
             ClearCachedRTMS();
-            break;
         }
     }
 }
-let loadMapDataIndexer = 0;
-async function LoadMapDataValues(localValues)
+
+async function LoadMapDataValues(localValues, loadMapDataIndexer = 0)
 {   
     let loadingProgress = document.getElementById("loadingprogress");
     loadingProgress.innerHTML = "Progress: "+(loadMapDataIndexer+1)+"/"+localValues[0].length+" ("+(Math.round((loadMapDataIndexer+1)/localValues[0].length*10000)/100)+"%)";
-    /*if (LoadedBeatmapIds.includes(localValues[0][i].mapsetId))
-    {
-        for (let j = 0; j < LoadedBeatmapIds.length; ++j)
-        {
-            if ((LoadedBeatmapIds[j] != localValues[0][i].mapsetId && LoadedDifficultyIds[j] != localValues[1][i].diffId) || !isCache[j])
-                continue;
-            LoadedBeatmapIds.splice(j, 1);
-            LoadedDifficultyIds.splice(j, 1);
-            beatmapList.splice(j, 1);
-            difficultyList.splice(j, 1);
-            LoadedBeatmapIds.splice(j, 1);
-            LoadedDifficultyIds.splice(j, 1);
-            songNames.splice(j, 1);
-            difficultyNames.splice(j, 1);
-            BPMs.splice(j, 1);
-            DrainTimes.splice(j, 1);
-            ODs.splice(j, 1);
-            NoteCounts.splice(j, 1);
-            TypingSectionCounts.splice(j, 1);
-            isCache.splice(j, 1);
-            oldStarRanks.splice(j, 1);
-            newStarRanks.splice(j, 1);
-            oldPPRanks.splice(j, 1);
-            newPPRanks.splice(j, 1);
-            for (let k = 0; k < Stars.length; ++k)
-            {
-                Stars[k].splice(j, 1);
-                StarHTDCs[k].splice(j, 1);
-                StarDTNCs[k].splice(j, 1);
-            }
-            for (let k = 0; k < PPs.length; ++k)
-            {
-                PPs[k].splice(j, 1);
-                PPHTDCs[k].splice(j, 1);
-                PPDTNCs[k].splice(j, 1);                        
-            }
-        }
-    }*/
-    //console.log(loadMapDataIndexer);
-    //console.log(localValues);
-    //console.log(localValues[0][loadMapDataIndexer]);
-    LoadedBeatmapIds.push(localValues[0][loadMapDataIndexer].mapsetId);
-    LoadedDifficultyIds.push(localValues[1][loadMapDataIndexer].diffId);
+
+    //LoadedBeatmapIds.push(localValues[0][loadMapDataIndexer].mapsetId);
+    //LoadedDifficultyIds.push(localValues[1][loadMapDataIndexer].diffId);
     let localDifficultyValues = CreateDifficultyData([localValues[1][loadMapDataIndexer]]);
     for (let j = 0; j < localDifficultyValues[0].length; ++j)
     {
@@ -266,7 +256,7 @@ async function LoadMapDataValues(localValues)
             PPHTDCs[j].push(localDifficultyValues[5][j][k]);
         }
     }
-    beatmapList.push(localValues[0][loadMapDataIndexer]);
+    //beatmapList.push(localValues[0][loadMapDataIndexer]);
     difficultyList.push(localValues[1][loadMapDataIndexer]);
     LoadedBeatmapIds.push(localValues[2][loadMapDataIndexer]);
     LoadedDifficultyIds.push(localValues[3][loadMapDataIndexer]);
@@ -284,9 +274,10 @@ async function LoadMapDataValues(localValues)
     newPPRanks.push(0);
     loadMapDataIndexer++;
     if (loadMapDataIndexer < localValues[0].length)
-        setTimeout(() => { LoadMapDataValues(localValues) }, 0);
+        setTimeout(() => { LoadMapDataValues(localValues, loadMapDataIndexer) }, 0);
     else
     {
+        loadingProgress.innerHTML = "Loaded "+ (loadMapDataIndexer) + " maps.";
         CreateTable("Difficulty list", "diffList", difTableColumnNames, difTableColumnIds, difTableColumnWidths, CreateDefaultRowIds(songNames.length), CreateDiffTableValues(true), difTableColumnCompare, difTableColumnTypes, 0);
         if (songNames.length == 0)
         {
@@ -296,6 +287,7 @@ async function LoadMapDataValues(localValues)
         {
             document.getElementById("clearrtms").style.display = "inline";
         }
+        UpdateClearButtons();
     }
 
     
@@ -335,7 +327,7 @@ function ClearCachedRTMS() {
             difficultyList.splice(i, 1);
             --i;
         }
-       
+        
     }
     /*if (songNames.length == 0)
     {
@@ -372,14 +364,17 @@ function ClearLoadedRTMS() {
     beatmapList = [];
     ODs = [];
     isCache = [];
-    beatmapList = [];
     difficultyList = [];
-    for (let i = 0; i < ppFormulaKeys.length; ++i) {
+    for (let i = 0; i < reworks.length; ++i) {
+        if (!ObjectHasVariable(reworks[i],"pp"))
+            continue;
         PPs.push([]);
         PPDTNCs.push([]);
         PPHTDCs.push([]);
     }
-    for (let i = 0; i < starFormulaKeys.length; ++i) {
+    for (let i = 0; i < reworks.length; ++i) {
+        if (!ObjectHasVariable(reworks[i],"sr"))
+            continue;
         Stars.push([]);
         StarDTNCs.push([]);
         StarHTDCs.push([]);
@@ -505,4 +500,14 @@ function CreateDefaultRowIds(rowidlength)
         rowIds.push(i);
     }
     return rowIds;
+}
+
+async function GetDataForMapLeaderboard(offset,limit)
+{
+    let apiMapDatas;
+    await CreateRankedMapDataFromApi(offset,limit).then(x => {
+        apiMapDatas = x;
+    });
+    if (apiMapDatas.length != 0)
+        LoadMapDataValues(apiMapDatas)
 }
