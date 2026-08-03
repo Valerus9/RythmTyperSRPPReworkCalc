@@ -1062,9 +1062,32 @@ let valerusReworkV2_1Compressed = {
                     continue;
                 }   
                 let individualSpeed = Math.max(difficultyObjects[i].startTime - difficultyObjects[lastIndex].startTime,0);
+                individualSpeed = 250 / (individualSpeed + 50);
+                speed.push(Math.pow(individualSpeed, 1.1));
+                lastIndex = i;                
+            }
+            return speed;
+        }
+        const calculateStrain = (difficultyObjects) => {
+            let speed = [];
+            if (difficultyObjects.length > 0)
+                speed.push(1);
+            let lastIndex = 0;
+            let nerfBuffBuildUp = 0;
+            for (let i = 1; i < difficultyObjects.length; ++i)
+            {
+                if (difficultyObjects[i].startTime - difficultyObjects[lastIndex].startTime == 0)
+                {
+                    speed.push(1);
+                    continue;
+                }   
+                if (difficultyObjects[i].startTime - difficultyObjects[lastIndex].startTime > 5000)
+                {
+                    nerfBuffBuildUp = 0;
+                }
+                let individualSpeed = Math.max(difficultyObjects[i].startTime - difficultyObjects[lastIndex].startTime,0);
                 individualSpeed = 250 / (individualSpeed + 100);
-                nerfBuffBuildUp += (individualSpeed - 1) / 100;
-                //speed.push(Math.pow(individualSpeed, 1.5));
+                nerfBuffBuildUp += (individualSpeed - 1) / 1000;
                 speed.push(1 + nerfBuffBuildUp);
                 lastIndex = i;                
             }
@@ -1337,7 +1360,7 @@ let valerusReworkV2_1Compressed = {
         
         let noteStartTimesForBuildUp = [];
         let noteBaseValuesForBuildUp = [];
-        let noteMultiplierNames = ["Speed factor"];//, "Repeated pattern nerf", "Stamina", "Chord difficulty"];
+        let noteMultiplierNames = ["Speed factor", "Strain"];//, "Repeated pattern nerf", "Stamina", "Chord difficulty"];
         let noteMultiplierValues = [];
         let avaliablecolors = [[94, 140, 105], [70, 235, 52], [8, 189, 131], [191, 224, 27], [212, 132, 47], [111, 78, 204]];//, [128, 31, 135], [0, 247, 231], [28, 22, 186]];
         let notecolors = [];
@@ -1362,7 +1385,7 @@ let valerusReworkV2_1Compressed = {
         let typingSectionMultiplierNames = [];
         let typingSectionMultiplierValues = [];
 
-        let leftNoteMultipliers = [calculateSpeed(splitMap.leftHand)];//, calculateStamina(splitMap.leftHand, LEFTDRAINTIME)];
+        let leftNoteMultipliers = [calculateSpeed(splitMap.leftHand), calculateStrain(splitMap.leftHand)];//, calculateStamina(splitMap.leftHand, LEFTDRAINTIME)];
             //, calculateRepeatedPatternNerf(splitMap.leftHand),
             //calculateStamina(splitMap.leftHand, LEFTDRAINTIME), calculateChordDifficulty(splitMap.leftHand)];
         //let leftNoteMultipliers = [];
@@ -1375,7 +1398,7 @@ let valerusReworkV2_1Compressed = {
             }
         }
 
-        let rightNoteMultipliers = [calculateSpeed(splitMap.rightHand)];//, calculateStamina(splitMap.rightHand, RIGHTDRAINTIME)];
+        let rightNoteMultipliers = [calculateSpeed(splitMap.rightHand), calculateStrain(splitMap.rightHand)];//, calculateStamina(splitMap.rightHand, RIGHTDRAINTIME)];
             //, calculateRepeatedPatternNerf(splitMap.rightHand), 
             //calculateStamina(splitMap.rightHand, RIGHTDRAINTIME), calculateChordDifficulty(splitMap.rightHand)];
         //let rightNoteMultipliers = [];
