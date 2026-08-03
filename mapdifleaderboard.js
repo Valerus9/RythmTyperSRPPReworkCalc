@@ -12,6 +12,13 @@ let newStarRanks = [];
 let oldPPRanks = [];
 let newPPRanks = [];
 
+let mapDifModselect = 0
+
+let TableCreation = () => {
+        let createdTableValues = CreateDiffTableValues(true, mapDifModselect, false);
+        CreateTable("Difficulty list", "diffList", difTableColumnNames, difTableColumnIds, difTableColumnWidths, CreateDefaultRowIds(createdTableValues[0].length), createdTableValues, difTableColumnCompare, difTableColumnTypes, 0)
+    };
+
 function CreateSelectContentBeatmap() {
     let selectsrFirst = document.getElementById("srcalcselectfirst");
     let selectsrtextFirst = "<option value=\"\" disabled selected>Select a sr rework</option>\n";
@@ -67,6 +74,7 @@ function CreateSelectContentBeatmap() {
     selectppSecond.innerHTML = selectpptextSecond;
     let modSelect = document.getElementById("modselect");
     let modSelectText = "";
+    modSelectText += "<option value=\"" + 0 + "\" selected>All mods</option>\n";
     for (let i = 0; i < modList.length; ++i) {
         if (i == 0) {
             modSelectText += "<option value=\"" + (i + 1) + "\" selected>" + modList[i] + "</option>\n";
@@ -79,23 +87,23 @@ function CreateSelectContentBeatmap() {
     modSelect.innerHTML = modSelectText;
     document.getElementById("srcalcselectfirst").addEventListener("change", async (event) => {
         srReworkFirst = event.target.value - 1;
-        CreateTable("Difficulty list", "diffList", difTableColumnNames, difTableColumnIds, difTableColumnWidths, CreateDefaultRowIds(songNames.length), CreateDiffTableValues(true), difTableColumnCompare, difTableColumnTypes, 0);
+        TableCreation();
     });
     document.getElementById("srcalcselectsecond").addEventListener("change", async (event) => {
         srReworkSecond = event.target.value - 1;
-        CreateTable("Difficulty list", "diffList", difTableColumnNames, difTableColumnIds, difTableColumnWidths, CreateDefaultRowIds(songNames.length), CreateDiffTableValues(true), difTableColumnCompare, difTableColumnTypes, 0);
+        TableCreation();
     });
     document.getElementById("ppcalcselectfirst").addEventListener("change", async (event) => {
         ppReworkFirst = event.target.value - 1;
-        CreateTable("Difficulty list", "diffList", difTableColumnNames, difTableColumnIds, difTableColumnWidths, CreateDefaultRowIds(songNames.length), CreateDiffTableValues(true), difTableColumnCompare, difTableColumnTypes, 0);
+        TableCreation();
     });
     document.getElementById("ppcalcselectsecond").addEventListener("change", async (event) => {
         ppReworkSecond = event.target.value - 1;
-        CreateTable("Difficulty list", "diffList", difTableColumnNames, difTableColumnIds, difTableColumnWidths, CreateDefaultRowIds(songNames.length), CreateDiffTableValues(true), difTableColumnCompare, difTableColumnTypes, 0);
+        TableCreation();
     });
     document.getElementById("modselect").addEventListener("change", async (event) => {
-        selectedMod = modList[event.target.value - 1];
-        CreateTable("Difficulty list", "diffList", difTableColumnNames, difTableColumnIds, difTableColumnWidths, CreateDefaultRowIds(songNames.length), CreateDiffTableValues(true), difTableColumnCompare, difTableColumnTypes, 0);
+        mapDifModselect = event.target.value - 1;
+        TableCreation();
     });
 }
 
@@ -126,24 +134,25 @@ function LoadMapDifLeaderboard() {
     {
         document.getElementById("clearrtms").style.display = "inline";
     }
+    
     document.getElementById("srcalcselectfirst").addEventListener("change", async (event) => {
         srReworkFirst = event.target.value - 1;
-        CreateTable("Difficulty list", "diffList", difTableColumnNames, difTableColumnIds, difTableColumnWidths, CreateDefaultRowIds(songNames.length), CreateDiffTableValues(true), difTableColumnCompare, difTableColumnTypes, 0);
+        TableCreation();
     });
     document.getElementById("srcalcselectsecond").addEventListener("change", async (event) => {
         srReworkSecond = event.target.value - 1;
-        CreateTable("Difficulty list", "diffList", difTableColumnNames, difTableColumnIds, difTableColumnWidths, CreateDefaultRowIds(songNames.length), CreateDiffTableValues(true), difTableColumnCompare, difTableColumnTypes, 0);
+        TableCreation();
     });
     document.getElementById("ppcalcselectfirst").addEventListener("change", async (event) => {
         ppReworkFirst = event.target.value - 1;
-        CreateTable("Difficulty list", "diffList", difTableColumnNames, difTableColumnIds, difTableColumnWidths, CreateDefaultRowIds(songNames.length), CreateDiffTableValues(true), difTableColumnCompare, difTableColumnTypes, 0);
+        TableCreation();
     });
     document.getElementById("ppcalcselectsecond").addEventListener("change", async (event) => {
         ppReworkSecond = event.target.value - 1;        
-        CreateTable("Difficulty list", "diffList", difTableColumnNames, difTableColumnIds, difTableColumnWidths, CreateDefaultRowIds(songNames.length), CreateDiffTableValues(true), difTableColumnCompare, difTableColumnTypes, 0);
+        TableCreation();
     });
     CreateSelectContentBeatmap();
-    CreateTable("Difficulty list", "diffList", difTableColumnNames, difTableColumnIds, difTableColumnWidths, CreateDefaultRowIds(songNames.length), CreateDiffTableValues(true), difTableColumnCompare, difTableColumnTypes, 0);
+    TableCreation();
 
     document.getElementById("clearrtms").addEventListener("click", async (event) => {
         ClearLoadedRTMS();
@@ -152,12 +161,12 @@ function LoadMapDifLeaderboard() {
         document.getElementById("cacheMessage").style.display = "none";
         document.getElementById("changemenudifferentodCalc").disabled = true;
         document.getElementById("changemenugraphviewofrework").disabled = true;
-        CreateTable("Difficulty list", "diffList", difTableColumnNames, difTableColumnIds, difTableColumnWidths, CreateDefaultRowIds(songNames.length), CreateDiffTableValues(true), difTableColumnCompare, difTableColumnTypes, 0);
+        TableCreation();
     });
     document.getElementById("clearcachertms").addEventListener("click", async (event) => {
         ClearCachedRTMS();
         UpdateClearButtons();
-        CreateTable("Difficulty list", "diffList", difTableColumnNames, difTableColumnIds, difTableColumnWidths, CreateDefaultRowIds(songNames.length), CreateDiffTableValues(true), difTableColumnCompare, difTableColumnTypes, 0);
+        TableCreation();
     });
 
     document.getElementById("zipInput").addEventListener("change", async (event) => {
@@ -215,7 +224,7 @@ function UpdateClearButtons()
     {
         document.getElementById("changemenudifferentodCalc").disabled = false;
         document.getElementById("changemenugraphviewofrework").disabled = false;
-        //document.getElementById("leftrighthandmenu").disabled = false;
+        document.getElementById("leftrighthandmenu").disabled = false;
     }
 }
 
@@ -278,7 +287,7 @@ async function LoadMapDataValues(localValues, loadMapDataIndexer = 0)
     else
     {
         loadingProgress.innerHTML = "Loaded "+ (loadMapDataIndexer) + " maps.";
-        CreateTable("Difficulty list", "diffList", difTableColumnNames, difTableColumnIds, difTableColumnWidths, CreateDefaultRowIds(songNames.length), CreateDiffTableValues(true), difTableColumnCompare, difTableColumnTypes, 0);
+        TableCreation();
         if (songNames.length == 0)
         {
             document.getElementById("clearrtms").style.display = "none";
@@ -381,14 +390,68 @@ function ClearLoadedRTMS() {
     }
 }
 
+function MergeArrays(multipleArrays)
+{
+    let result = [];
+    for (let i = 0; i <multipleArrays[0].length; ++i)
+    {
+        result.push([]);
+    }
+    for (let i = 0; i <multipleArrays.length; ++i) 
+    {
+        for (let j = 0; j < multipleArrays[i].length; ++j)
+        {
+            for (let k = 0; k < multipleArrays[i][j].length; ++k)
+            {
+                result[j].push(multipleArrays[i][j][k])
+            }
+        }
+    }
+    return result;
+}
 
-
-function CreateDiffTableValues(haveRanks)
+function CreateDiffTableValues(haveRanks, localSelectedMod, showModInName)
 {
     if (songNames.length == 0)
     {
         return [[], [], [], [], [], [], [], [], [], [], [], [], [], []];
-    }
+    }    
+
+    let localOldStarRanks = [];
+    let localNewStarRanks = [];
+    let localOldPPRanks = [];
+    let localNewPPRanks = [];
+
+    if (localSelectedMod == -1)
+    {
+        let multipleModResult = [];
+        for (let i = 0; i < modList.length; ++i)
+        {
+            multipleModResult.push(CreateDiffTableValues(haveRanks, i, true));
+        }
+        let allValues = MergeArrays(multipleModResult);
+        if (haveRanks)
+        {
+            let rankResult = CreateRanks(allValues);
+            localOldStarRanks = rankResult[0];
+            localNewStarRanks = rankResult[1];
+            localOldPPRanks = rankResult[2];
+            localNewPPRanks = rankResult[3];
+        }
+        let resultAllValues = [];
+        for (let i = 0; i < allValues.length; ++i)
+        {
+            resultAllValues.push(allValues[i]);
+        }
+        for (let i = 0; i < localOldStarRanks.length; ++i)
+        {
+            resultAllValues[0][i] = localOldStarRanks[i];
+            resultAllValues[1][i] = localNewStarRanks[i];
+            resultAllValues[2][i] = localOldPPRanks[i];
+            resultAllValues[3][i] = localNewPPRanks[i];
+        }
+        return resultAllValues;
+    }    
 
     let oldStars = [];
     let newStars = [];
@@ -397,99 +460,125 @@ function CreateDiffTableValues(haveRanks)
     let actualDrainTimes = [];
     let actualBPM = [];
     let actualODs = [];
-    let modSpeed = GetModSpeed(selectedMod);
+    let modSpeed = GetModSpeed(modList[localSelectedMod]);
 
     for (let i = 0; i < Stars[srReworkFirst].length; ++i)
     {
-        oldStars.push(Math.round(GetModdedStar(i,srReworkFirst,selectedMod)*100)/100);
-        newStars.push(Math.round(GetModdedStar(i,srReworkSecond,selectedMod)*100)/100);
-        oldPP.push(GetModdedPP(i,ppReworkFirst,selectedMod));
-        newPP.push(GetModdedPP(i,ppReworkSecond,selectedMod));
+        oldStars.push(Math.round(GetModdedStar(i, srReworkFirst, modList[localSelectedMod]) * 100)/100);
+        newStars.push(Math.round(GetModdedStar(i, srReworkSecond, modList[localSelectedMod]) * 100)/100);
+        oldPP.push(GetModdedPP(i, ppReworkFirst, modList[localSelectedMod]));
+        newPP.push(GetModdedPP(i, ppReworkSecond, modList[localSelectedMod]));
         actualDrainTimes.push(Math.round(DrainTimes[i] / modSpeed));
         actualBPM.push(Math.round(BPMs[i] / modSpeed));
-        actualODs.push(Math.round(GetModdedOD(ODs[i], selectedMod)*100)/100);
+        actualODs.push(Math.round(GetModdedOD(ODs[i], modList[localSelectedMod]) * 100)/100);
     }
-    
-    if (haveRanks)
-        CreateRanks();
+        
 
-    if (oldStarRanks.length < songNames)
+    let localSongNames = [];
+    let localDifficultyNames = [];
+
+    for (let i = 0; i < songNames.length; ++i)
+    {
+        let localSongName = songNames[i];
+        if (localSelectedMod != 0 && showModInName)
+            localSongName = modList[localSelectedMod]+" "+songNames[i];
+        localSongNames.push(localSongName);
+        localDifficultyNames.push(difficultyNames[i]);
+    }
+
+    if (haveRanks)
+    {
+        let rankResult = CreateRanks([oldStars, oldStars, oldStars, oldStars, oldStars, newStars, oldPP, newPP, localSongNames, localDifficultyNames, actualBPM, actualDrainTimes,
+            actualODs, NoteCounts, TypingSectionCounts]);
+        localOldStarRanks = rankResult[0];
+        localNewStarRanks = rankResult[1];
+        localOldPPRanks = rankResult[2];
+        localNewPPRanks = rankResult[3];
+    }
+
+    if (localOldStarRanks.length < songNames.length)
     {        
         for (let i = 0; i < songNames.length;++i)
         {
-            oldStarRanks.push(i);
-            newStarRanks.push(i);
-            oldPPRanks.push(i);
-            newPPRanks.push(i);
+            localOldStarRanks.push(i);
+            localNewStarRanks.push(i);
+            localOldPPRanks.push(i);
+            localNewPPRanks.push(i);
         }
     }
-    return [oldStarRanks, newStarRanks, oldPPRanks, newPPRanks, oldStars, newStars, oldPP, newPP, songNames, difficultyNames, BPMs, actualDrainTimes,
+    return [localOldStarRanks, localNewStarRanks, localOldPPRanks, localNewPPRanks, oldStars, newStars, oldPP, newPP, localSongNames, localDifficultyNames, actualBPM, actualDrainTimes,
         actualODs, NoteCounts, TypingSectionCounts]
 }
 
 
 
-function CreateRanks() {
+function CreateRanks(tableValues) {
     //let difTableColumnNames = ["Song name", "Difficulty name", "BPM", "Drain time",
     //"Note count", "TS counts", "Old stars", "New stars", "Old PP", "New PP"];
     let oldSRIndex = difTableColumnNames.indexOf("Old stars");
     let newSRIndex = difTableColumnNames.indexOf("New stars");
     let oldPPIndex = difTableColumnNames.indexOf("Old PP");
     let newPPIndex = difTableColumnNames.indexOf("New PP");
+    
+    let localOldStarRanks = [];
+    let localNewStarRanks = [];
+    let localOldPPRanks = [];
+    let localNewPPRanks = [];
+
     let sorts = [];
     for (let i = 0; i < difTableColumnNames.length; ++i)
     {
         sorts.push(0);
     }
-    while (oldStarRanks.length < songNames.length)
+    while (localOldStarRanks.length < songNames.length)
     {
-        oldStarRanks.push(0);
-        newStarRanks.push(0);
-        oldPPRanks.push(0);
-        newPPRanks.push(0);
+        localOldStarRanks.push(0);
+        localNewStarRanks.push(0);
+        localOldPPRanks.push(0);
+        localNewPPRanks.push(0);
     }
-    while (oldStarRanks.length > songNames.length)
+    while (localOldStarRanks.length > songNames.length)
     {
-        oldStarRanks.splice(0, 1);
-        newStarRanks.splice(0, 1);
-        oldPPRanks.splice(0, 1);
-        newPPRanks.splice(0, 1);
+        localOldStarRanks.splice(0, 1);
+        localNewStarRanks.splice(0, 1);
+        localOldPPRanks.splice(0, 1);
+        localNewPPRanks.splice(0, 1);
     }
     sorts[oldSRIndex] = 1;
-    let tempValues = DoSort(sorts, CreateDiffTableValues(false), difTableColumnTypes);
+    let tempValues = DoSort(sorts, tableValues, difTableColumnTypes);
     for (let i = 0; i < tempValues.length; ++i)
     {
-        oldStarRanks[tempValues[i]] = i; 
+        localOldStarRanks[tempValues[i]] = i; 
     }    
     sorts[oldSRIndex] = 0;
     sorts[newSRIndex] = 1;
-    tempValues = DoSort(sorts, CreateDiffTableValues(false), difTableColumnTypes);
+    tempValues = DoSort(sorts, tableValues, difTableColumnTypes);
     for (let i = 0; i < tempValues.length; ++i)
     {
-        newStarRanks[tempValues[i]] = i; 
+        localNewStarRanks[tempValues[i]] = i; 
     }    
     sorts[newSRIndex] = 0;
     sorts[oldPPIndex] = 1;
-    tempValues = DoSort(sorts, CreateDiffTableValues(false), difTableColumnTypes);
+    tempValues = DoSort(sorts, tableValues, difTableColumnTypes);
     for (let i = 0; i < tempValues.length; ++i)
     {
-        oldPPRanks[tempValues[i]] = i; 
+        localOldPPRanks[tempValues[i]] = i; 
     }    
     sorts[oldPPIndex] = 0;
     sorts[newPPIndex] = 1;
-    tempValues = DoSort(sorts, CreateDiffTableValues(false), difTableColumnTypes);
+    tempValues = DoSort(sorts, tableValues, difTableColumnTypes);
     for (let i = 0; i < tempValues.length; ++i)
     {
-        newPPRanks[tempValues[i]] = i; 
+        localNewPPRanks[tempValues[i]] = i; 
     }    
-    for (let i = 0; i < oldStarRanks.length;++i)
+    for (let i = 0; i < localOldStarRanks.length;++i)
     {
-        oldStarRanks[i]++;
-        newStarRanks[i]++;
-        oldPPRanks[i]++;
-        newPPRanks[i]++;
+        localOldStarRanks[i]++;
+        localNewStarRanks[i]++;
+        localOldPPRanks[i]++;
+        localNewPPRanks[i]++;
     }
-        
+    return [localOldStarRanks, localNewStarRanks, localOldPPRanks, localNewPPRanks];
 }
 
 function CreateDefaultRowIds(rowidlength)

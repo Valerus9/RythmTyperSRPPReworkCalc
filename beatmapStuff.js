@@ -161,7 +161,7 @@ async function CreateMapDataFromFiles(files) {
     return [localBeatmapData, localDifficultyData, localLoadedBeatmapIds, localLoadedDifficultyIds, localSongNames, localDifficultyNames, localBPMs, localDrainTimes, localODs, localNoteCounts, localTypingSectionCounts];
 }
 
-function CreateDifficultyData(difficultyInput)
+function ConvertDifficultyData(difficultyInput)
 {
     let tempDifficulties = [];
     for (let i = 0; i < difficultyInput.length; ++i)
@@ -206,6 +206,12 @@ function CreateDifficultyData(difficultyInput)
         }
         tempDifficulties.push(tempDifficulty);
     }
+    return tempDifficulties;
+}
+
+function CreateDifficultyData(difficultyInput)
+{
+    let tempDifficulties = ConvertDifficultyData(difficultyInput);
     
     let localStars = [];
     let localStarDTNCs = [];
@@ -326,7 +332,7 @@ function CreateDifficultyData(difficultyInput)
                 localStarDTNCs[i].push(-1);
                 
                 localStarHTDCs[i].push(-1);
-                console.error( "Error occoured while calculating " + difficulty.songName  +"'s diff called "+difficulty.difficultyTitle+" using "+ reworks[i].name+"' sr: "+error);
+                console.error( "Error occoured while calculating " + difficulty.songName  +"'s diff called "+difficulty.difficultyTitle+" using "+ reworks[i].name+"' sr: "+error+ " at "+ error.stack);
             }
         }
 

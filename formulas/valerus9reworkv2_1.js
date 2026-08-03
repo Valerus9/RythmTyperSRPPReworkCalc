@@ -33,13 +33,14 @@ let valerusReworkV2_1Compressed = {
         calculate(scoreData)
         {
             result = valerusReworkV2_1Compressed.innerCalculate(scoreData);
+            return result;
         }
     },
     innerCalculate(scoreData)
     {
-        const TAPNOTEDIFFICULTY = 1;
-        const HOLDNOTEDIFFICULTY = 1;
-        const RELEASEDIFFICULTY = 1;
+        const TAPNOTEDIFFICULTY = 0.01;
+        const HOLDNOTEDIFFICULTY = 0.01;
+        const RELEASEDIFFICULTY = 0.01;
         const TYPINGSECTIONDIFFICULTY = 0.02;
 
         const copyObject = (x) => {
@@ -101,6 +102,7 @@ let valerusReworkV2_1Compressed = {
             let drainTime = 0;
             for (let i = 1; i <mergedNoteObjects.length; ++i)
             {
+                console.log(i);
                 drainTime += Math.min(mergedNoteObjects[i].startTime - mergedNoteObjects[i - 1].startTime, 5000);
             }
             return Math.max(drainTime,1000);
@@ -108,7 +110,7 @@ let valerusReworkV2_1Compressed = {
 
         let createNewTempConvertedNote = (note) => {
             return {
-                id: -1,
+                id: note.id,
                 type: note.type,
                 startTime: getStartTime(note),
                 endTime: getEndTime(note),
@@ -295,6 +297,7 @@ let valerusReworkV2_1Compressed = {
         const createChordFromAlreadyExisting = (difficultyChord, keyIndexes) => {
             let tempDifficultyChord = {
                 type: difficultyChord.type,
+                ids: [],
                 keyPositions: [],
                 keyTypes: [],
                 startTime: difficultyChord.startTime,
@@ -308,32 +311,185 @@ let valerusReworkV2_1Compressed = {
                 }
                 tempDifficultyChord.keyPositions.push(tempKeyPosition);
                 tempDifficultyChord.keyTypes.push(difficultyChord.keyTypes[keyIndexes[i]]);
+                tempDifficultyChord.ids.push(difficultyChord.ids[keyIndexes[i]]);
             }
             return tempDifficultyChord;
+        }
+
+        
+
+
+        const createMergedNoteObject = (convertedNoteObjects, mergBeginning, mergEnd) => {
+            let tempMergedNoteObject = {
+                type: "",
+                ids: [],
+                keyPositions: [],
+                keyTypes: [],
+                startTime: convertedNoteObjects[mergBeginning].startTime,
+                endTime: convertedNoteObjects[mergBeginning].endTime,
+            }
+            for (let mergeIndexer = mergBeginning; mergeIndexer < mergEnd; ++mergeIndexer) {
+                if (tempMergedNoteObject.type == "") {
+                    tempMergedNoteObject.type = convertedNoteObjects[mergeIndexer].type + "chord";
+                }
+                else if (!tempMergedNoteObject.type.includes(convertedNoteObjects[mergeIndexer].type)) {
+                    tempMergedNoteObject.type = "mixedchord";
+                }
+                let tempKeyPosition =
+                {
+                    row: convertedNoteObjects[mergeIndexer].keyPosition.row,
+                    column: convertedNoteObjects[mergeIndexer].keyPosition.column,
+                }
+                tempMergedNoteObject.keyPositions.push(tempKeyPosition);
+                tempMergedNoteObject.keyTypes.push(convertedNoteObjects[mergeIndexer].type);
+                tempMergedNoteObject.ids.push(convertedNoteObjects[mergeIndexer].id);
+            }
+            return tempMergedNoteObject;
+        }
+
+        const sortArray = (unsortedArray, parameterToUse) => {
+            for (let i = 0; i < unsortedArray.length - 1; ++i)
+            {
+                for (let j = i + 1; j < unsortedArray.length; ++j)
+                {
+                    if (parameterToUse(unsortedArray[i], unsortedArray[j]))
+                    {
+                        let temp = copyObject(unsortedArray[i]);
+                        unsortedArray[i] = copyObject(unsortedArray[j]);
+                        unsortedArray[j] = copyObject(temp);
+                    }
+                }
+            }
+        }
+
+        const handSegregationScoring = (leftHandPosition, rightHandPosition, nextObject) =>
+        {
+            let originalLeftHandPosition = {
+                type: "",
+                keyPosition: {
+                    row: 2,
+                    column: 2
+                }
+            }
+
+            let originalRightHandPosition = {
+                type: "",
+                keyPosition: {
+                    row: 2,
+                    column: 7
+                }
+            }
+
+            
+
+            let leftHandDistance = distanceBetweenObjects(leftHandPosition, nextObject);
+            let leftHandTime = Math.min(nextObject.startTime - leftHandPosition.startTime, 1200);
+            let leftVelocity = leftHandDistance / leftHandTime;
+            let leftHandDistanceNerf = nextObject.keyPosition.column / 10 + 1
+
+            let rightHandDistance = distanceBetweenObjects(rightHandPosition, nextObject);
+            let rightHandTime = Math.min(nextObject.startTime - leftHandPosition.startTime, 1200);
+            let rightVelocity = rightHandDistance / rightHandTime;
+            let rightHandDistanceNerf = (9 - nextObject.keyPosition.column) / 10 + 1
+
+            originalLeftHandDistance = distanceBetweenObjects(originalLeftHandPosition, nextObject);
+            originalRightHandDistance = distanceBetweenObjects(originalRightHandPosition, nextObject);
+
+            
+
+            //return { leftHandScore: leftVelocity * leftHandDistanceNerf, rightHandScore: rightVelocity * rightHandDistanceNerf}
+
+            return { leftHandScore: leftVelocity, rightHandScore: rightVelocity}
+        }
+
+        const getChordSize = (chord) => {
+            let min = {
+                width: Infinity,
+                height: Infinity,
+            }
+            let max = {
+                width: 1,
+                height: 1,
+            }
+            for (let i = 0; i < chord.keyPositions.length; ++i)
+            {
+                if (min.width > chord.keyPositions.column)
+                    min.width = chord.keyPositions.column
+                
+                if (min.height > chord.keyPositions.row)
+                    min.height = chord.keyPositions.row
+                    
+                if (max.width < chord.keyPositions.column)
+                    max.width = chord.keyPositions.column
+                
+                if (max.height < chord.keyPositions.row)
+                    max.height = chord.keyPositions.row
+            }
+            let result = {
+                width: max.width - min.width + 1,
+                height: max.height - min.height + 1,
+            }
+            return result;
         }
 
         const divideChordsBetweenHandPositions = (difficultyChord, leftHandPosition, rightHandPosition) => {            
             let leftHandChordIndexes = [];
             let rightHandChordIndexes = [];
-            for (let i = 0; i < difficultyChord.keyPositions.length; ++i) {
-                let leftHandDistance = 0;
-                let rightHandDistance = 0;
-                let x1 = leftHandPosition.keyPosition.row;
-                let x2 = difficultyChord.keyPositions[i].row;
-                let y1 = leftHandPosition.keyPosition.column;
-                let y2 = difficultyChord.keyPositions[i].column;
-                leftHandDistance = calculateDistance(x1, x2, y1, y2);
-
-                x1 = rightHandPosition.keyPosition.row;
-                y1 = rightHandPosition.keyPosition.column;
-                rightHandDistance = calculateDistance(x1, x2, y1, y2);
-                if (leftHandDistance <= rightHandDistance)
+            let chordSizes = getChordSize(difficultyChord);
+            if (chordSizes.width == 1 || (chordSizes.height == 1 && chordSizes.width < 5))
+            {
+                let sumRow = 0;
+                let sumColumn = 0;
+                for (let i = 0; i < difficultyChord.keyPositions.length; ++i)
                 {
-                    leftHandChordIndexes.push(i);
+                    sumRow += difficultyChord.keyPositions[i].row;
+                    sumColumn += difficultyChord.keyPositions[i].column;
+                }
+                let chordPosition = {
+                    startTime: difficultyChord.startTime,
+                    keyPosition: {
+                        row: sumRow / difficultyChord.keyPositions.length,
+                        column: sumColumn / difficultyChord.keyPositions.length,
+                    }
+                }
+                let handScoring = handSegregationScoring(leftHandPosition, rightHandPosition, chordPosition)
+                if (handScoring.leftHandScore < handScoring.rightHandScore)
+                { 
+                    for (let i = 0; i < difficultyChord.keyPositions.length; ++i)
+                    {
+                        leftHandChordIndexes.push(i);
+                    }
                 }
                 else
                 {
-                    rightHandChordIndexes.push(i);
+                    for (let i = 0; i < difficultyChord.keyPositions.length; ++i)
+                    {
+                        rightHandChordIndexes.push(i);
+                    }
+                }
+            }
+            else
+            {
+                for (let i = 0; i < difficultyChord.keyPositions.length; ++i) {
+                    let leftHandDistance = 0;
+                    let rightHandDistance = 0;
+                    let x1 = leftHandPosition.keyPosition.row;
+                    let x2 = difficultyChord.keyPositions[i].row;
+                    let y1 = leftHandPosition.keyPosition.column;
+                    let y2 = difficultyChord.keyPositions[i].column;
+                    leftHandDistance = calculateDistance(x1, x2, y1, y2);
+    
+                    x1 = rightHandPosition.keyPosition.row;
+                    y1 = rightHandPosition.keyPosition.column;
+                    rightHandDistance = calculateDistance(x1, x2, y1, y2);
+                    if (leftHandDistance <= rightHandDistance)
+                    {
+                        leftHandChordIndexes.push(i);
+                    }
+                    else
+                    {
+                        rightHandChordIndexes.push(i);
+                    }
                 }
             }
             let newLeftHandPosition = {
@@ -390,60 +546,10 @@ let valerusReworkV2_1Compressed = {
             return {rightHandPosition: newRightHandPosition, leftHandPosition: newLeftHandPosition, leftChord: leftHandChord, rightChord: rightHandChord};
         }
 
-
-        const createMergedNoteObject = (convertedNoteObjects, mergBeginning, mergEnd) => {
-            let tempMergedNoteObject = {
-                type: "",
-                id: -1,
-                keyPositions: [],
-                keyTypes: [],
-                startTime: convertedNoteObjects[mergBeginning].startTime,
-                endTime: convertedNoteObjects[mergBeginning].endTime,
-            }
-            for (let mergeIndexer = mergBeginning; mergeIndexer < mergEnd; ++mergeIndexer) {
-                if (tempMergedNoteObject.type == "") {
-                    tempMergedNoteObject.type = convertedNoteObjects[mergeIndexer].type + "chord";
-                }
-                else if (!tempMergedNoteObject.type.includes(convertedNoteObjects[mergeIndexer].type)) {
-                    tempMergedNoteObject.type = "mixedchord";
-                }
-                let tempKeyPosition =
-                {
-                    row: convertedNoteObjects[mergeIndexer].keyPosition.row,
-                    column: convertedNoteObjects[mergeIndexer].keyPosition.column,
-                }
-                tempMergedNoteObject.keyPositions.push(tempKeyPosition);
-                tempMergedNoteObject.keyTypes.push(convertedNoteObjects[mergeIndexer].type);
-            }
-            return tempMergedNoteObject;
-        }
-
-        const sortArray = (unsortedArray, parameterToUse) => {
-            for (let i = 0; i < unsortedArray.length - 1; ++i)
-            {
-                for (let j = i + 1; j < unsortedArray.length; ++j)
-                {
-                    if (parameterToUse(unsortedArray[i], unsortedArray[j]))
-                    {
-                        let temp = copyObject(unsortedArray[i]);
-                        unsortedArray[i] = copyObject(unsortedArray[j]);
-                        unsortedArray[j] = copyObject(temp);
-                    }
-                }
-            }
-        }
-
         const splitMapBetweenTwoHands =(mergedNoteObjects) => {
             let leftHandPosition = {
                 type: "",
-                keyPosition: {
-                    row: 2,
-                    column: 2
-                }
-                
-            }
-            let originalLeftHandPosition = {
-                type: "",
+                startTime: 0,
                 keyPosition: {
                     row: 2,
                     column: 2
@@ -453,14 +559,7 @@ let valerusReworkV2_1Compressed = {
             let leftMergedNoteObjects = [];
             let rightHandPosition = {
                 type: "",
-                keyPosition: {
-                    row: 2,
-                    column: 7
-                }
-                
-            }
-            let originalRightHandPosition = {
-                type: "",
+                startTime: 0,
                 keyPosition: {
                     row: 2,
                     column: 7
@@ -471,11 +570,6 @@ let valerusReworkV2_1Compressed = {
 
             for (let i = 0; i < mergedNoteObjects.length; ++i)
             {
-                let leftHandDistance = 0;
-                let rightHandDistance = 0;
-                
-                let originalLeftHandDistance = 0;
-                let originalRightHandDistance = 0;
                 if (mergedNoteObjects[i].type.includes("chord"))
                 {
                     let divided = divideChordsBetweenHandPositions(mergedNoteObjects[i], leftHandPosition, rightHandPosition);
@@ -484,27 +578,31 @@ let valerusReworkV2_1Compressed = {
                         leftHandPosition.keyPosition.row = divided.leftHandPosition.keyPosition.row;
                         leftHandPosition.keyPosition.column = divided.leftHandPosition.keyPosition.column;
                         leftMergedNoteObjects.push(divided.leftChord);
+                        leftHandPosition.type = mergedNoteObjects[i].type.replace("chord","");
+                        leftHandPosition.startTime = mergedNoteObjects[i].startTime;
                     }
                     if (divided.rightChord.keyPositions.length > 0)
                     {
                         rightHandPosition.keyPosition.row = divided.rightHandPosition.keyPosition.row;
                         rightHandPosition.keyPosition.column = divided.rightHandPosition.keyPosition.column;
                         rightMergedNoteObjects.push(divided.rightChord);
+                        rightHandPosition.type = mergedNoteObjects[i].type.replace("chord","");
+                        rightHandPosition.startTime = mergedNoteObjects[i].startTime;
                     }
                     
                 }
                 else
                 {
-                    leftHandDistance = distanceBetweenObjects(leftHandPosition, mergedNoteObjects[i]);
-                    rightHandDistance = distanceBetweenObjects(rightHandPosition, mergedNoteObjects[i]);
-                    originalLeftHandDistance = distanceBetweenObjects(originalLeftHandPosition, mergedNoteObjects[i]);
-                    originalRightHandDistance = distanceBetweenObjects(originalRightHandPosition, mergedNoteObjects[i]);
-                    if (leftHandDistance < rightHandDistance && originalRightHandDistance < 5)
+                    let handScoring = handSegregationScoring(leftHandPosition, rightHandPosition, mergedNoteObjects[i]);
+
+                    //if (leftHandDistance < rightHandDistance && originalRightHandDistance > 2)
+                    if (handScoring.leftHandScore < handScoring.rightHandScore)
                     {
                         leftMergedNoteObjects.push(mergedNoteObjects[i]);
                         leftHandPosition.keyPosition.row = mergedNoteObjects[i].keyPosition.row;
                         leftHandPosition.keyPosition.column = mergedNoteObjects[i].keyPosition.column;
                         leftHandPosition.type = mergedNoteObjects[i].type;
+                        leftHandPosition.startTime = mergedNoteObjects[i].startTime;
                     }                        
                     else
                     {
@@ -512,9 +610,10 @@ let valerusReworkV2_1Compressed = {
                         rightHandPosition.keyPosition.row = mergedNoteObjects[i].keyPosition.row;
                         rightHandPosition.keyPosition.column = mergedNoteObjects[i].keyPosition.column;
                         rightHandPosition.type = mergedNoteObjects[i].type;
+                        rightHandPosition.startTime = mergedNoteObjects[i].startTime;
                     }                        
                 }
-                if (rightHandPosition.keyPosition.column < 3)
+                /*if (rightHandPosition.keyPosition.column < 3)
                 {
                     rightMergedNoteObjects.pop();
                     leftMergedNoteObjects.push(mergedNoteObjects[i]);                    
@@ -537,8 +636,44 @@ let valerusReworkV2_1Compressed = {
                     leftHandPosition.keyPosition.row = originalLeftHandPosition.keyPosition.row;
                     leftHandPosition.keyPosition.column = originalLeftHandPosition.keyPosition.column;
                     leftHandPosition.type = originalLeftHandPosition.type;
+                }*/
+                if (rightHandPosition.keyPosition.column - leftHandPosition.keyPosition.column < 0)
+                {
+                    let tempPosition = {
+                        type: rightHandPosition.type,
+                        startTime: rightHandPosition.startTime,
+                        keyPosition: {
+                            row: rightHandPosition.keyPosition.row,
+                            column: rightHandPosition.keyPosition.column
+                        }
+                    }
+                    rightHandPosition.type = leftHandPosition.type
+                    rightHandPosition.startTime = leftHandPosition.startTime
+                    rightHandPosition.keyPosition.row = leftHandPosition.keyPosition.row
+                    rightHandPosition.keyPosition.column = leftHandPosition.keyPosition.column
+
+                    leftHandPosition.type = tempPosition.type
+                    leftHandPosition.startTime = tempPosition.startTime
+                    leftHandPosition.keyPosition.row = tempPosition.keyPosition.row
+                    leftHandPosition.keyPosition.column = tempPosition.keyPosition.column
+
+                    if (rightMergedNoteObjects.length == 0)
+                    {
+                        rightMergedNoteObjects.push(leftMergedNoteObjects.pop());
+                    }
+                    else if (leftMergedNoteObjects.length == 0)
+                    {
+                        leftMergedNoteObjects.push(rightMergedNoteObjects.pop());
+                    }
+                    else
+                    {
+                        let tempObject = rightMergedNoteObjects[rightMergedNoteObjects.length - 1];
+                        rightMergedNoteObjects[rightMergedNoteObjects.length - 1] = leftMergedNoteObjects[leftMergedNoteObjects.length - 1]
+                        leftMergedNoteObjects[leftMergedNoteObjects.length - 1] = tempObject;
+                    }
                 }
             }
+            
             return { leftHand: leftMergedNoteObjects, rightHand: rightMergedNoteObjects};
         };
 
@@ -717,22 +852,19 @@ let valerusReworkV2_1Compressed = {
             if (difficultyObjects.length > 0)
                 speed.push(1);
             let lastIndex = 0;
+            let nerfBuffBuildUp = 0;
             for (let i = 1; i < difficultyObjects.length; ++i)
-            {                
-                //speed.push(1);
-                if (difficultyObjects[i].type.includes("anchor"))
-                {
-                    speed.push(1);
-                    continue;
-                }
+            {
                 if (difficultyObjects[i].startTime - difficultyObjects[lastIndex].startTime == 0)
                 {
                     speed.push(1);
                     continue;
                 }   
                 let individualSpeed = Math.max(difficultyObjects[i].startTime - difficultyObjects[lastIndex].startTime,0);
-                individualSpeed = 500 / (individualSpeed + 100);
-                speed.push(Math.pow(individualSpeed, 2.5));
+                individualSpeed = 250 / (individualSpeed + 100);
+                nerfBuffBuildUp += (individualSpeed - 1) / 100;
+                //speed.push(Math.pow(individualSpeed, 1.5));
+                speed.push(1 + nerfBuffBuildUp);
                 lastIndex = i;                
             }
             return speed;
@@ -745,9 +877,10 @@ let valerusReworkV2_1Compressed = {
             {
                 stamina.push(staminaBuff);
             }*/
+            let staminaBuff = Math.pow(Math.max((drainTime - 60000) / 60000, 1), 0.3);
             for (let i = 1; i < difficultyObjects.length; ++i)
             {
-                stamina.push(1);
+                stamina.push(staminaBuff);
             }
             return stamina;
         }
@@ -804,7 +937,6 @@ let valerusReworkV2_1Compressed = {
                 return {difficultySum: 0};
 
             let difficultySum = 0;
-            let anchorCount = 0;
             for (let i = 0; i < difficultyObjects.length; ++i)
             {
                 let calculatedDifficulty = 0;
@@ -830,8 +962,6 @@ let valerusReworkV2_1Compressed = {
                         chordDifficulty = RELEASEDIFFICULTY;
                     calculatedDifficulty += chordDifficulty * difficultyObjects[i].keyPositions.length;
                 }
-                if (difficultyObjects[i].type == "anchor")
-                    anchorCount++; 
                 if (difficultyObjects[i].type == "tap")
                     calculatedDifficulty = TAPNOTEDIFFICULTY;
                 if (difficultyObjects[i].type == "hold")
@@ -845,7 +975,7 @@ let valerusReworkV2_1Compressed = {
                 }
                 difficultySum += multipliedDifficulty;
             }
-            return {difficultySum: difficultySum / (difficultyObjects.length - anchorCount)};
+            return {difficultySum: difficultySum};
         };
 
         let filteredNotes = [];
@@ -917,10 +1047,6 @@ let valerusReworkV2_1Compressed = {
                 convertedNoteObjects.push(tempConvertedNote);
             
                 tempConvertedNote = createNewTempConvertedNote(selectedNote);
-                tempConvertedNote.type = "anchor";
-                convertedNoteObjects.push(tempConvertedNote);
-            
-                tempConvertedNote = createNewTempConvertedNote(selectedNote);
                 tempConvertedNote.type = "release";
                 tempConvertedNote.startTime = getEndTime(selectedNote);            
             }
@@ -929,7 +1055,7 @@ let valerusReworkV2_1Compressed = {
 
         //console.log(convertedNoteObjects);
         sortArray(convertedNoteObjects, (one, two) => {
-            return one.startTime > two.startTime || (one.startTime == two.startTime && one.type == "anchor")
+            return one.startTime > two.startTime;
         })
         //console.log(convertedNoteObjects);
 
@@ -956,14 +1082,7 @@ let valerusReworkV2_1Compressed = {
                     let mergedNotes = [];
                     for (let i = previousMerger; i < merger; ++i)
                     {
-                        if (convertedNoteObjects[i].type == "anchor")
-                        {
-                            mergedNoteObjects.push(convertedNoteObjects[i]);
-                        }
-                        else
-                        {
-                            mergedNotes.push(convertedNoteObjects[i]);
-                        }
+                        mergedNotes.push(convertedNoteObjects[i]);
                     }
                     if (mergedNotes.length == 0)
                     {
@@ -979,11 +1098,6 @@ let valerusReworkV2_1Compressed = {
                     }                    
                 }
             }
-        }
-
-        for (let i = 0; i < mergedNoteObjects.length; ++i)
-        {
-            mergedNoteObjects[i].id = i;
         }
 
         //console.log(mergedNoteObjects);
@@ -1016,7 +1130,7 @@ let valerusReworkV2_1Compressed = {
         
         let noteStartTimesForBuildUp = [];
         let noteBaseValuesForBuildUp = [];
-        let noteMultiplierNames = ["Speed factor", "Repeated pattern nerf", "Stamina", "Chord difficulty"];
+        let noteMultiplierNames = ["Speed factor"];//, "Repeated pattern nerf", "Stamina", "Chord difficulty"];
         let noteMultiplierValues = [];
         let avaliablecolors = [[94, 140, 105], [70, 235, 52], [8, 189, 131], [191, 224, 27], [212, 132, 47], [111, 78, 204]];//, [128, 31, 135], [0, 247, 231], [28, 22, 186]];
         let notecolors = [];
@@ -1041,31 +1155,31 @@ let valerusReworkV2_1Compressed = {
         let typingSectionMultiplierNames = [];
         let typingSectionMultiplierValues = [];
 
-        let leftNoteMultipliers = [calculateSpeed(splitMap.leftHand)];
+        let leftNoteMultipliers = [calculateSpeed(splitMap.leftHand)];//, calculateStamina(splitMap.leftHand, LEFTDRAINTIME)];
             //, calculateRepeatedPatternNerf(splitMap.leftHand),
             //calculateStamina(splitMap.leftHand, LEFTDRAINTIME), calculateChordDifficulty(splitMap.leftHand)];
         //let leftNoteMultipliers = [];
         let leftResult = calculateDifficultySum(splitMap.leftHand, LEFTDRAINTIME, leftNoteMultipliers);
-        //for (let i = 0; i < splitMap.leftHand.length; ++i)
-        //{
-        //    for (let j = 0; j < noteMultiplierNames.length; ++j)
-        //    {
-        //        noteMultiplierValues[j][splitMap.leftHand[i].id] = leftNoteMultipliers[j][i];
-        //    }
-        //}
+        for (let i = 0; i < splitMap.leftHand.length; ++i)
+        {
+            for (let j = 0; j < noteMultiplierNames.length; ++j)
+            {
+                noteMultiplierValues[j][splitMap.leftHand[i].id] = leftNoteMultipliers[j][i];
+            }
+        }
 
-        let rightNoteMultipliers = [calculateSpeed(splitMap.rightHand)]
+        let rightNoteMultipliers = [calculateSpeed(splitMap.rightHand)];//, calculateStamina(splitMap.rightHand, RIGHTDRAINTIME)];
             //, calculateRepeatedPatternNerf(splitMap.rightHand), 
             //calculateStamina(splitMap.rightHand, RIGHTDRAINTIME), calculateChordDifficulty(splitMap.rightHand)];
         //let rightNoteMultipliers = [];
         let rightResult = calculateDifficultySum(splitMap.rightHand, RIGHTDRAINTIME, rightNoteMultipliers);
-        //for (let i = 0; i < splitMap.rightHand.length; ++i)
-        //{
-        //    for (let j = 0; j < noteMultiplierNames.length; ++j)
-        //    {
-        //        noteMultiplierValues[j][splitMap.rightHand[i].id] = rightNoteMultipliers[j][i];
-        //    }
-        //}
+        for (let i = 0; i < splitMap.rightHand.length; ++i)
+        {
+            for (let j = 0; j < noteMultiplierNames.length; ++j)
+            {
+                noteMultiplierValues[j][splitMap.rightHand[i].id] = rightNoteMultipliers[j][i];
+            }
+        }
 
         //console.log(leftNoteMultipliers);
         //console.log(rightNoteMultipliers);
@@ -1076,12 +1190,53 @@ let valerusReworkV2_1Compressed = {
 
         let difficultyDensity = (leftDifficultyDensity + rightDifficultyDensity);
 
-        
+        let leftHandIds = [];
+        for (let i = 0; i < splitMap.leftHand.length; ++i)
+        {
+            if (splitMap.leftHand[i].type.includes("chord"))
+            {
+                for (let j = 0; j < splitMap.leftHand[i].ids.length; ++j)
+                {
+                    if (!leftHandIds.includes(splitMap.leftHand[i].ids[j]))
+                    {
+                        leftHandIds.push(splitMap.leftHand[i].ids[j]);
+                    }
+                }
+            }
+            else
+            {
+                if (!leftHandIds.includes(splitMap.leftHand[i].id))
+                {
+                    leftHandIds.push(splitMap.leftHand[i].id);
+                }
+            }
+        }
+        let rightHandIds = [];
+        for (let i = 0; i < splitMap.rightHand.length; ++i)
+        {
+            if (splitMap.rightHand[i].type.includes("chord"))
+            {
+                for (let j = 0; j < splitMap.rightHand[i].ids.length; ++j)
+                {
+                    if (!rightHandIds.includes(splitMap.rightHand[i].ids[j]))
+                    {
+                        rightHandIds.push(splitMap.rightHand[i].ids[j]);
+                    }
+                }
+            }
+            else
+            {
+                if (!rightHandIds.includes(splitMap.rightHand[i].id))
+                {
+                    rightHandIds.push(splitMap.rightHand[i].id);
+                }
+            }
+        }
 
         return {difficultyDensity: difficultyDensity, noteStartTimesForBuildUp: noteStartTimesForBuildUp, noteBaseValuesForBuildUp: noteBaseValuesForBuildUp,
              noteMultiplierNames: noteMultiplierNames, noteMultiplierValues: noteMultiplierValues, notecolors: notecolors,
              typingSectionBaseValuesForBuildUp:typingSectionBaseValuesForBuildUp, typingSectionMultiplierNames: typingSectionMultiplierNames,
-             typingSectionMultiplierValues: typingSectionMultiplierValues};
+             typingSectionMultiplierValues: typingSectionMultiplierValues, leftHandIds: leftHandIds, rightHandIds: rightHandIds};
     }
 }
 
