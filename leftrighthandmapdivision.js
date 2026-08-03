@@ -120,8 +120,6 @@ function Createleftrighthandseparation()
     let copiedNotes = [];
     for (let i = 0; i < leftRightHandDifficulty.notes.length; ++i)
     {
-        if (!leftRightHand.leftHandIds.includes(i) && !leftRightHand.rightHandIds.includes(i))
-            continue;
         if (leftRightHandDifficulty.notes[i].type == "tap")
         {
             let tempTap = {
@@ -154,6 +152,10 @@ function Createleftrighthandseparation()
         {
             copiedNotes[i].layer = "righthand";
         }
+        if (!leftRightHand.leftHandIds.includes(i)  && !leftRightHand.rightHandIds.includes(i))
+        {
+            copiedNotes[i].layer = "undecided";
+        }
     }
     let copiedDifficulty = {
         mapsetId: leftRightHandDifficulty.mapsetId,
@@ -164,7 +166,7 @@ function Createleftrighthandseparation()
         numberRowEnabled: leftRightHandDifficulty.numberRowEnabled,
         spacebarEnabled: leftRightHandDifficulty.spacebarEnabled,
         layersEnabled: true,
-        layers: [{id: "lefthand", name: "Left hand"},{id: "righthand", name: "Right hand"}],
+        layers: [{id: "lefthand", name: "Left hand"},{id: "righthand", name: "Right hand"},{id: "undecided", name: "Undecided"}],
         bgFile: leftRightHandDifficulty.bgFile,
         bookmarks: leftRightHandDifficulty.bookmarks,
         notes: copiedNotes,

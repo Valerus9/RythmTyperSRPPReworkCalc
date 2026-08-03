@@ -432,7 +432,7 @@ let valerusReworkV2_1Compressed = {
             return result;
         }
 
-        const divideChordsBetweenHandPositions = (difficultyChord, leftHandPosition, rightHandPosition) => {            
+        /*const divideChordsBetweenHandPositions = (difficultyChord, leftHandPosition, rightHandPosition) => {            
             let leftHandChordIndexes = [];
             let rightHandChordIndexes = [];
             let chordSizes = getChordSize(difficultyChord);
@@ -544,9 +544,78 @@ let valerusReworkV2_1Compressed = {
             let rightHandChord = createChordFromAlreadyExisting(difficultyChord,rightHandChordIndexes);
 
             return {rightHandPosition: newRightHandPosition, leftHandPosition: newLeftHandPosition, leftChord: leftHandChord, rightChord: rightHandChord};
+        }*/
+
+        const divideChordsBetweenHandPositions = (difficultyChord, leftHandPosition, rightHandPosition) => {            
+            let leftHandChordIndexes = [];
+            let rightHandChordIndexes = [];
+            
+            for (let i = 0; i < difficultyChord.keyPositions.length; ++i) {
+                if (difficultyChord.keyPositions[i].column < 5)
+                {
+                    leftHandChordIndexes.push(i);
+                }
+                else
+                {
+                    rightHandChordIndexes.push(i);
+                }
+            }
+            
+            let newLeftHandPosition = {
+                keyPosition: {
+                    row: -2,
+                    column: -2
+                }
+                
+            }
+            let newRightHandPosition = {
+                keyPosition: {
+                    row: -2,
+                    column: -2
+                }                
+            }
+            for (let i = 0; i < leftHandChordIndexes.length; ++i)
+            {
+                newLeftHandPosition.keyPosition.row += difficultyChord.keyPositions[leftHandChordIndexes[i]].row;
+                newLeftHandPosition.keyPosition.column += difficultyChord.keyPositions[leftHandChordIndexes[i]].column;
+            }
+            if (newLeftHandPosition.keyPosition.row != -2 || newLeftHandPosition.keyPosition.column != -2)
+            {
+                newLeftHandPosition.keyPosition.row += 2;
+                newLeftHandPosition.keyPosition.column += 2;
+                newLeftHandPosition.keyPosition.row = newLeftHandPosition.keyPosition.row / leftHandChordIndexes.length;
+                newLeftHandPosition.keyPosition.column = newLeftHandPosition.keyPosition.column / leftHandChordIndexes.length;
+            }
+            else
+            {
+                newLeftHandPosition.keyPosition.row += leftHandPosition.keyPosition.row;
+                newLeftHandPosition.keyPosition.column += leftHandPosition.keyPosition.column;
+            }
+            for (let i = 0; i < rightHandChordIndexes.length; ++i)
+            {
+                newRightHandPosition.keyPosition.row += difficultyChord.keyPositions[rightHandChordIndexes[i]].row;
+                newRightHandPosition.keyPosition.column += difficultyChord.keyPositions[rightHandChordIndexes[i]].column;
+            }
+            if (newRightHandPosition.keyPosition.row != -2 || newRightHandPosition.keyPosition.column != -2)
+            {
+                newRightHandPosition.keyPosition.row += 2;
+                newRightHandPosition.keyPosition.column += 2;
+                newRightHandPosition.keyPosition.row = newRightHandPosition.keyPosition.row / rightHandChordIndexes.length;
+                newRightHandPosition.keyPosition.column = newRightHandPosition.keyPosition.column / rightHandChordIndexes.length;
+            }
+            else
+            {
+                newRightHandPosition.keyPosition.row += rightHandPosition.keyPosition.row;
+                newRightHandPosition.keyPosition.column += rightHandPosition.keyPosition.column;
+            }
+
+            let leftHandChord = createChordFromAlreadyExisting(difficultyChord,leftHandChordIndexes);
+            let rightHandChord = createChordFromAlreadyExisting(difficultyChord,rightHandChordIndexes);
+
+            return {rightHandPosition: newRightHandPosition, leftHandPosition: newLeftHandPosition, leftChord: leftHandChord, rightChord: rightHandChord};
         }
 
-        const splitMapBetweenTwoHands =(mergedNoteObjects) => {
+        /*const splitMapBetweenTwoHands =(mergedNoteObjects) => {
             let leftHandPosition = {
                 type: "",
                 startTime: 0,
@@ -613,7 +682,7 @@ let valerusReworkV2_1Compressed = {
                         rightHandPosition.startTime = mergedNoteObjects[i].startTime;
                     }                        
                 }
-                /*if (rightHandPosition.keyPosition.column < 3)
+                if (rightHandPosition.keyPosition.column < 3)
                 {
                     rightMergedNoteObjects.pop();
                     leftMergedNoteObjects.push(mergedNoteObjects[i]);                    
@@ -636,7 +705,7 @@ let valerusReworkV2_1Compressed = {
                     leftHandPosition.keyPosition.row = originalLeftHandPosition.keyPosition.row;
                     leftHandPosition.keyPosition.column = originalLeftHandPosition.keyPosition.column;
                     leftHandPosition.type = originalLeftHandPosition.type;
-                }*/
+                }
                 if (rightHandPosition.keyPosition.column - leftHandPosition.keyPosition.column < 0)
                 {
                     let tempPosition = {
@@ -672,6 +741,138 @@ let valerusReworkV2_1Compressed = {
                         leftMergedNoteObjects[leftMergedNoteObjects.length - 1] = tempObject;
                     }
                 }
+            }
+            
+            return { leftHand: leftMergedNoteObjects, rightHand: rightMergedNoteObjects};
+        };*/
+
+        const splitMapBetweenTwoHands =(mergedNoteObjects) => {
+            let leftHandPosition = {
+                type: "",
+                startTime: 0,
+                keyPosition: {
+                    row: 2,
+                    column: 2
+                }
+                
+            }
+            let leftMergedNoteObjects = [];
+            let rightHandPosition = {
+                type: "",
+                startTime: 0,
+                keyPosition: {
+                    row: 2,
+                    column: 7
+                }
+                
+            }
+            let rightMergedNoteObjects = [];
+
+            for (let i = 0; i < mergedNoteObjects.length; ++i)
+            {
+                if (mergedNoteObjects[i].type.includes("chord"))
+                {
+                    let divided = divideChordsBetweenHandPositions(mergedNoteObjects[i], leftHandPosition, rightHandPosition);
+                    if (divided.leftChord.keyPositions.length > 0)
+                    {
+                        leftHandPosition.keyPosition.row = divided.leftHandPosition.keyPosition.row;
+                        leftHandPosition.keyPosition.column = divided.leftHandPosition.keyPosition.column;
+                        leftMergedNoteObjects.push(divided.leftChord);
+                        leftHandPosition.type = mergedNoteObjects[i].type.replace("chord","");
+                        leftHandPosition.startTime = mergedNoteObjects[i].startTime;
+                    }
+                    if (divided.rightChord.keyPositions.length > 0)
+                    {
+                        rightHandPosition.keyPosition.row = divided.rightHandPosition.keyPosition.row;
+                        rightHandPosition.keyPosition.column = divided.rightHandPosition.keyPosition.column;
+                        rightMergedNoteObjects.push(divided.rightChord);
+                        rightHandPosition.type = mergedNoteObjects[i].type.replace("chord","");
+                        rightHandPosition.startTime = mergedNoteObjects[i].startTime;
+                    }
+                    
+                }
+                else
+                {
+                    //let handScoring = handSegregationScoring(leftHandPosition, rightHandPosition, mergedNoteObjects[i]);
+
+                    //if (leftHandDistance < rightHandDistance && originalRightHandDistance > 2)
+                    //if (handScoring.leftHandScore < handScoring.rightHandScore)
+                    if (mergedNoteObjects[i].keyPosition.column < 5)
+                    {
+                        leftMergedNoteObjects.push(mergedNoteObjects[i]);
+                        leftHandPosition.keyPosition.row = mergedNoteObjects[i].keyPosition.row;
+                        leftHandPosition.keyPosition.column = mergedNoteObjects[i].keyPosition.column;
+                        leftHandPosition.type = mergedNoteObjects[i].type;
+                        leftHandPosition.startTime = mergedNoteObjects[i].startTime;
+                    }                        
+                    else
+                    {
+                        rightMergedNoteObjects.push(mergedNoteObjects[i]);
+                        rightHandPosition.keyPosition.row = mergedNoteObjects[i].keyPosition.row;
+                        rightHandPosition.keyPosition.column = mergedNoteObjects[i].keyPosition.column;
+                        rightHandPosition.type = mergedNoteObjects[i].type;
+                        rightHandPosition.startTime = mergedNoteObjects[i].startTime;
+                    }                        
+                }
+                /*if (rightHandPosition.keyPosition.column < 3)
+                {
+                    rightMergedNoteObjects.pop();
+                    leftMergedNoteObjects.push(mergedNoteObjects[i]);                    
+                    leftHandPosition.keyPosition.row = rightHandPosition.keyPosition.row;
+                    leftHandPosition.keyPosition.column = rightHandPosition.keyPosition.column;
+                    leftHandPosition.type = rightHandPosition.type;
+                    
+                    rightHandPosition.keyPosition.row = originalRightHandPosition.keyPosition.row;
+                    rightHandPosition.keyPosition.column = originalRightHandPosition.keyPosition.column;
+                    rightHandPosition.type = originalRightHandPosition.type;
+                }
+                if (leftHandPosition.keyPosition.column > 7)
+                {
+                    leftMergedNoteObjects.pop();
+                    rightMergedNoteObjects.push(mergedNoteObjects[i]);
+                    rightHandPosition.keyPosition.row = leftHandPosition.keyPosition.row;
+                    rightHandPosition.keyPosition.column = leftHandPosition.keyPosition.column;
+                    rightHandPosition.type = leftHandPosition.type;
+
+                    leftHandPosition.keyPosition.row = originalLeftHandPosition.keyPosition.row;
+                    leftHandPosition.keyPosition.column = originalLeftHandPosition.keyPosition.column;
+                    leftHandPosition.type = originalLeftHandPosition.type;
+                }*/
+                /*if (rightHandPosition.keyPosition.column - leftHandPosition.keyPosition.column < 0)
+                {
+                    let tempPosition = {
+                        type: rightHandPosition.type,
+                        startTime: rightHandPosition.startTime,
+                        keyPosition: {
+                            row: rightHandPosition.keyPosition.row,
+                            column: rightHandPosition.keyPosition.column
+                        }
+                    }
+                    rightHandPosition.type = leftHandPosition.type
+                    rightHandPosition.startTime = leftHandPosition.startTime
+                    rightHandPosition.keyPosition.row = leftHandPosition.keyPosition.row
+                    rightHandPosition.keyPosition.column = leftHandPosition.keyPosition.column
+
+                    leftHandPosition.type = tempPosition.type
+                    leftHandPosition.startTime = tempPosition.startTime
+                    leftHandPosition.keyPosition.row = tempPosition.keyPosition.row
+                    leftHandPosition.keyPosition.column = tempPosition.keyPosition.column
+
+                    if (rightMergedNoteObjects.length == 0)
+                    {
+                        rightMergedNoteObjects.push(leftMergedNoteObjects.pop());
+                    }
+                    else if (leftMergedNoteObjects.length == 0)
+                    {
+                        leftMergedNoteObjects.push(rightMergedNoteObjects.pop());
+                    }
+                    else
+                    {
+                        let tempObject = rightMergedNoteObjects[rightMergedNoteObjects.length - 1];
+                        rightMergedNoteObjects[rightMergedNoteObjects.length - 1] = leftMergedNoteObjects[leftMergedNoteObjects.length - 1]
+                        leftMergedNoteObjects[leftMergedNoteObjects.length - 1] = tempObject;
+                    }
+                }*/
             }
             
             return { leftHand: leftMergedNoteObjects, rightHand: rightMergedNoteObjects};
@@ -1098,6 +1299,12 @@ let valerusReworkV2_1Compressed = {
                     }                    
                 }
             }
+        }
+
+        while (merger < convertedNoteObjects.length)
+        {
+            mergedNoteObjects.push(convertedNoteObjects[merger]);
+            merger++;
         }
 
         //console.log(mergedNoteObjects);
