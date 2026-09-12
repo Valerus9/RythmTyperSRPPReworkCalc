@@ -6,18 +6,15 @@ let valerusReworkV2_1Compressed = {
         {
             const acc = scoreData.accuracy / 100;
             let result =valerusReworkV2_1Compressed.innerCalculate(scoreData).difficultyDensity;
-            //result = Math.pow(result, 1.1);            
-            return result * 10 * Math.pow(acc, 5);
+            return  result* 16 * Math.pow(acc, 5);
         }
     },
     sr: {
 
         calculate(scoreData)
         {
-            let result =valerusReworkV2_1Compressed.innerCalculate(scoreData).difficultyDensity;  
-            //result = Math.pow(result, 1.05);
-            //result *= 1.15;
-            return result / 2.6;
+            let result =valerusReworkV2_1Compressed.innerCalculate(scoreData).difficultyDensity;
+            return result * 0.8;
         }
     },
     buildup:
@@ -38,12 +35,15 @@ let valerusReworkV2_1Compressed = {
     },
     innerCalculate(scoreData)
     {
-        const TAPNOTEDIFFICULTY = 0.01;
+        const TAPNOTEDIFFICULTY = 0.02;
         const HOLDNOTEDIFFICULTY = 0.01;
         const RELEASEDIFFICULTY = 0.01;
+        const OVERALLDIFFICULTY = scoreData.overallDifficulty;
         const TYPINGSECTIONDIFFICULTY = 0.02;
-
+        
         const copyObject = (x) => {
+            if (typeof x === 'number')
+                return x;
             let temp = {};
             let xkeys =Object.keys(x);
             for (let i = 0; i < xkeys.length; ++i)
@@ -102,7 +102,7 @@ let valerusReworkV2_1Compressed = {
             let drainTime = 0;
             for (let i = 1; i <mergedNoteObjects.length; ++i)
             {
-                console.log(i);
+                //console.log(i);
                 drainTime += Math.min(mergedNoteObjects[i].startTime - mergedNoteObjects[i - 1].startTime, 5000);
             }
             return Math.max(drainTime,1000);
@@ -153,6 +153,20 @@ let valerusReworkV2_1Compressed = {
         const distanceBetweenObjects = (difficultyObject1, difficultyObject2) => {
             let vectorDistance = distanceBetweenObjectsVector(difficultyObject1, difficultyObject2);
             return Math.sqrt(Math.pow(vectorDistance.x, 2) + Math.pow(vectorDistance.y, 2));
+        }
+        const calculateChordCenter = (chord) => {
+            let center = {
+                row: 0,
+                column: 0
+            }
+            for (let i = 0; i < chord.keyPositions.length; ++i)
+            {
+                center.row += chord.keyPositions[i].row;
+                center.column += chord.keyPositions[i].column;
+            }
+            center.row /= chord.keyPositions.length;
+            center.column /= chord.keyPositions.length;
+            return center;
         }
         const distanceBetweenObjectsVector = (difficultyObject1, difficultyObject2) => {
             let distance = 1;
@@ -292,8 +306,6 @@ let valerusReworkV2_1Compressed = {
             return chordWidthHeight;
         }
 
-        
-        
         const createChordFromAlreadyExisting = (difficultyChord, keyIndexes) => {
             let tempDifficultyChord = {
                 type: difficultyChord.type,
@@ -315,9 +327,6 @@ let valerusReworkV2_1Compressed = {
             }
             return tempDifficultyChord;
         }
-
-        
-
 
         const createMergedNoteObject = (convertedNoteObjects, mergBeginning, mergEnd) => {
             let tempMergedNoteObject = {
@@ -362,46 +371,6 @@ let valerusReworkV2_1Compressed = {
             }
         }
 
-        const handSegregationScoring = (leftHandPosition, rightHandPosition, nextObject) =>
-        {
-            let originalLeftHandPosition = {
-                type: "",
-                keyPosition: {
-                    row: 2,
-                    column: 2
-                }
-            }
-
-            let originalRightHandPosition = {
-                type: "",
-                keyPosition: {
-                    row: 2,
-                    column: 7
-                }
-            }
-
-            
-
-            let leftHandDistance = distanceBetweenObjects(leftHandPosition, nextObject);
-            let leftHandTime = Math.min(nextObject.startTime - leftHandPosition.startTime, 1200);
-            let leftVelocity = leftHandDistance / leftHandTime;
-            let leftHandDistanceNerf = nextObject.keyPosition.column / 10 + 1
-
-            let rightHandDistance = distanceBetweenObjects(rightHandPosition, nextObject);
-            let rightHandTime = Math.min(nextObject.startTime - leftHandPosition.startTime, 1200);
-            let rightVelocity = rightHandDistance / rightHandTime;
-            let rightHandDistanceNerf = (9 - nextObject.keyPosition.column) / 10 + 1
-
-            originalLeftHandDistance = distanceBetweenObjects(originalLeftHandPosition, nextObject);
-            originalRightHandDistance = distanceBetweenObjects(originalRightHandPosition, nextObject);
-
-            
-
-            //return { leftHandScore: leftVelocity * leftHandDistanceNerf, rightHandScore: rightVelocity * rightHandDistanceNerf}
-
-            return { leftHandScore: leftVelocity, rightHandScore: rightVelocity}
-        }
-
         const getChordSize = (chord) => {
             let min = {
                 width: Infinity,
@@ -431,120 +400,6 @@ let valerusReworkV2_1Compressed = {
             }
             return result;
         }
-
-        /*const divideChordsBetweenHandPositions = (difficultyChord, leftHandPosition, rightHandPosition) => {            
-            let leftHandChordIndexes = [];
-            let rightHandChordIndexes = [];
-            let chordSizes = getChordSize(difficultyChord);
-            if (chordSizes.width == 1 || (chordSizes.height == 1 && chordSizes.width < 5))
-            {
-                let sumRow = 0;
-                let sumColumn = 0;
-                for (let i = 0; i < difficultyChord.keyPositions.length; ++i)
-                {
-                    sumRow += difficultyChord.keyPositions[i].row;
-                    sumColumn += difficultyChord.keyPositions[i].column;
-                }
-                let chordPosition = {
-                    startTime: difficultyChord.startTime,
-                    keyPosition: {
-                        row: sumRow / difficultyChord.keyPositions.length,
-                        column: sumColumn / difficultyChord.keyPositions.length,
-                    }
-                }
-                let handScoring = handSegregationScoring(leftHandPosition, rightHandPosition, chordPosition)
-                if (handScoring.leftHandScore < handScoring.rightHandScore)
-                { 
-                    for (let i = 0; i < difficultyChord.keyPositions.length; ++i)
-                    {
-                        leftHandChordIndexes.push(i);
-                    }
-                }
-                else
-                {
-                    for (let i = 0; i < difficultyChord.keyPositions.length; ++i)
-                    {
-                        rightHandChordIndexes.push(i);
-                    }
-                }
-            }
-            else
-            {
-                for (let i = 0; i < difficultyChord.keyPositions.length; ++i) {
-                    let leftHandDistance = 0;
-                    let rightHandDistance = 0;
-                    let x1 = leftHandPosition.keyPosition.row;
-                    let x2 = difficultyChord.keyPositions[i].row;
-                    let y1 = leftHandPosition.keyPosition.column;
-                    let y2 = difficultyChord.keyPositions[i].column;
-                    leftHandDistance = calculateDistance(x1, x2, y1, y2);
-    
-                    x1 = rightHandPosition.keyPosition.row;
-                    y1 = rightHandPosition.keyPosition.column;
-                    rightHandDistance = calculateDistance(x1, x2, y1, y2);
-                    if (leftHandDistance <= rightHandDistance)
-                    {
-                        leftHandChordIndexes.push(i);
-                    }
-                    else
-                    {
-                        rightHandChordIndexes.push(i);
-                    }
-                }
-            }
-            let newLeftHandPosition = {
-                keyPosition: {
-                    row: -2,
-                    column: -2
-                }
-                
-            }
-            let newRightHandPosition = {
-                keyPosition: {
-                    row: -2,
-                    column: -2
-                }                
-            }
-            for (let i = 0; i < leftHandChordIndexes.length; ++i)
-            {
-                newLeftHandPosition.keyPosition.row += difficultyChord.keyPositions[leftHandChordIndexes[i]].row;
-                newLeftHandPosition.keyPosition.column += difficultyChord.keyPositions[leftHandChordIndexes[i]].column;
-            }
-            if (newLeftHandPosition.keyPosition.row != -2 || newLeftHandPosition.keyPosition.column != -2)
-            {
-                newLeftHandPosition.keyPosition.row += 2;
-                newLeftHandPosition.keyPosition.column += 2;
-                newLeftHandPosition.keyPosition.row = newLeftHandPosition.keyPosition.row / leftHandChordIndexes.length;
-                newLeftHandPosition.keyPosition.column = newLeftHandPosition.keyPosition.column / leftHandChordIndexes.length;
-            }
-            else
-            {
-                newLeftHandPosition.keyPosition.row += leftHandPosition.keyPosition.row;
-                newLeftHandPosition.keyPosition.column += leftHandPosition.keyPosition.column;
-            }
-            for (let i = 0; i < rightHandChordIndexes.length; ++i)
-            {
-                newRightHandPosition.keyPosition.row += difficultyChord.keyPositions[rightHandChordIndexes[i]].row;
-                newRightHandPosition.keyPosition.column += difficultyChord.keyPositions[rightHandChordIndexes[i]].column;
-            }
-            if (newRightHandPosition.keyPosition.row != -2 || newRightHandPosition.keyPosition.column != -2)
-            {
-                newRightHandPosition.keyPosition.row += 2;
-                newRightHandPosition.keyPosition.column += 2;
-                newRightHandPosition.keyPosition.row = newRightHandPosition.keyPosition.row / rightHandChordIndexes.length;
-                newRightHandPosition.keyPosition.column = newRightHandPosition.keyPosition.column / rightHandChordIndexes.length;
-            }
-            else
-            {
-                newRightHandPosition.keyPosition.row += rightHandPosition.keyPosition.row;
-                newRightHandPosition.keyPosition.column += rightHandPosition.keyPosition.column;
-            }
-
-            let leftHandChord = createChordFromAlreadyExisting(difficultyChord,leftHandChordIndexes);
-            let rightHandChord = createChordFromAlreadyExisting(difficultyChord,rightHandChordIndexes);
-
-            return {rightHandPosition: newRightHandPosition, leftHandPosition: newLeftHandPosition, leftChord: leftHandChord, rightChord: rightHandChord};
-        }*/
 
         const divideChordsBetweenHandPositions = (difficultyChord, leftHandPosition, rightHandPosition) => {            
             let leftHandChordIndexes = [];
@@ -615,137 +470,6 @@ let valerusReworkV2_1Compressed = {
             return {rightHandPosition: newRightHandPosition, leftHandPosition: newLeftHandPosition, leftChord: leftHandChord, rightChord: rightHandChord};
         }
 
-        /*const splitMapBetweenTwoHands =(mergedNoteObjects) => {
-            let leftHandPosition = {
-                type: "",
-                startTime: 0,
-                keyPosition: {
-                    row: 2,
-                    column: 2
-                }
-                
-            }
-            let leftMergedNoteObjects = [];
-            let rightHandPosition = {
-                type: "",
-                startTime: 0,
-                keyPosition: {
-                    row: 2,
-                    column: 7
-                }
-                
-            }
-            let rightMergedNoteObjects = [];
-
-            for (let i = 0; i < mergedNoteObjects.length; ++i)
-            {
-                if (mergedNoteObjects[i].type.includes("chord"))
-                {
-                    let divided = divideChordsBetweenHandPositions(mergedNoteObjects[i], leftHandPosition, rightHandPosition);
-                    if (divided.leftChord.keyPositions.length > 0)
-                    {
-                        leftHandPosition.keyPosition.row = divided.leftHandPosition.keyPosition.row;
-                        leftHandPosition.keyPosition.column = divided.leftHandPosition.keyPosition.column;
-                        leftMergedNoteObjects.push(divided.leftChord);
-                        leftHandPosition.type = mergedNoteObjects[i].type.replace("chord","");
-                        leftHandPosition.startTime = mergedNoteObjects[i].startTime;
-                    }
-                    if (divided.rightChord.keyPositions.length > 0)
-                    {
-                        rightHandPosition.keyPosition.row = divided.rightHandPosition.keyPosition.row;
-                        rightHandPosition.keyPosition.column = divided.rightHandPosition.keyPosition.column;
-                        rightMergedNoteObjects.push(divided.rightChord);
-                        rightHandPosition.type = mergedNoteObjects[i].type.replace("chord","");
-                        rightHandPosition.startTime = mergedNoteObjects[i].startTime;
-                    }
-                    
-                }
-                else
-                {
-                    let handScoring = handSegregationScoring(leftHandPosition, rightHandPosition, mergedNoteObjects[i]);
-
-                    //if (leftHandDistance < rightHandDistance && originalRightHandDistance > 2)
-                    if (handScoring.leftHandScore < handScoring.rightHandScore)
-                    {
-                        leftMergedNoteObjects.push(mergedNoteObjects[i]);
-                        leftHandPosition.keyPosition.row = mergedNoteObjects[i].keyPosition.row;
-                        leftHandPosition.keyPosition.column = mergedNoteObjects[i].keyPosition.column;
-                        leftHandPosition.type = mergedNoteObjects[i].type;
-                        leftHandPosition.startTime = mergedNoteObjects[i].startTime;
-                    }                        
-                    else
-                    {
-                        rightMergedNoteObjects.push(mergedNoteObjects[i]);
-                        rightHandPosition.keyPosition.row = mergedNoteObjects[i].keyPosition.row;
-                        rightHandPosition.keyPosition.column = mergedNoteObjects[i].keyPosition.column;
-                        rightHandPosition.type = mergedNoteObjects[i].type;
-                        rightHandPosition.startTime = mergedNoteObjects[i].startTime;
-                    }                        
-                }
-                if (rightHandPosition.keyPosition.column < 3)
-                {
-                    rightMergedNoteObjects.pop();
-                    leftMergedNoteObjects.push(mergedNoteObjects[i]);                    
-                    leftHandPosition.keyPosition.row = rightHandPosition.keyPosition.row;
-                    leftHandPosition.keyPosition.column = rightHandPosition.keyPosition.column;
-                    leftHandPosition.type = rightHandPosition.type;
-                    
-                    rightHandPosition.keyPosition.row = originalRightHandPosition.keyPosition.row;
-                    rightHandPosition.keyPosition.column = originalRightHandPosition.keyPosition.column;
-                    rightHandPosition.type = originalRightHandPosition.type;
-                }
-                if (leftHandPosition.keyPosition.column > 7)
-                {
-                    leftMergedNoteObjects.pop();
-                    rightMergedNoteObjects.push(mergedNoteObjects[i]);
-                    rightHandPosition.keyPosition.row = leftHandPosition.keyPosition.row;
-                    rightHandPosition.keyPosition.column = leftHandPosition.keyPosition.column;
-                    rightHandPosition.type = leftHandPosition.type;
-
-                    leftHandPosition.keyPosition.row = originalLeftHandPosition.keyPosition.row;
-                    leftHandPosition.keyPosition.column = originalLeftHandPosition.keyPosition.column;
-                    leftHandPosition.type = originalLeftHandPosition.type;
-                }
-                if (rightHandPosition.keyPosition.column - leftHandPosition.keyPosition.column < 0)
-                {
-                    let tempPosition = {
-                        type: rightHandPosition.type,
-                        startTime: rightHandPosition.startTime,
-                        keyPosition: {
-                            row: rightHandPosition.keyPosition.row,
-                            column: rightHandPosition.keyPosition.column
-                        }
-                    }
-                    rightHandPosition.type = leftHandPosition.type
-                    rightHandPosition.startTime = leftHandPosition.startTime
-                    rightHandPosition.keyPosition.row = leftHandPosition.keyPosition.row
-                    rightHandPosition.keyPosition.column = leftHandPosition.keyPosition.column
-
-                    leftHandPosition.type = tempPosition.type
-                    leftHandPosition.startTime = tempPosition.startTime
-                    leftHandPosition.keyPosition.row = tempPosition.keyPosition.row
-                    leftHandPosition.keyPosition.column = tempPosition.keyPosition.column
-
-                    if (rightMergedNoteObjects.length == 0)
-                    {
-                        rightMergedNoteObjects.push(leftMergedNoteObjects.pop());
-                    }
-                    else if (leftMergedNoteObjects.length == 0)
-                    {
-                        leftMergedNoteObjects.push(rightMergedNoteObjects.pop());
-                    }
-                    else
-                    {
-                        let tempObject = rightMergedNoteObjects[rightMergedNoteObjects.length - 1];
-                        rightMergedNoteObjects[rightMergedNoteObjects.length - 1] = leftMergedNoteObjects[leftMergedNoteObjects.length - 1]
-                        leftMergedNoteObjects[leftMergedNoteObjects.length - 1] = tempObject;
-                    }
-                }
-            }
-            
-            return { leftHand: leftMergedNoteObjects, rightHand: rightMergedNoteObjects};
-        };*/
-
         const splitMapBetweenTwoHands =(mergedNoteObjects) => {
             let leftHandPosition = {
                 type: "",
@@ -793,10 +517,6 @@ let valerusReworkV2_1Compressed = {
                 }
                 else
                 {
-                    //let handScoring = handSegregationScoring(leftHandPosition, rightHandPosition, mergedNoteObjects[i]);
-
-                    //if (leftHandDistance < rightHandDistance && originalRightHandDistance > 2)
-                    //if (handScoring.leftHandScore < handScoring.rightHandScore)
                     if (mergedNoteObjects[i].keyPosition.column < 5)
                     {
                         leftMergedNoteObjects.push(mergedNoteObjects[i]);
@@ -814,246 +534,26 @@ let valerusReworkV2_1Compressed = {
                         rightHandPosition.startTime = mergedNoteObjects[i].startTime;
                     }                        
                 }
-                /*if (rightHandPosition.keyPosition.column < 3)
-                {
-                    rightMergedNoteObjects.pop();
-                    leftMergedNoteObjects.push(mergedNoteObjects[i]);                    
-                    leftHandPosition.keyPosition.row = rightHandPosition.keyPosition.row;
-                    leftHandPosition.keyPosition.column = rightHandPosition.keyPosition.column;
-                    leftHandPosition.type = rightHandPosition.type;
-                    
-                    rightHandPosition.keyPosition.row = originalRightHandPosition.keyPosition.row;
-                    rightHandPosition.keyPosition.column = originalRightHandPosition.keyPosition.column;
-                    rightHandPosition.type = originalRightHandPosition.type;
-                }
-                if (leftHandPosition.keyPosition.column > 7)
-                {
-                    leftMergedNoteObjects.pop();
-                    rightMergedNoteObjects.push(mergedNoteObjects[i]);
-                    rightHandPosition.keyPosition.row = leftHandPosition.keyPosition.row;
-                    rightHandPosition.keyPosition.column = leftHandPosition.keyPosition.column;
-                    rightHandPosition.type = leftHandPosition.type;
-
-                    leftHandPosition.keyPosition.row = originalLeftHandPosition.keyPosition.row;
-                    leftHandPosition.keyPosition.column = originalLeftHandPosition.keyPosition.column;
-                    leftHandPosition.type = originalLeftHandPosition.type;
-                }*/
-                /*if (rightHandPosition.keyPosition.column - leftHandPosition.keyPosition.column < 0)
-                {
-                    let tempPosition = {
-                        type: rightHandPosition.type,
-                        startTime: rightHandPosition.startTime,
-                        keyPosition: {
-                            row: rightHandPosition.keyPosition.row,
-                            column: rightHandPosition.keyPosition.column
-                        }
-                    }
-                    rightHandPosition.type = leftHandPosition.type
-                    rightHandPosition.startTime = leftHandPosition.startTime
-                    rightHandPosition.keyPosition.row = leftHandPosition.keyPosition.row
-                    rightHandPosition.keyPosition.column = leftHandPosition.keyPosition.column
-
-                    leftHandPosition.type = tempPosition.type
-                    leftHandPosition.startTime = tempPosition.startTime
-                    leftHandPosition.keyPosition.row = tempPosition.keyPosition.row
-                    leftHandPosition.keyPosition.column = tempPosition.keyPosition.column
-
-                    if (rightMergedNoteObjects.length == 0)
-                    {
-                        rightMergedNoteObjects.push(leftMergedNoteObjects.pop());
-                    }
-                    else if (leftMergedNoteObjects.length == 0)
-                    {
-                        leftMergedNoteObjects.push(rightMergedNoteObjects.pop());
-                    }
-                    else
-                    {
-                        let tempObject = rightMergedNoteObjects[rightMergedNoteObjects.length - 1];
-                        rightMergedNoteObjects[rightMergedNoteObjects.length - 1] = leftMergedNoteObjects[leftMergedNoteObjects.length - 1]
-                        leftMergedNoteObjects[leftMergedNoteObjects.length - 1] = tempObject;
-                    }
-                }*/
             }
             
             return { leftHand: leftMergedNoteObjects, rightHand: rightMergedNoteObjects};
         };
 
-        const calculateRepeatedPatternNerf = (difficultyObjects) => {
-            let keyPositionMatrix = [
-                [], [], [], [], [], [], [], [], [], [],
-                [], [], [], [], [], [], [], [], [], [],
-                [], [], [], [], [], [], [], [], [], [],
-            ];
-            let layerAlreadyUsed = [];
-            let repeatedPatternNerf = [];
-            for (let i = 0; i < difficultyObjects.length; ++i) {
-                repeatedPatternNerf.push(1);
-                layerAlreadyUsed.push(false);
-                for (let j = 0; j < keyPositionMatrix.length; ++j) {
-                    keyPositionMatrix[j].push(-1);
-                }
-                let lastLayer = keyPositionMatrix[0].length - 1;
-                if (difficultyObjects[i].type.includes("chord")) {
-                    for (let j = 0; j < difficultyObjects[i].keyPositions.length; ++j) {
-                        let row = difficultyObjects[i].keyPositions[j].row;
-                        let column = difficultyObjects[i].keyPositions[j].column;
-                        keyPositionMatrix[row * 10 + column][lastLayer] = difficultyObjects[i].startTime;
-                    }
-                }
-                else if (difficultyObjects[i].type != "typingsection" && difficultyObjects[i].type != "anchor") {
-                    let row = difficultyObjects[i].keyPosition.row;
-                    let column = difficultyObjects[i].keyPosition.column;
-                    keyPositionMatrix[row * 10 + column][lastLayer] = difficultyObjects[i].startTime;
-                }
-            }
-
-            let filteredForPatterns = [];
-            let alreadyUsedForPatterns = [];
-            for (let i = 0; i < keyPositionMatrix[0].length; ++i) {
-                if (!matrixLayerContainsKey(keyPositionMatrix, i))
-                    continue;
-                filteredForPatterns.push(i);
-                alreadyUsedForPatterns.push(false);
-            }
-            let patterns = [];
-            let previousCorrectBase = [];
-            for (let i = 0; i < filteredForPatterns.length; ++i)
-            {
-
-                let noDataPattern = filteredForPatterns.slice(i, 40+i);
-                let dataPattern = {
-                    offsets: [],
-                    positions: [],
-                    values: [],
-                    times: [],
-                    types: [],
-                    ids: []
-                };
-                dataPattern.offsets.push(matrixLayerGetKeyPosition(keyPositionMatrix, noDataPattern[0]));
-                dataPattern.positions.push(matrixLayerGetKeyPosition(keyPositionMatrix, noDataPattern[0]));
-                dataPattern.values.push(matrixLayerGetKeyValue(keyPositionMatrix, noDataPattern[0]));
-                dataPattern.times.push(matrixLayerGetKeyValue(keyPositionMatrix, noDataPattern[0]));
-                dataPattern.types.push(difficultyObjects[0].type);
-                dataPattern.ids.push(noDataPattern[0]);
-                let previous = 0;
-                for (let j = 1; j < noDataPattern.length; ++j)
-                {
-                    let previousKeyValue = matrixLayerGetKeyValue(keyPositionMatrix, noDataPattern[previous]);
-                    let previousKeyPosition = matrixLayerGetKeyPosition(keyPositionMatrix, noDataPattern[previous]);
-                    let nextKeyValue = matrixLayerGetKeyValue(keyPositionMatrix, noDataPattern[j]);
-                    let nextKeyPosition = matrixLayerGetKeyPosition(keyPositionMatrix, noDataPattern[j]);
-                    if (distanceBetweenPositionsVector(previousKeyPosition, nextKeyPosition) > 3)
-                    {
-                        continue;
-                    }                
-                    dataPattern.offsets.push(distanceBetweenPositionsVector(previousKeyPosition, nextKeyPosition));
-                    dataPattern.positions.push(nextKeyPosition);
-                    dataPattern.values.push(nextKeyValue - previousKeyValue);
-                    dataPattern.times.push(nextKeyValue);
-                    dataPattern.types.push(difficultyObjects[j].type);
-                    dataPattern.ids.push(noDataPattern[j]);
-                    previous = j;
-                }
-                if (dataPattern.offsets.length == 1)
-                    continue;
-                patterns.push(dataPattern);
-                previousCorrectBase.push(true);
-            }
-            for (let i = 0; i < patterns.length - 1; ++i)
-            {
-                let previousCorrect = previousCorrectBase.slice(0, previousCorrectBase.length -1);
-                let patternLength = 2;
-                let noMatch = false;
-                let firstRound = true;
-                while(!noMatch)
-                {
-                    noMatch = true;
-                    let newCorrect = previousCorrect.slice(0, previousCorrect.length -1);
-                    for (let j = i + 1; j < patterns.length; ++j)
-                    {
-                        if (patterns[j].offsets.length < patternLength)
-                            newCorrect[j] = false;
-                        if (!newCorrect[j])
-                            continue;
-                        for (let k = 0; k < patternLength; ++k)
-                        {
-                            if (k == 0)
-                            {
-                                if (patterns[i].types[k] != patterns[j].types[k])
-                                {
-                                    newCorrect[j] = false;
-                                    break;
-                                }
-                                continue;
-                            }
-                            if (patterns[i].values[k] - 5 > patterns[j].values[k] || patterns[i].values[k] + 5 < patterns[j].values[k] 
-                                || patterns[i].offsets[k].x != patterns[j].offsets[k].x || patterns[i].offsets[k].y != patterns[j].offsets[k].y
-                                || patterns[i].types[k] != patterns[j].types[k])
-                            {
-                                newCorrect[j] = false;
-                                break;
-                            }
-                        }
-                        if (newCorrect[j])
-                        {
-                            noMatch = false;
-                        }
-
-                    }
-
-                    if (noMatch)
-                    {
-                        if (firstRound)
-                            break;   
-                        break;
-                    }
-
-
-                    patternLength++;
-                    firstRound = false;
-                    previousCorrect = newCorrect.slice(0, newCorrect.length -1);
-                }
-                patternLength--;
-                if (firstRound)
-                    continue;
-                if (patternLength > 2) {
-                    let samePatternCount = 1;
-                    for (let j = i + 1; j < previousCorrect.length ; ++j)
-                    {
-                        if (previousCorrect[j])
-                            samePatternCount++
-                    }
-                    let appliedRepeatedPatternNerf = Math.min(Math.pow(1 / Math.pow(samePatternCount, 0.5), Math.max(patternLength - 2, 1)), 1);
-                    for (let j = i + 1; j < previousCorrect.length; ++j) {
-                        if (!previousCorrect[j])
-                            continue;
-                        for (let k = 0; k < patternLength; ++k) {
-                            repeatedPatternNerf[patterns[j].ids[k]] = appliedRepeatedPatternNerf;
-                        }
-                    }
-                }
-                for (let j = 0; j < previousCorrect.length; ++j)
-                {
-                    if (previousCorrect[j])
-                    {
-                        patterns.splice(j, 1);
-                        previousCorrect.splice(j , 1);
-                        previousCorrectBase.splice(0,1);
-                        j--;
-
-                    }
-
-                }
-            }
-            return repeatedPatternNerf;
-        }
-
         const calculateSpeed = (difficultyObjects) => {
+            const UPPERLIMIT = 80 - 6 * OVERALLDIFFICULTY;;
+            const LOWERLIMIT = UPPERLIMIT/2;
+            const MSLIMIT = 300;
+            const getSpeed = (duration) => {
+                if (duration > MSLIMIT)
+                    return MSLIMIT/duration;
+                else
+                    return ((MSLIMIT/duration - 1)/2)+1;
+            }
+
             let speed = [];
             if (difficultyObjects.length > 0)
                 speed.push(1);
             let lastIndex = 0;
-            let nerfBuffBuildUp = 0;
             for (let i = 1; i < difficultyObjects.length; ++i)
             {
                 if (difficultyObjects[i].startTime - difficultyObjects[lastIndex].startTime == 0)
@@ -1062,97 +562,30 @@ let valerusReworkV2_1Compressed = {
                     continue;
                 }   
                 let individualSpeed = Math.max(difficultyObjects[i].startTime - difficultyObjects[lastIndex].startTime,0);
-                individualSpeed = 250 / (individualSpeed + 50);
-                speed.push(Math.pow(individualSpeed, 1.1));
-                lastIndex = i;                
-            }
-            return speed;
-        }
-        const calculateStrain = (difficultyObjects) => {
-            let speed = [];
-            if (difficultyObjects.length > 0)
-                speed.push(1);
-            let lastIndex = 0;
-            let nerfBuffBuildUp = 0;
-            for (let i = 1; i < difficultyObjects.length; ++i)
-            {
-                if (difficultyObjects[i].startTime - difficultyObjects[lastIndex].startTime == 0)
+                let samePosition = true;
+                if (difficultyObjects[i].type.includes("chord") || difficultyObjects[lastIndex].type.includes("chord"))
+                    samePosition = false;
+                else if (difficultyObjects[i].keyPosition.row != difficultyObjects[lastIndex].keyPosition.row 
+                    || difficultyObjects[i].keyPosition.column != difficultyObjects[lastIndex].keyPosition.column)
+                    samePosition = false;
+                if (individualSpeed < LOWERLIMIT && !samePosition)
                 {
                     speed.push(1);
-                    continue;
-                }   
-                if (difficultyObjects[i].startTime - difficultyObjects[lastIndex].startTime > 5000)
-                {
-                    nerfBuffBuildUp = 0;
-                }
-                let individualSpeed = Math.max(difficultyObjects[i].startTime - difficultyObjects[lastIndex].startTime,0);
-                individualSpeed = 250 / (individualSpeed + 100);
-                nerfBuffBuildUp += (individualSpeed - 1) / 1000;
-                speed.push(1 + nerfBuffBuildUp);
-                lastIndex = i;                
-            }
-            return speed;
-        }
-        const calculateStamina = (difficultyObjects, drainTime) => {
-            let stamina = [];
-            stamina.push(1);
-            /*let staminaBuff = difficultyObjects.length   /( drainTime / 600);
-            for (let i = 1; i < difficultyObjects.length; ++i)
-            {
-                stamina.push(staminaBuff);
-            }*/
-            let staminaBuff = Math.pow(Math.max((drainTime - 60000) / 60000, 1), 0.3);
-            for (let i = 1; i < difficultyObjects.length; ++i)
-            {
-                stamina.push(staminaBuff);
-            }
-            return stamina;
-        }
-
-        const calculateRoll = (difficultyObjects) => {
-            
-        }
-
-        const calculateChordDifficulty = (difficultyObjects) => {
-            let chordDiff = [];
-            for (let i = 0; i < difficultyObjects.length; ++i)
-            {
-                if (difficultyObjects[i].type.includes("chord"))
-                {
-                    let minRow = Infinity;
-                    let maxRow = 0;
-                    let minColumn = Infinity;
-                    let maxColumn = 0;
-                    for (let j = 0; j < difficultyObjects[i].keyPositions.length; ++j)
-                    {
-                        if (difficultyObjects[i].keyPositions[j].row < minRow)
-                            minRow = difficultyObjects[i].keyPositions[j].row 
-                        if (difficultyObjects[i].keyPositions[j].row > maxRow)
-                            maxRow = difficultyObjects[i].keyPositions[j].row 
-                        if (difficultyObjects[i].keyPositions[j].column < minColumn)
-                            minColumn = difficultyObjects[i].keyPositions[j].column 
-                        if (difficultyObjects[i].keyPositions[j].column > maxColumn)
-                            maxColumn = difficultyObjects[i].keyPositions[j].column 
-                    }
-                    if (minRow == maxRow)
-                    {
-                        chordDiff.push(1 / difficultyObjects[i].keyPositions.length * (1 + (difficultyObjects[i].keyPositions.length / 10)));
-                        continue;
-                    }
-                    
-                    if (minColumn == maxColumn)
-                    {
-                        chordDiff.push(1 / difficultyObjects[i].keyPositions.length * (1 + (difficultyObjects[i].keyPositions.length / 10)));
-                        continue;
-                    }
-                    chordDiff.push(1);
-                }
+                }      
+                else if (individualSpeed < UPPERLIMIT && !samePosition)
+                {              
+                    let amount = getSpeed(UPPERLIMIT) - 1;
+                    let percentage = Math.pow((individualSpeed - LOWERLIMIT)/LOWERLIMIT,0.5);      
+                    speed.push(1+amount*percentage);
+                }              
                 else
                 {
-                    chordDiff.push(1);
+                    speed.push(getSpeed(individualSpeed));
                 }
+                //speed.push(1);
+                lastIndex = i;                
             }
-            return chordDiff;
+            return speed;
         }
 
         const calculateDifficultySum = (difficultyObjects, drainTime, noteMultipliers) => {
@@ -1160,6 +593,7 @@ let valerusReworkV2_1Compressed = {
             if (difficultyObjects.length == 0)
                 return {difficultySum: 0};
 
+            let difficulties = [];
             let difficultySum = 0;
             for (let i = 0; i < difficultyObjects.length; ++i)
             {
@@ -1197,8 +631,15 @@ let valerusReworkV2_1Compressed = {
                 {
                     multipliedDifficulty *= noteMultipliers[j][i];
                 }
-                difficultySum += multipliedDifficulty;
+                difficulties.push(multipliedDifficulty);
+                //difficultySum += multipliedDifficulty;
             }
+            sortArray(difficulties, (x, y) => { return x < y});
+            for (let i = 0; i < difficulties.length; ++i)
+            {
+                difficultySum += difficulties[i] * Math.pow(0.992, i);
+            }
+            
             return {difficultySum: difficultySum};
         };
 
@@ -1346,7 +787,7 @@ let valerusReworkV2_1Compressed = {
             let indexType = objectCounts.types.indexOf(mergedNoteObjects[i].type);
             objectCounts.counts[indexType] += 1;
         }*/
-        //console.log(scoreData.songName + " "+scoreData.difficultyTitle);
+        console.log(scoreData.songName + " "+scoreData.difficultyTitle);
         //console.log(objectCounts);
 
         let splitMap = splitMapBetweenTwoHands(mergedNoteObjects);
@@ -1360,7 +801,10 @@ let valerusReworkV2_1Compressed = {
         
         let noteStartTimesForBuildUp = [];
         let noteBaseValuesForBuildUp = [];
-        let noteMultiplierNames = ["Speed factor", "Strain"];//, "Repeated pattern nerf", "Stamina", "Chord difficulty"];
+        let noteMultiplierNames = ["Speed factor"];
+        const calculateFactors = (difficultyObjects) => {
+            return [calculateSpeed(difficultyObjects)];
+        }
         let noteMultiplierValues = [];
         let avaliablecolors = [[94, 140, 105], [70, 235, 52], [8, 189, 131], [191, 224, 27], [212, 132, 47], [111, 78, 204]];//, [128, 31, 135], [0, 247, 231], [28, 22, 186]];
         let notecolors = [];
@@ -1385,9 +829,7 @@ let valerusReworkV2_1Compressed = {
         let typingSectionMultiplierNames = [];
         let typingSectionMultiplierValues = [];
 
-        let leftNoteMultipliers = [calculateSpeed(splitMap.leftHand), calculateStrain(splitMap.leftHand)];//, calculateStamina(splitMap.leftHand, LEFTDRAINTIME)];
-            //, calculateRepeatedPatternNerf(splitMap.leftHand),
-            //calculateStamina(splitMap.leftHand, LEFTDRAINTIME), calculateChordDifficulty(splitMap.leftHand)];
+        let leftNoteMultipliers = calculateFactors(splitMap.leftHand);
         //let leftNoteMultipliers = [];
         let leftResult = calculateDifficultySum(splitMap.leftHand, LEFTDRAINTIME, leftNoteMultipliers);
         for (let i = 0; i < splitMap.leftHand.length; ++i)
@@ -1398,9 +840,7 @@ let valerusReworkV2_1Compressed = {
             }
         }
 
-        let rightNoteMultipliers = [calculateSpeed(splitMap.rightHand), calculateStrain(splitMap.rightHand)];//, calculateStamina(splitMap.rightHand, RIGHTDRAINTIME)];
-            //, calculateRepeatedPatternNerf(splitMap.rightHand), 
-            //calculateStamina(splitMap.rightHand, RIGHTDRAINTIME), calculateChordDifficulty(splitMap.rightHand)];
+        let rightNoteMultipliers = calculateFactors(splitMap.rightHand);
         //let rightNoteMultipliers = [];
         let rightResult = calculateDifficultySum(splitMap.rightHand, RIGHTDRAINTIME, rightNoteMultipliers);
         for (let i = 0; i < splitMap.rightHand.length; ++i)
