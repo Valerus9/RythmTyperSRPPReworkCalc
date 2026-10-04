@@ -787,7 +787,6 @@ let valerusReworkV2_1Compressed = {
             let indexType = objectCounts.types.indexOf(mergedNoteObjects[i].type);
             objectCounts.counts[indexType] += 1;
         }*/
-        console.log(scoreData.songName + " "+scoreData.difficultyTitle);
         //console.log(objectCounts);
 
         let splitMap = splitMapBetweenTwoHands(mergedNoteObjects);
@@ -910,4 +909,4 @@ let valerusReworkV2_1Compressed = {
     }
 }
 
-reworks.push(valerusReworkV2_1Compressed);
+//reworks.push(valerusReworkV2_1Compressed);

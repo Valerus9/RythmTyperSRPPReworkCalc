@@ -1,5 +1,5 @@
-const apiv1 = "https://us-central1-rhythm-typer.cloudfunctions.net/api";
-const apiv2 = "https://us-central1-rhythm-typer.cloudfunctions.net/api/v2";
+const apiv1 = "https://api.rhythmtyper.net";
+const apiv2 = "https://api.rhythmtyper.net/v2";
 
 //apiv2 + "/leaderboard?limit=50&offset=0&sortBy=totalPP"
 /*
@@ -148,6 +148,13 @@ object that contains:
         cb
         //diffname
         diff
+        judgments
+        {
+            perfect
+            good
+            ok
+            miss
+        }
         //grade
         gr
         mods
@@ -269,7 +276,7 @@ async function GetPlayerData(userId) {
 
 async function GetBeatmapData(beatmapId) {
     let localFetchResult;
-    await fetch(apiv1 + "/getBeatmaps?limit=1&mapsetId=" + beatmapId, {cache: "no-store"}).then(response => response.json())
+    await fetch(apiv1 + "/getBeatmaps?mapsetId=" + beatmapId, {cache: "no-store"}).then(response => response.json())
         .then(localBeatmapData => {
             localFetchResult = localBeatmapData;
         });
@@ -308,9 +315,9 @@ async function GetBeatmapData(beatmapId) {
 */
 
 
-async function GetDifficultyData(beatmapId, difficultyId) {
+async function GetDifficultyData(difficultyId) {
     let localFetchResult;
-    await fetch(apiv2 + "/beatmap/" + beatmapId + "/difficulty/" + difficultyId, {cache: "no-store"}).then(response => response.json())
+    await fetch(apiv2 + "/beatmaps/" + difficultyId, {cache: "no-store"}).then(response => response.json())
         .then(localDifficultyData => {
             localFetchResult = localDifficultyData;
         });
@@ -509,3 +516,13 @@ async function GetRankedBeatmapDatas(offset, limit) {
 //await GetRankedBeatmapDatas(0, -1).then(x => {
 //    console.log(x);
 //});
+
+
+async function GetBeatmapRTM(beatmapId) {
+    let localFetchResult;
+    await fetch(apiv1 + "/getBeatmaps?" + beatmapId, {cache: "no-store"}).then(response => response.json())
+        .then(localDifficultyData => {
+            localFetchResult = localDifficultyData;
+        });
+    return localFetchResult;
+}

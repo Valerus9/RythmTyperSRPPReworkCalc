@@ -161,6 +161,73 @@ async function CreateMapDataFromFiles(files) {
     return [localBeatmapData, localDifficultyData, localLoadedBeatmapIds, localLoadedDifficultyIds, localSongNames, localDifficultyNames, localBPMs, localDrainTimes, localODs, localNoteCounts, localTypingSectionCounts];
 }
 
+function SetDifficultyData(difficultyInput, accuracy, judgments)
+{
+    let tempDifficulty = {
+        overallDifficulty: difficultyInput.overallDifficulty,
+        notes: [],
+        typingSections: [],
+        songName: difficultyInput.songName,
+        difficultyTitle: difficultyInput.name,
+        accuracy: accuracy,
+        judgmentCounts: {
+            perfect: 0,
+            good: 0,
+            ok: 0,
+            miss: 0
+        }
+    };
+    if (ObjectHasVariable(judgments, "perfect"))
+    {
+        tempDifficulty.judgmentCounts.perfect=judgments.perfect;
+    }
+    if (ObjectHasVariable(judgments, "good"))
+    {
+        tempDifficulty.judgmentCounts.good=judgments.good;
+    }
+    if (ObjectHasVariable(judgments, "ok"))
+    {
+        tempDifficulty.judgmentCounts.ok=judgments.ok;
+    }
+    if (ObjectHasVariable(judgments, "miss"))
+    {
+        tempDifficulty.judgmentCounts.miss=judgments.miss;
+    }
+    
+    for (let j = 0; j < difficultyInput.notes.length; ++j)
+    {
+        if (difficultyInput.notes[j].type == "tap")
+        {
+            let tempNote = {
+                type: difficultyInput.notes[j].type,
+                key: difficultyInput.notes[j].key,
+                startTime: difficultyInput.notes[j].time/1000,
+                time: difficultyInput.notes[j].time/1000,
+            }
+            tempDifficulty.notes.push(tempNote);
+        }
+        else if (difficultyInput.notes[j].type == "hold")
+        {
+            let tempNote = {
+                type: difficultyInput.notes[j].type,
+                key: difficultyInput.notes[j].key,
+                startTime: difficultyInput.notes[j].startTime/1000,
+                endTime: difficultyInput.notes[j].endTime/1000,
+            }
+            tempDifficulty.notes.push(tempNote);
+        }
+    }
+    for (let j = 0; j < difficultyInput.typingSections.length; ++j) {
+        let tempSection = {
+            startTime: difficultyInput.typingSections[j].startTime/1000,
+            endTime: difficultyInput.typingSections[j].endTime/1000,    
+            text: difficultyInput.typingSections[j].text,    
+        }
+        tempDifficulty.typingSections.push(tempSection);
+    }
+    return tempDifficulty;
+}
+
 function ConvertDifficultyData(difficultyInput)
 {
     let tempDifficulties = [];
@@ -171,12 +238,40 @@ function ConvertDifficultyData(difficultyInput)
             notes: [],
             typingSections: [],
             songName: difficultyInput[i].songName,
-            difficultyTitle: difficultyInput[i].name
+            difficultyTitle: difficultyInput[i].name,
+            judgmentCounts: {
+                perfect: 0,
+                good: 0,
+                ok: 0,
+                miss: 0
+            }
         };
+        if (ObjectHasVariable(difficultyInput[i], "judgmentCounts"))
+        {
+            if (ObjectHasVariable(difficultyInput[i].judgmentCounts, "perfect"))
+            {
+                tempDifficulty.judgmentCounts.perfect=difficultyInput[i].judgmentCounts.perfect;
+            }
+            if (ObjectHasVariable(difficultyInput[i].judgmentCounts, "good"))
+            {
+                tempDifficulty.judgmentCounts.good=difficultyInput[i].judgmentCounts.good;
+            }
+            if (ObjectHasVariable(difficultyInput[i].judgmentCounts, "ok"))
+            {
+                tempDifficulty.judgmentCounts.ok=difficultyInput[i].judgmentCounts.ok;
+            }
+            if (ObjectHasVariable(difficultyInput[i].judgmentCounts, "miss"))
+            {
+                tempDifficulty.judgmentCounts.miss=difficultyInput[i].judgmentCounts.miss;
+            }
+        }
+        let tapCount = 0;
+        let holdCount = 0;
         for (let j = 0; j < difficultyInput[i].notes.length; ++j)
         {
             if (difficultyInput[i].notes[j].type == "tap")
             {
+                tapCount++;
                 let tempNote = {
                     type: difficultyInput[i].notes[j].type,
                     key: difficultyInput[i].notes[j].key,
@@ -185,8 +280,9 @@ function ConvertDifficultyData(difficultyInput)
                 }
                 tempDifficulty.notes.push(tempNote);
             }
-            else
+            else if (difficultyInput[i].notes[j].type == "hold")
             {
+                holdCount++;
                 let tempNote = {
                     type: difficultyInput[i].notes[j].type,
                     key: difficultyInput[i].notes[j].key,
@@ -196,6 +292,7 @@ function ConvertDifficultyData(difficultyInput)
                 tempDifficulty.notes.push(tempNote);
             }
         }
+        tempDifficulty.judgmentCounts.perfect = tapCount + 2* holdCount;
         for (let j = 0; j < difficultyInput[i].typingSections.length; ++j) {
             let tempSection = {
                 startTime: difficultyInput[i].typingSections[j].startTime/1000,
@@ -239,20 +336,35 @@ function CreateDifficultyData(difficultyInput)
     for (const difficulty of tempDifficulties) {
         let ms = 80 - 6 * difficulty.overallDifficulty;
         let overallDifficultyDTNC = (80 - (ms / 1.5)) / 6;
+        
         let DifficultyDTNC = {
+            songName: difficulty.songName + " (DT)",
             notes: [],
             overallDifficulty: overallDifficultyDTNC,
             typingSections: [],
             accuracy: 100,
-            difficultyTitle: difficulty.difficultyTitle
+            difficultyTitle: difficulty.difficultyTitle,
+            judgmentCounts: {
+                perfect: difficulty.judgmentCounts.perfect,
+                good: difficulty.judgmentCounts.good,
+                ok: difficulty.judgmentCounts.ok,
+                miss: difficulty.judgmentCounts.miss
+            }
         };
         let overallDifficultyHTDC = (80 - (ms / 0.75)) / 6;
         let DifficultyHTDC = {
+            songName: difficulty.songName + " (HT)",
             notes: [],
             overallDifficulty: overallDifficultyHTDC,
             typingSections: [],
             accuracy: 100,
-            difficultyTitle: difficulty.difficultyTitle
+            difficultyTitle: difficulty.difficultyTitle,
+            judgmentCounts: {
+                perfect: difficulty.judgmentCounts.perfect,
+                good: difficulty.judgmentCounts.good,
+                ok: difficulty.judgmentCounts.ok,
+                miss: difficulty.judgmentCounts.miss
+            }
         };
         for (const note of difficulty.notes) {
             if (note.type == "tap") {
@@ -305,9 +417,21 @@ function CreateDifficultyData(difficultyInput)
 
         }
 
-        difficulty.accuracy = 100;
-        DifficultyDTNC.accuracy = 100;
-        DifficultyHTDC.accuracy = 100;
+
+        
+        if (ObjectHasVariable(difficulty, "accuracy"))
+        {
+            DifficultyDTNC.accuracy = difficulty.accuracy;
+            DifficultyHTDC.accuracy = difficulty.accuracy;
+
+        }
+        else
+        {
+            difficulty.accuracy = 100;
+            DifficultyDTNC.accuracy = 100;
+            DifficultyHTDC.accuracy = 100;
+        }
+        
 
 
         for (let i = 0; i < reworks.length; ++i) {

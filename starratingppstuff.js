@@ -148,3 +148,29 @@ function GetModSpeed(mod) {
     }
     return 1.0;
 }
+
+function GetBeatmapDifficulty(mapName, difficultyName, mods, accuracy, judgments)
+{
+    let difficultyData = [];
+    for (let i = 0; i < songNames.length; ++i)
+    {
+        if (songNames[i] == mapName && difficultyNames[i] == difficultyName)
+        {
+            difficultyData = CreateDifficultyData([SetDifficultyData(difficultyList[i], accuracy, judgments)])
+        }
+    }
+    if (difficultyData.length == 0)
+        return -1
+    if (mods.includes("DT") || mods.includes("NC"))
+    {
+        return { sr: difficultyData[1], pp: difficultyData[4] }
+    }
+    else if (mods.includes("DC") || mods.includes("HT"))
+    {
+        return { sr: difficultyData[2], pp: difficultyData[5] }
+    }
+    else
+    {
+        return { sr: difficultyData[0], pp: difficultyData[3] }
+    }
+}

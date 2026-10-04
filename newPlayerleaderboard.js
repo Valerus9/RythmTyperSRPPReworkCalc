@@ -1,3 +1,5 @@
+let playerLeaderboardData = [];
+
 function CreateSelectContentUser() {
     let selectppFirst = document.getElementById("ppcalcselectfirst");
     let selectpptextFirst = "<option value=\"\" disabled selected>Select a pp rework</option>\n";
@@ -49,7 +51,7 @@ function LoadPlayerLeaderBoard() {
         + "</div>"
         + "<table id=\"playerleaderboard\"></table>"
     CreateSelectContentUser();
-    //CreateLeaderboard();
+    CreateLeaderboard();
 }
 
 function CreateLeaderboard()
@@ -78,6 +80,11 @@ function CreateLeaderboard()
 
 function CreateLeaderboardValues()
 {
+    if (playerLeaderboardData.length == 0)
+    {
+        playerLeaderboardData = CreatePlayerLeaderboardData();
+        return;
+    }
     let rowId = [];
     for (let i = 0; i < playerLeaderboardData.length; ++i)
     {
@@ -159,8 +166,19 @@ function CreateLeaderboardValues()
     return [leaderboardUsername, leaderboardOldRank, leaderboardNewRank, leaderboardOldPP, leaderboardNewPP, leaderboardPPdiff, leaderboardActualPPdiff, subtables];
 }
 
-CreatePlayerLeaderboardData();
 function CreatePlayerLeaderboardData()
 {
-    
+    GetPlayersFromLeaderboard(10,0, "totalPP").then(topPlayerData => {
+        Promise.all(topPlayerData.map((x) => GetPlayerData(x.userId))).then(topPlayerDatas => {
+            console.log(topPlayerDatas)
+            for (let i = 0; i < topPlayerDatas.length; ++i)
+            {
+                for (let j = 0; j < topPlayerDatas[i].topPlays.length; ++j)
+                {                    
+                    GetBeatmapDifficulty(topPlayerDatas[i].topPlays[j].bt, topPlayerDatas[i].topPlays[j].diff, topPlayerDatas[i].topPlays[j].mods, topPlayerDatas[i].topPlays[j].acc, topPlayerDatas[i].topPlays[j].judgments)
+                }
+            }
+        });
+    });
+    return [2];
 }
