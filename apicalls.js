@@ -1,5 +1,6 @@
 const apiv1 = "https://api.rhythmtyper.net";
 const apiv2 = "https://api.rhythmtyper.net/v2";
+const webapi = "https://cdn.rhythmtyper.net"
 
 //apiv2 + "/leaderboard?limit=50&offset=0&sortBy=totalPP"
 /*
@@ -287,49 +288,6 @@ async function GetBeatmapData(beatmapId) {
 //    console.log(x);
 //});
 
-//https://us-central1-rhythm-typer.cloudfunctions.net/api/v2/beatmap/%7BmapsetId%7D/difficulty/%7BdiffId%7D
-//https://us-central1-rhythm-typer.cloudfunctions.net/api/v2/beatmap/lvwb5rxv3cr6/difficulty/aAHlPn7DGsDjoLqLNNpr
-/*
-    bpm
-    difficultyTitle
-    mapsetId
-    notes
-    Array of the following object
-    {
-        key
-        type: "tap"
-        time
-        type: "hold"
-        startTime
-        endTime
-    }
-    overallDifficulty
-    songTitle
-    typingSections
-    Array of the following object
-    {
-        text
-        endTime
-        startTime
-    }
-*/
-
-
-async function GetDifficultyData(difficultyId) {
-    let localFetchResult;
-    await fetch(apiv2 + "/beatmaps/" + difficultyId, {cache: "no-store"}).then(response => response.json())
-        .then(localDifficultyData => {
-            localFetchResult = localDifficultyData;
-        });
-    return localFetchResult;
-}
-
-//GetDifficultyData("lvwb5rxv3cr6", "aAHlPn7DGsDjoLqLNNpr").then(x => {
-//    console.log(x);
-//});
-
-
-
 
 //https://us-central1-rhythm-typer.cloudfunctions.net/api/v2/user/%7BuserId%7D/allScores
 /*  
@@ -518,11 +476,12 @@ async function GetRankedBeatmapDatas(offset, limit) {
 //});
 
 
-async function GetBeatmapRTM(beatmapId) {
+async function GetBeatmapRTM(beatmapId, version) {
     let localFetchResult;
-    await fetch(apiv1 + "/getBeatmaps?" + beatmapId, {cache: "no-store"}).then(response => response.json())
-        .then(localDifficultyData => {
-            localFetchResult = localDifficultyData;
+    await fetch(webapi + "/beatmaps/" + beatmapId + "/" + beatmapId + ".rtm?v=" + version, {cache: "no-store"})
+        .then(localBeatmapData => {
+            localFetchResult = localBeatmapData;
         });
+    console.log(localFetchResult)
     return localFetchResult;
 }

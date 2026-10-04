@@ -563,23 +563,27 @@ async function CreateRankedMapDataFromApi(offset, limit)
     let localTypingSectionCounts = [];
     let localODs = [];
 
-
-    let localBeatmapIdDiffId = [];
+    let beatmapDatas = []
+    let beatmapConvertedDatas = []
     await GetRankedBeatmapDatas(offset, limit).then(beatmapData => {
-        for (let i = 0; i < beatmapData.length; ++i)
-        {
-            for (let j = 0; j < beatmapData[i].difficulties.length; ++j)
-            {
-                localBeatmapList.push(beatmapData[i]);
-                localLoadedBeatmapIds.push(beatmapData[i].id);
-                localSongNames.push(beatmapData[i].songName);   
-                //console.log(i+" "+j);
-                localLoadedDifficultyIds.push(beatmapData[i].difficulties[j].diffId);             
-                localBeatmapIdDiffId.push({id: beatmapData[i].id, diffId: beatmapData[i].difficulties[j].diffId})
-            }            
-        }
+        beatmapDatas = beatmapData
     });
-
+    beatmapConvertedDatas = await Promise.all(beatmapDatas.map((x) => GetBeatmapRTM(x.mapsetId, x.version)))
+    let actualBeatmapData = CreateMapDataFromFiles(beatmapConvertedDatas);
+    for (let i = 0; i < actualBeatmapData.length; ++i)
+    {        
+        localBeatmapList = actualBeatmapData[i][0]
+        localDifficultyList = actualBeatmapData[i][1]
+        localLoadedBeatmapIds = actualBeatmapData[i][2]
+        localLoadedDifficultyIds = actualBeatmapData[i][3]
+        localSongNames = actualBeatmapData[i][4]
+        localDifficultyNames = actualBeatmapData[i][5]
+        localBPMs = actualBeatmapData[i][6]
+        localDrainTimes = actualBeatmapData[i][7]
+        localODs = actualBeatmapData[i][8]
+        localNoteCounts = actualBeatmapData[i][9]
+        localTypingSectionCounts = actualBeatmapData[i][10]
+    }
     //if (LsIsStored(lsDifficultyIds))
     //{
     //
@@ -651,34 +655,6 @@ async function CreateRankedMapDataFromApi(offset, limit)
         LsSetValueAsArray(lsDifficultyTitles, []);
     }*/
     
-    let difficultyDatas = await Promise.all(localBeatmapIdDiffId.map((x) => GetDifficultyData(x.id, x.diffId)));
-    for (let i = 0; i < difficultyDatas.length; ++i)
-    {
-        localDifficultyList.push(difficultyDatas[i]);
-        localDifficultyNames.push(difficultyDatas[i].difficultyTitle);
-        localBPMs.push(difficultyDatas[i].bpm);
-        let minTime = Infinity;
-        let maxTime = 0;
-        for (const note of difficultyDatas[i].notes)
-        {
-            if (minTime > getStartTime(note))
-                minTime = getStartTime(note);
-            if (maxTime < getEndTime(note))
-                maxTime = getEndTime(note);
-        }
-        for (const typingSection of difficultyDatas[i].typingSections)
-        {
-            if (minTime > getStartTime(typingSection))
-                minTime = getStartTime(typingSection);
-            if (maxTime < getEndTime(typingSection))
-                maxTime = getEndTime(typingSection);
-        }
-        localDrainTimes.push(maxTime - minTime);
-        localNoteCounts.push(difficultyDatas[i].notes.length);
-        localTypingSectionCounts.push(difficultyDatas[i].typingSections.length);
-        localODs.push(difficultyDatas[i].overallDifficulty);
-
-    }  
     /*if (LsInclude(lsDifficultyIds, localBeatmapList[i].difficulties[difficultyCounter].diffId))
     {
         let indexOfDifficulty = LsIndexOf(lsDifficultyIds, localBeatmapList[i].difficulties[difficultyCounter].diffId);
