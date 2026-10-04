@@ -569,7 +569,7 @@ async function CreateRankedMapDataFromApi(offset, limit)
         beatmapDatas = beatmapData
     });
     beatmapConvertedDatas = await Promise.all(beatmapDatas.map((x) => GetBeatmapRTM(x.mapsetId, x.version)))
-    let actualBeatmapData = CreateMapDataFromFiles(beatmapConvertedDatas);
+    let actualBeatmapData = CreateMapDataFromFiles(beatmapConvertedDatas);  
     for (let i = 0; i < actualBeatmapData.length; ++i)
     {        
         localBeatmapList = actualBeatmapData[i][0]

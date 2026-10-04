@@ -95,3 +95,4 @@ function RefreshSelectedButton() {
 //localStorage.clear();
 LoadMapDifLeaderboard();
 GetDataForMapLeaderboard(0,10);
+

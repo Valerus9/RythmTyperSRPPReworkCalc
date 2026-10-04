@@ -27,6 +27,8 @@ async function GetPlayersFromLeaderboard(limit, offset, sortby) {
     while (limit > 0) {
         await fetch(apiv2 + "/leaderboard?limit=" + Math.min(limit, 50) + "&offset=" + offset + "&sortBy=" + sortby, {cache: "no-store"}).then(response => response.json())
             .then(localPlayerData => {
+                if (localPlayerData.type == "cors")
+                    console.log(localPlayerData)
                 for (let i = 0; i < localPlayerData.length; ++i) {
                     localFetchResult.push(localPlayerData[i]);
                 }
@@ -188,6 +190,8 @@ async function GetPlayerData(userId) {
     let localFetchResult;
     await fetch(apiv2 + "/profile/" + userId, {cache: "no-store"}).then(response => response.json())
         .then(localPlayerData => {
+            if (localPlayerData.type == "cors")
+                console.log(localPlayerData)
             localFetchResult = localPlayerData
         });
     return localFetchResult;
@@ -279,6 +283,8 @@ async function GetBeatmapData(beatmapId) {
     let localFetchResult;
     await fetch(apiv1 + "/getBeatmaps?mapsetId=" + beatmapId, {cache: "no-store"}).then(response => response.json())
         .then(localBeatmapData => {
+            if (localBeatmapData.type == "cors")
+                console.log(localBeatmapData)
             localFetchResult = localBeatmapData;
         });
     return localFetchResult;
@@ -314,6 +320,8 @@ async function GetScoreData(userId) {
     let localFetchResult;
     await fetch(apiv2 + "/user/" + userId + "/allScores", {cache: "no-store"}).then(response => response.json())
         .then(localPlayerData => {
+            if (localPlayerData.type == "cors")
+                console.log(localPlayerData)
             localFetchResult = localPlayerData;
         });
     return localFetchResult;
@@ -341,6 +349,8 @@ async function GetLesserPlayerDatas(limit) {
     let localFetchResult;
     await fetch(apiv2 + "/players&limit=" + limit, {cache: "no-store"}).then(response => response.json())
         .then(localPlayerData => {
+            if (localPlayerData.type == "cors")
+                console.log(localPlayerData)
             localFetchResult = localPlayerData;
         });
     return localFetchResult;
@@ -448,6 +458,8 @@ async function GetRankedBeatmapDatas(offset, limit) {
         await fetch(apiv1 + "/getBeatmaps?limit=" + limit + "" + cursorParameter + "&status=ranked&sortBy=uploaded&showExplicit=true&language=all", {cache: "no-store"})
             .then(response => response.json())
             .then(data => {
+                if (data.type == "cors")
+                    console.log(data)
                 for (let i = 0; i < data.beatmaps.length; ++i) {
                     
                     if (counter < offset)
@@ -480,8 +492,9 @@ async function GetBeatmapRTM(beatmapId, version) {
     let localFetchResult;
     await fetch(webapi + "/beatmaps/" + beatmapId + "/" + beatmapId + ".rtm?v=" + version, {cache: "no-store"})
         .then(localBeatmapData => {
+            if (localBeatmapData.type == "cors")
+                console.log(localBeatmapData)
             localFetchResult = localBeatmapData;
         });
-    console.log(localFetchResult)
     return localFetchResult;
 }

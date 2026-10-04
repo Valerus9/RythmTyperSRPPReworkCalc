@@ -597,6 +597,6 @@ async function GetDataForMapLeaderboard(offset,limit)
     await CreateRankedMapDataFromApi(offset,limit).then(x => {
         apiMapDatas = x;
     });
-    if (apiMapDatas.length != 0)
+    if (apiMapDatas[0].length != 0)
         LoadMapDataValues(apiMapDatas)
 }
