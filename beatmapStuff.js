@@ -91,7 +91,8 @@ async function CreateMapDataFromFiles(files) {
                         break;
                     }
                 }
-                data.mapsetId = beatmapId;
+                if (beatmapId != "0")
+                    data.mapsetId = beatmapId;
                 if (hasKey) {
                     localDifficultyList.push(data);
                 }
@@ -539,29 +540,6 @@ function scaleDifficultySpeed(difficultyInput, speedInput)
 
 async function CreateRankedMapDataFromApi(offset, limit)
 {
-    const getStartTime = x => {
-        if (x.type == "tap")
-            return x.time;
-        if (x.type == "hold")
-            return x.startTime;
-    }
-    const getEndTime = x => {
-        if (x.type == "tap")
-            return x.time;
-        if (x.type == "hold")
-            return x.endTime;
-    }
-    let localDifficultyList = [];
-    let localBeatmapList = [];
-    let localLoadedBeatmapIds = [];
-    let localLoadedDifficultyIds = [];
-    let localSongNames = [];
-    let localDifficultyNames = [];
-    let localBPMs = [];
-    let localDrainTimes = [];
-    let localNoteCounts = [];
-    let localTypingSectionCounts = [];
-    let localODs = [];
 
     let beatmapDatas = []
     let beatmapConvertedDatas = []
@@ -569,21 +547,22 @@ async function CreateRankedMapDataFromApi(offset, limit)
         beatmapDatas = beatmapData
     });
     beatmapConvertedDatas = await Promise.all(beatmapDatas.map((x) => GetBeatmapRTM(x.mapsetId, x.version)))
-    let actualBeatmapData = CreateMapDataFromFiles(beatmapConvertedDatas);  
-    for (let i = 0; i < actualBeatmapData.length; ++i)
-    {        
-        localBeatmapList = actualBeatmapData[i][0]
-        localDifficultyList = actualBeatmapData[i][1]
-        localLoadedBeatmapIds = actualBeatmapData[i][2]
-        localLoadedDifficultyIds = actualBeatmapData[i][3]
-        localSongNames = actualBeatmapData[i][4]
-        localDifficultyNames = actualBeatmapData[i][5]
-        localBPMs = actualBeatmapData[i][6]
-        localDrainTimes = actualBeatmapData[i][7]
-        localODs = actualBeatmapData[i][8]
-        localNoteCounts = actualBeatmapData[i][9]
-        localTypingSectionCounts = actualBeatmapData[i][10]
-    }
+    let actualBeatmapData = await CreateMapDataFromFiles(beatmapConvertedDatas);  
+    return actualBeatmapData;
+    //for (let i = 0; i < actualBeatmapData.length; ++i)
+    //{        
+    //    localBeatmapList = actualBeatmapData[i][0]
+    //    localDifficultyList = actualBeatmapData[i][1]
+    //    localLoadedBeatmapIds = actualBeatmapData[i][2]
+    //    localLoadedDifficultyIds = actualBeatmapData[i][3]
+    //    localSongNames = actualBeatmapData[i][4]
+    //    localDifficultyNames = actualBeatmapData[i][5]
+    //    localBPMs = actualBeatmapData[i][6]
+    //    localDrainTimes = actualBeatmapData[i][7]
+    //    localODs = actualBeatmapData[i][8]
+    //    localNoteCounts = actualBeatmapData[i][9]
+    //    localTypingSectionCounts = actualBeatmapData[i][10]
+    //}
     //if (LsIsStored(lsDifficultyIds))
     //{
     //
@@ -685,9 +664,8 @@ async function CreateRankedMapDataFromApi(offset, limit)
         localTypingSectionCounts.push(difficultyData.typingSections.length);
         localODs.push(difficultyData.overallDifficulty);
     }*/
-    
 
-    return [localBeatmapList, localDifficultyList, localLoadedBeatmapIds, localLoadedDifficultyIds, localSongNames, localDifficultyNames, localBPMs, localDrainTimes, localODs, localNoteCounts, localTypingSectionCounts];
+    //return [localBeatmapList, localDifficultyList, localLoadedBeatmapIds, localLoadedDifficultyIds, localSongNames, localDifficultyNames, localBPMs, localDrainTimes, localODs, localNoteCounts, localTypingSectionCounts];
 }
 
 /*function CompressDifficultyData(inputDifficultyData)
