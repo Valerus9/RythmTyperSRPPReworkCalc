@@ -19,6 +19,20 @@ let TableCreation = () => {
         CreateTable("Difficulty list", "diffList", difTableColumnNames, difTableColumnIds, difTableColumnWidths, CreateDefaultRowIds(createdTableValues[0].length), createdTableValues, difTableColumnCompare, difTableColumnTypes, 0)
     };
 
+function CleanUpAfterLoad()
+{
+    TableCreation();
+    if (songNames.length == 0)
+    {
+        document.getElementById("clearrtms").style.display = "none";
+    }
+    else if (songNames.length > 0)
+    {
+        document.getElementById("clearrtms").style.display = "inline";
+    }
+    UpdateClearButtons();
+}
+
 function CreateSelectContentBeatmap() {
     let selectsrFirst = document.getElementById("srcalcselectfirst");
     let selectsrtextFirst = "<option value=\"\" disabled selected>Select a sr rework</option>\n";
@@ -173,7 +187,7 @@ function LoadMapDifLeaderboard() {
         const files = [...event.target.files].filter(f => f.name.endsWith(".rtm"));
         await CreateMapDataFromFiles(files).then(data => {
             ClearCacheIfMapIsInThem(data).then(data2=>{
-                LoadMapDataValues(data);
+                LoadMapDataValues(data, CleanUpAfterLoad);
             });
             
         });
@@ -239,14 +253,14 @@ async function ClearCacheIfMapIsInThem(localValues)
     }
 }
 
-async function LoadMapDataValues(localValues, loadMapDataIndexer = 0)
+async function LoadMapDataValues(localValues, afterFunction, loadMapDataIndexer = 0)
 {   
     let loadingProgress = document.getElementById("loadingprogress");
     loadingProgress.innerHTML = "Progress: "+(loadMapDataIndexer+1)+"/"+localValues[0].length+" ("+(Math.round((loadMapDataIndexer+1)/localValues[0].length*10000)/100)+"%)";
 
     //LoadedBeatmapIds.push(localValues[0][loadMapDataIndexer].mapsetId);
     //LoadedDifficultyIds.push(localValues[1][loadMapDataIndexer].diffId);
-    let localDifficultyValues = CreateDifficultyData([localValues[1][loadMapDataIndexer]]);
+    let localDifficultyValues = CreateDifficultyData([localValues[1][loadMapDataIndexer]], true);
     for (let j = 0; j < localDifficultyValues[0].length; ++j)
     {
         for (let k = 0; k < localDifficultyValues[0][j].length; ++k)
@@ -283,20 +297,12 @@ async function LoadMapDataValues(localValues, loadMapDataIndexer = 0)
     newPPRanks.push(0);
     loadMapDataIndexer++;
     if (loadMapDataIndexer < localValues[0].length)
-        setTimeout(() => { LoadMapDataValues(localValues, loadMapDataIndexer) }, 0);
+        loadingProgress.innerHTML = "Progress: "+(loadMapDataIndexer+1)+"/"+localValues[0].length+" ("+(Math.round((loadMapDataIndexer+1)/localValues[0].length*10000)/100)+"%)";
+    if (loadMapDataIndexer < localValues[0].length)
+        setTimeout(() => { LoadMapDataValues(localValues, afterFunction, loadMapDataIndexer) }, 0);
     else
     {
-        loadingProgress.innerHTML = "Loaded "+ (loadMapDataIndexer) + " maps.";
-        TableCreation();
-        if (songNames.length == 0)
-        {
-            document.getElementById("clearrtms").style.display = "none";
-        }
-        else if (songNames.length > 0)
-        {
-            document.getElementById("clearrtms").style.display = "inline";
-        }
-        UpdateClearButtons();
+        afterFunction();
     }
 
     
@@ -598,5 +604,5 @@ async function GetDataForMapLeaderboard(offset,limit)
         apiMapDatas = x;
     });
     if (apiMapDatas[0].length != 0)
-        LoadMapDataValues(apiMapDatas)
+        LoadMapDataValues(apiMapDatas, CleanUpAfterLoad)
 }

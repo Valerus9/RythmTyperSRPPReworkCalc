@@ -202,8 +202,8 @@ function SetDifficultyData(difficultyInput, accuracy, judgments)
             let tempNote = {
                 type: difficultyInput.notes[j].type,
                 key: difficultyInput.notes[j].key,
-                startTime: difficultyInput.notes[j].time/1000,
-                time: difficultyInput.notes[j].time/1000,
+                startTime: difficultyInput.notes[j].time,
+                time: difficultyInput.notes[j].time,
             }
             tempDifficulty.notes.push(tempNote);
         }
@@ -212,8 +212,8 @@ function SetDifficultyData(difficultyInput, accuracy, judgments)
             let tempNote = {
                 type: difficultyInput.notes[j].type,
                 key: difficultyInput.notes[j].key,
-                startTime: difficultyInput.notes[j].startTime/1000,
-                endTime: difficultyInput.notes[j].endTime/1000,
+                startTime: difficultyInput.notes[j].startTime,
+                endTime: difficultyInput.notes[j].endTime,
             }
             tempDifficulty.notes.push(tempNote);
         }
@@ -240,6 +240,7 @@ function ConvertDifficultyData(difficultyInput)
             typingSections: [],
             songName: difficultyInput[i].songName,
             difficultyTitle: difficultyInput[i].name,
+            accuracy: 100,
             judgmentCounts: {
                 perfect: 0,
                 good: 0,
@@ -265,6 +266,10 @@ function ConvertDifficultyData(difficultyInput)
             {
                 tempDifficulty.judgmentCounts.miss=difficultyInput[i].judgmentCounts.miss;
             }
+        }
+        if (ObjectHasVariable(difficultyInput[i], "accuracy"))
+        {
+            tempDifficulty.accuracy = difficultyInput[i].accuracy;
         }
         let tapCount = 0;
         let holdCount = 0;
@@ -307,10 +312,13 @@ function ConvertDifficultyData(difficultyInput)
     return tempDifficulties;
 }
 
-function CreateDifficultyData(difficultyInput)
+function CreateDifficultyData(difficultyInput, needsConverting = true)
 {
-    let tempDifficulties = ConvertDifficultyData(difficultyInput);
-    
+    let tempDifficulties = difficultyInput;
+    if (needsConverting)
+    {
+        tempDifficulties = ConvertDifficultyData(difficultyInput);
+    }
     let localStars = [];
     let localStarDTNCs = [];
     let localStarHTDCs = [];

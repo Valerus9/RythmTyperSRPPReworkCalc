@@ -156,21 +156,22 @@ function GetBeatmapDifficulty(mapName, difficultyName, mods, accuracy, judgments
     {
         if (songNames[i] == mapName && difficultyNames[i] == difficultyName)
         {
-            difficultyData = CreateDifficultyData([SetDifficultyData(difficultyList[i], accuracy, judgments)])
+            difficultyData = [CreateDifficultyData([SetDifficultyData(difficultyList[i], accuracy, judgments)], true)];
+            break;
         }
     }
     if (difficultyData.length == 0)
         return -1
     if (mods.includes("DT") || mods.includes("NC"))
     {
-        return { sr: difficultyData[1], pp: difficultyData[4] }
+        return { sr: difficultyData[0][1], pp: difficultyData[0][4] }
     }
     else if (mods.includes("DC") || mods.includes("HT"))
     {
-        return { sr: difficultyData[2], pp: difficultyData[5] }
+        return { sr: difficultyData[0][2], pp: difficultyData[0][5] }
     }
     else
     {
-        return { sr: difficultyData[0], pp: difficultyData[3] }
+        return { sr: difficultyData[0][0], pp: difficultyData[0][3] }
     }
 }
