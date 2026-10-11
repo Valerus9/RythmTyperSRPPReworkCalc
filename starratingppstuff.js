@@ -51,59 +51,7 @@ function SetUpStarPPArrays()
         StarHTDCs.push([]);
     }
 }
-/*LoadRankedBeatmaps();
 
-
-
-function LoadRankedBeatmaps() {
-    
-    for (let i = 0; i < reworks.length; ++i) {
-        let keysOfRework = Object.keys(reworks[i]);
-        if (!keysOfRework.includes("pp"))
-            continue;
-        PPs.push([]);
-        PPDTNCs.push([]);
-        PPHTDCs.push([]);
-    }
-    for (let i = 0; i < reworks.length; ++i) {
-        let keysOfRework = Object.keys(reworks[i]);
-        if (!keysOfRework.includes("sr"))
-            continue;
-        Stars.push([]);
-        StarDTNCs.push([]);
-        StarHTDCs.push([]);
-    }
-    for (let i = 0; i < RankedSongNames.length; ++i) {
-        
-        LoadedBeatmapIds.push(RankedBeatmapIds[i]);
-        LoadedDifficultyIds.push(RankedDifficultyIds[i]);
-        songNames.push(RankedSongNames[i]);
-        difficultyNames.push(RankedDifficultyNames[i]);
-        BPMs.push(RankedBPMs[i]);
-        DrainTimes.push(RankedDrainTimes[i]);
-        NoteCounts.push(RankedNoteCounts[i]);
-        TypingSectionCounts.push(RankedTypingSectionCounts[i]);
-        ODs.push(RankedODs[i]);
-        isCache.push(true);
-        difficultyList.push(undefined);
-        beatmapList.push(undefined);
-    }
-    for (let i = 0; i < RankedStars.length; ++i) {
-        for (let j = 0; j < RankedStars[i].length; ++j) {
-            Stars[i].push(RankedStars[i][j])
-            StarDTNCs[i].push(RankedStarDTNCs[i][j])
-            StarHTDCs[i].push(RankedStarHTDCs[i][j])
-        }
-    }
-
-    for (let i = 0; i < RankedPPs.length; ++i) {
-        for (let j = 0; j < RankedPPs[i].length; ++j) {
-            PPs[i].push(RankedPPs[i][j])
-            PPDTNCs[i].push(RankedPPDTNCs[i][j])
-            PPHTDCs[i].push(RankedPPHTDCs[i][j])
-        }
-    }
-}*/
 
 function GetModdedStar(diffIdSingle, reworkId, mod) {
     if (mod.includes("NC") || mod.includes("DT")) {

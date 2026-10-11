@@ -197,6 +197,21 @@ async function GetPlayerData(userId) {
     return localFetchResult;
 }
 
+async function UserIdExists(userId) {
+    let localFetchResult;
+    await fetch(apiv2 + "/profile/" + userId, {cache: "no-store"}).then(response => response.json())
+        .then(localPlayerData => {
+            if (localPlayerData.type == "cors" && localPlayerData.status != 200)
+                console.log(localPlayerData)
+            localFetchResult = true;
+        })
+        .catch(error => {
+            localFetchResult = false;
+        });
+
+    return localFetchResult;
+}
+
 //GetPlayerData("RXUO3zA4ciQkJ3O63MJyMFAGCCM2").then(x => {
 //    console.log(x);
 //});
@@ -446,7 +461,7 @@ async function GetRankedBeatmapDatas(offset, limit) {
     let getAllOfThem = limit == -1;
     let counter = 0;
     let realLimit = limit + offset;
-    while(hasMore && (localFetchResult.length < realLimit - offset|| getAllOfThem))
+    while(hasMore && (localFetchResult.length < realLimit - offset || getAllOfThem))
     {
         limit = Math.min(realLimit - localFetchResult.length - counter, 100);
         if (getAllOfThem)
@@ -490,7 +505,7 @@ async function GetRankedBeatmapDatas(offset, limit) {
 
 async function GetBeatmapRTM(beatmapId, version) {
     let localFetchResult;
-    let localBeatmapData = await fetch(webapi + "/beatmaps/" + beatmapId + "/" + beatmapId + ".rtm?v=" + version, {cache: "no-store"})
+    let localBeatmapData = await fetch(webapi + "/beatmaps/" + beatmapId + "/" + beatmapId + ".rtm?v=" + version, {cache: "no-cache"})
     if (localBeatmapData.type == "cors" && localBeatmapData.status != 200)
         console.log(localBeatmapData)
     localFetchResult = await localBeatmapData.blob();

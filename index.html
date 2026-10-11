@@ -8,13 +8,15 @@
     <script src="datalocalstorage.js"></script>
     <script src="zipcode.js"></script>
     <script src="ppaccuracies.js"></script>
+    <script src="cachedrankedmapdata.js"></script>
+    <script src="cachedplayerleaderboard.js"></script>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="darklightmodestyle.css">
 </head>
 <body>    
     <div id="topbar" class="neededpadding">
         <input type="button" id="visualmodeswitch" value="Dark mode">    
-        <input type="button" id="changemenuprofile" disabled value="Leaderboard change">
+        <input type="button" id="changemenuprofile" value="Leaderboard change">
         <input type="button" class="selected" id="changemenumaps" value="Map sr pp change">
         <input type="button" id="changemenudifferentodCalc" disabled value="Different OD calc">
         <input type="button" id="changemenugraphviewofrework" disabled value="Rework graph view">
@@ -22,6 +24,7 @@
         <input type="button" id="leftrighthandmenu" disabled value="Left/Right hand">
     </div>
     <div id="warningcacheonly" class="neededpadding" style="display:flex; justify-content:center; width:100%;"><div id="warningcacheonlycenter" class="neededpadding">You need to upload .rtm files on the Map sr pp change menu in order to access Different OD calc and Rework graph view</div></div>
+    <div id="warningcacheonly" class="neededpadding" style="display:flex; justify-content:center; width:100%;"><div id="warningcacheonlycenter" class="neededpadding">The cached values are from 2026.10.11.</div></div>
     <h1 class="title">Rhythm typer SR/PP Rework site</h1>
     <h5 class="author">By Valerus9</h5>
     <div id="container" class="neededpadding">
@@ -56,6 +59,7 @@
         <p>Mod select</p>
         <select id="modselect">
         </select>
+        <input type="button" id="loadnextrankedmaps" value="Load 25 more ranked maps">
         <input type="button" id="clearrtms" value="Clear loaded rtms">
         <input type="button" id="clearcachertms" value="Clear cached values">
         <p id="cacheMessage">There are cached map data loaded.</p>
@@ -65,12 +69,12 @@
     </div>     
     <script src="reworklist.js"></script>
     <script src="apicalls.js"></script>
+    <script src="tablecreator.js"></script>
     <script src="formulas/ingameformula.js"></script>
     <script src="formulas/ingamehotfix.js"></script>
     <script src="formulas/valerus9reworkv2_1.js"></script>
     <script src="formulas/valerus9reworkv3.js"></script>
     <script src="beatmapStuff.js"></script>   
-    <script src="tablecreator.js"></script>
     <script src="starratingppstuff.js"></script>
     <script src="differentodcalc.js"></script>
     <script src="newPlayerleaderboard.js"></script>

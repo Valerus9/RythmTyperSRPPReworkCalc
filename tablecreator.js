@@ -577,6 +577,16 @@ function DoSort(columnSorts, columnValues, tableColumnTypes) {
     return rowIds;
 }
 
+function CreateDefaultRowIds(rowidlength)
+{
+    let rowIds = [];
+    for (let i = 0; i < rowidlength; ++i)
+    {
+        rowIds.push(i);
+    }
+    return rowIds;
+}
+
 function CreateGlobalTableData(tableid, tableColumnNames, tableColumnIds, tableColumnWidths, tableRowIds, tableColumnValues, tableColumnCompare, tableColumnTypes, tableLimit)
 {
     if (!createdTableIds.includes(tableid))

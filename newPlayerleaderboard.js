@@ -49,11 +49,35 @@ function LoadPlayerLeaderBoard() {
         + "<select id=\"ppcalcselectsecond\">"
         + "</select>"
         + "</div>"
+        + "<input type=\"text\" id=\"userid\" name=\"userid\">"
+        + "<input type=\"button\" id=\"loaduser\" disabled value=\"Add user to leaderboard\">"
         + "<p id=\"loadingprogress\"></p>"
         + "<table id=\"playerleaderboard\"></table>"        
     CreateSelectContentUser();
     CreateLeaderboard();
+    document.getElementById("userid").addEventListener("input", async (event) => {
+        let userIdText = document.getElementById("userid").value;
+        let loaduserButton = document.getElementById("loaduser")
+        if (userIdText.length == 0)
+        {
+            loaduserButton.disabled = true;
+        }
+        else
+        {
+            loaduserButton.disabled = false;
+        }
+    });
+    document.getElementById("loaduser").addEventListener("click", async (event) => {
+        let loaduserButton = document.getElementById("loaduser")
+        loaduserButton.disabled = true;
+        AddPlayerToLeaderboard([document.getElementById("userid").value])
+    });
 }
+
+//function UserIdTextBox()
+//{
+//    if ()
+//}
 
 function CreateLeaderboard()
 {
@@ -68,7 +92,7 @@ function CreateLeaderboard()
         leaderboardRowIds.push(i);
     }
     CreateTable("Player leaderboard", "playerleaderboard",leaderboardColumnNames,leaderboardColumnIds,leaderboardColumnWidths,leaderboardRowIds,CreateLeaderboardValues(),leaderboardColumnCompare,leaderboardColumnTypes, 50);
-    //tableSubtablesHidden[createdTableIds.indexOf("playerleaderboard")] = true;
+    tableSubtablesHidden[createdTableIds.indexOf("playerleaderboard")] = true;
     if (playerLeaderboardData.length == 0)
         return
     for (let i = 0; i < tableHidden.length;++i)
@@ -85,13 +109,8 @@ function CreateLeaderboardValues()
 {
     if (playerLeaderboardData.length == 0)
     {
-        playerLeaderboardData = CreatePlayerLeaderboardData();
+        //playerLeaderboardData = CreatePlayerLeaderboardData();
         return [[], [], [], [], [], [], [], []];
-    }
-    let rowId = [];
-    for (let i = 0; i < playerLeaderboardData.length; ++i)
-    {
-        rowId.push(i);
     }
 
     let leaderboardUsername = [];
@@ -104,7 +123,8 @@ function CreateLeaderboardValues()
 
     let subtableScoreColumnNames = ["Song name", "Diff name", "Old SS PP", "Old PP", "Old weighted PP", "New SS PP", "New PP", "New weighted PP", "PP diff", "Weighted PP diff", "Accuracy", "Mods"];
     let subtableScoreColumnIds = ["songName", "diffName", "oldSSPP", "oldPP", "oldcalcPP", "newSSPP", "newPP", "newcalcPP", "ppdiff", "weightedppdiff", "acc", "mods"];
-    let subtableScoreColumnWidths = [300, 200, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40];    
+    let subtableScoreColumnWidths = [300, 200, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40];        
+    let rowId = [];
     let subtableScoreColumnCompare = [-1, -1, -1, -1, -1, 2, 3, 4, -1, -1, -1, -1];
     let subtableScoreColumnTypes = ["search", "string", "integer", "integer", "integer", "integer", "integer", "integer", "integer", "integer", "percentage", "string"];
 
@@ -134,6 +154,7 @@ function CreateLeaderboardValues()
         let scoreAcc = [];
         for (let j = 0; j < playerLeaderboardData[i].plays.length; ++j)
         {
+            rowId.push(j);
             scoreSongName.push(playerLeaderboardData[i].plays[j].songName);
             scoreDiffName.push(playerLeaderboardData[i].plays[j].diffName);
             scoreOldSSPP.push(playerLeaderboardData[i].plays[j].originalSSPPs[ppReworkFirst]);
@@ -169,69 +190,89 @@ function CreateLeaderboardValues()
     return [leaderboardUsername, leaderboardOldRank, leaderboardNewRank, leaderboardOldPP, leaderboardNewPP, leaderboardPPdiff, leaderboardActualPPdiff, subtables];
 }
 
+function AddPlayerToLeaderboard(userId)
+{
+    let tempUserId = [];
+    Promise.all(userId.map((x) => UserIdExists(x))).then(userIdExists => {        
+        for (let i = 0; i < userId.length; ++i)
+        {
+            if (!userIdExists[i])
+                continue;
+            tempUserId.push({
+                userId: userId[i]
+            })
+        }
+        if (tempUserId.length > 0)
+            GetNecesseryResourcesForPlayers(tempUserId)
+    })
+}
+
 function CreatePlayerLeaderboardData()
 {
-    GetPlayersFromLeaderboard(5,0, "totalPP").then(topPlayerData => {
-        Promise.all(topPlayerData.map((x) => GetPlayerData(x.userId))).then(topPlayerDatas => {
-            let needToBeProcessed = [];
-            for (let i = 0; i < topPlayerDatas.length; ++i)
-            {
-                for (let j = 0; j < topPlayerDatas[i].topPlays.length; ++j)
-                {     
-                    let foundMap = false;
-                    let mapIndex = 0;
-                    while(!foundMap && mapIndex != -1)
-                    {
-                        if (difficultyNames[mapIndex] == topPlayerDatas[i].topPlays[j].diff)
-                        {
-                            foundMap = true;
-                            break;
-                        }
-                        mapIndex = songNames.indexOf(topPlayerDatas[i].topPlays[j].bt, mapIndex + 1);
-                    }       
-                    if (!foundMap && !needToBeProcessed.includes(topPlayerDatas[i].topPlays[j].bid))
-                        needToBeProcessed.push(topPlayerDatas[i].topPlays[j].bid)
-                }
-            }
-            if (needToBeProcessed.length > 0)
-            {
-                Promise.all(needToBeProcessed.map((x) => GetBeatmapData(x))).then(neededBeatmapDatas => {
-                    Promise.all(neededBeatmapDatas.map((x) => GetBeatmapRTM(x.beatmaps[0].mapsetId, x.beatmaps[0].version))).then(rtmfiles => {
-                        Promise.all(rtmfiles.map((x) => CreateMapDataFromFiles([x]))).then(separatedData => {
-                            let unseparatedData = [];
-                            for (let i = 0; i < separatedData[0].length; ++i)
-                            {
-                                unseparatedData.push([])
-                            }
-                            for (let i = 0; i < unseparatedData.length; ++i)
-                            {
-                                for (let j = 0; j < separatedData.length; ++j)
-                                {
-                                    for (let k = 0; k < separatedData[j][i].length; ++k)
-                                    {
-                                        unseparatedData[i].push(separatedData[j][i][k])
-                                    }
+    GetPlayersFromLeaderboard(50,0, "totalPP").then(topPlayerData => {
+        GetNecesseryResourcesForPlayers(topPlayerData)
+    });
+    return [];
+}
 
+function GetNecesseryResourcesForPlayers(topPlayerData)
+{
+    Promise.all(topPlayerData.map((x) => GetPlayerData(x.userId))).then(topPlayerDatas => {
+        let needToBeProcessed = [];
+        for (let i = 0; i < topPlayerDatas.length; ++i)
+        {
+            for (let j = 0; j < topPlayerDatas[i].topPlays.length; ++j)
+            {     
+                let foundMap = false;
+                let mapIndex = 0;
+                while(!foundMap && mapIndex != -1)
+                {
+                    if (difficultyNames[mapIndex] == topPlayerDatas[i].topPlays[j].diff && !isCache[mapIndex])
+                    {
+                        foundMap = true;
+                        break;
+                    }
+                    mapIndex = songNames.indexOf(topPlayerDatas[i].topPlays[j].bt, mapIndex + 1);
+                }       
+                if (!foundMap && !needToBeProcessed.includes(topPlayerDatas[i].topPlays[j].bid))
+                    needToBeProcessed.push(topPlayerDatas[i].topPlays[j].bid)
+            }
+        }
+        if (needToBeProcessed.length > 0)
+        {
+            Promise.all(needToBeProcessed.map((x) => GetBeatmapData(x))).then(neededBeatmapDatas => {
+                Promise.all(neededBeatmapDatas.map((x) => GetBeatmapRTM(x.beatmaps[0].mapsetId, x.beatmaps[0].version))).then(rtmfiles => {
+                    Promise.all(rtmfiles.map((x) => CreateMapDataFromFiles([x]))).then(separatedData => {
+                        let unseparatedData = [];
+                        for (let i = 0; i < separatedData[0].length; ++i)
+                        {
+                            unseparatedData.push([])
+                        }
+                        for (let i = 0; i < unseparatedData.length; ++i)
+                        {
+                            for (let j = 0; j < separatedData.length; ++j)
+                            {
+                                for (let k = 0; k < separatedData[j][i].length; ++k)
+                                {
+                                    unseparatedData[i].push(separatedData[j][i][k])
                                 }
+
                             }
-                            LoadMapDataValues(unseparatedData, () => {
-                                ConvertPlayerData(topPlayerDatas)
-                                CreateLeaderboard()
-                            })
+                        }
+                        LoadMapDataValues(unseparatedData, () => {
+                            ConvertPlayerData(topPlayerDatas)
+                            CreateLeaderboard()
                         })
                     })
                 })
-            }
-            else
-            {
-                LoadMapDataValues(unseparatedData, () => {                            
-                    ConvertPlayerData(topPlayerDatas)
-                    CreateLeaderboard()
-                })
-            }
-        });
+            })
+        }
+        else
+        {                        
+            ConvertPlayerData(topPlayerDatas)
+            CreateLeaderboard()
+        }
     });
-    return [];
 }
 
 function ConvertPlayerData(topPlayerDatas)

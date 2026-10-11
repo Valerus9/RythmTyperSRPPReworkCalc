@@ -13,6 +13,7 @@ let oldPPRanks = [];
 let newPPRanks = [];
 
 let mapDifModselect = 0
+let rankedMapLoadingOffset = 0;
 
 let TableCreation = () => {
         let createdTableValues = CreateDiffTableValues(true, mapDifModselect, false);
@@ -31,6 +32,8 @@ function CleanUpAfterLoad()
         document.getElementById("clearrtms").style.display = "inline";
     }
     UpdateClearButtons();
+    //CacheMapData();
+    document.getElementById("loadnextrankedmaps").disabled = false;
 }
 
 function CreateSelectContentBeatmap() {
@@ -182,14 +185,16 @@ function LoadMapDifLeaderboard() {
         UpdateClearButtons();
         TableCreation();
     });
+    document.getElementById("loadnextrankedmaps").addEventListener("click", async (event) => {
+        document.getElementById("loadnextrankedmaps").disabled = true;
+        GetDataForMapLeaderboard(rankedMapLoadingOffset,25);
+        rankedMapLoadingOffset += 25;
+    });
 
     document.getElementById("zipInput").addEventListener("change", async (event) => {
         const files = [...event.target.files].filter(f => f.name.endsWith(".rtm"));
         await CreateMapDataFromFiles(files).then(data => {
-            ClearCacheIfMapIsInThem(data).then(data2=>{
-                LoadMapDataValues(data, CleanUpAfterLoad);
-            });
-            
+            LoadMapDataValues(data, CleanUpAfterLoad);
         });
             
         document.getElementById("warningcacheonly").style.display = "none";
@@ -242,17 +247,6 @@ function UpdateClearButtons()
     }
 }
 
-async function ClearCacheIfMapIsInThem(localValues)
-{
-    for (let i = 0; i < localValues[0].length; ++i)
-    {
-        if (songNames.includes(localValues[4][i]) && isCache[songNames.indexOf(localValues[4][i])])
-        {
-            ClearCachedRTMS();
-        }
-    }
-}
-
 async function LoadMapDataValues(localValues, afterFunction, loadMapDataIndexer = 0)
 {   
     let loadingProgress = document.getElementById("loadingprogress");
@@ -260,41 +254,65 @@ async function LoadMapDataValues(localValues, afterFunction, loadMapDataIndexer 
 
     //LoadedBeatmapIds.push(localValues[0][loadMapDataIndexer].mapsetId);
     //LoadedDifficultyIds.push(localValues[1][loadMapDataIndexer].diffId);
-    let localDifficultyValues = CreateDifficultyData([localValues[1][loadMapDataIndexer]], true);
-    for (let j = 0; j < localDifficultyValues[0].length; ++j)
+    let songName = localValues[4][loadMapDataIndexer]
+    let diffName = localValues[5][loadMapDataIndexer]
+    let mapIndex = 0;
+    let needToBeAdded = true;
+    while (mapIndex != -1 && songNames.length > 0)
     {
-        for (let k = 0; k < localDifficultyValues[0][j].length; ++k)
+        if (songNames[mapIndex] == songName && difficultyNames[mapIndex] == diffName)
         {
-            Stars[j].push(localDifficultyValues[0][j][k]);
-            StarDTNCs[j].push(localDifficultyValues[1][j][k]);
-            StarHTDCs[j].push(localDifficultyValues[2][j][k]);
+            isCache[mapIndex] = false;
+            needToBeAdded = false;
+            difficultyList[mapIndex] = localValues[1][loadMapDataIndexer];
+            LoadedBeatmapIds[mapIndex] = localValues[2][loadMapDataIndexer];
+            LoadedDifficultyIds[mapIndex] = localValues[3][loadMapDataIndexer];
+            BPMs[mapIndex] = localValues[6][loadMapDataIndexer];
+            DrainTimes[mapIndex] = localValues[7][loadMapDataIndexer];
+            ODs[mapIndex] = localValues[8][loadMapDataIndexer];
+            NoteCounts[mapIndex] = localValues[9][loadMapDataIndexer];
+            TypingSectionCounts[mapIndex] = localValues[10][loadMapDataIndexer];
         }
+        mapIndex = songNames.indexOf(songName, mapIndex + 1)
     }
-    for (let j = 0; j < localDifficultyValues[3].length; ++j)
-    {    
-        for (let k = 0; k < localDifficultyValues[3][j].length; ++k)
+    if (needToBeAdded)
+    {
+        let localDifficultyValues = CreateDifficultyData([localValues[1][loadMapDataIndexer]], true);
+        for (let j = 0; j < localDifficultyValues[0].length; ++j)
         {
-            PPs[j].push(localDifficultyValues[3][j][k]);
-            PPDTNCs[j].push(localDifficultyValues[4][j][k]);
-            PPHTDCs[j].push(localDifficultyValues[5][j][k]);
+            for (let k = 0; k < localDifficultyValues[0][j].length; ++k)
+            {
+                Stars[j].push(localDifficultyValues[0][j][k]);
+                StarDTNCs[j].push(localDifficultyValues[1][j][k]);
+                StarHTDCs[j].push(localDifficultyValues[2][j][k]);
+            }
         }
+        for (let j = 0; j < localDifficultyValues[3].length; ++j)
+        {    
+            for (let k = 0; k < localDifficultyValues[3][j].length; ++k)
+            {
+                PPs[j].push(localDifficultyValues[3][j][k]);
+                PPDTNCs[j].push(localDifficultyValues[4][j][k]);
+                PPHTDCs[j].push(localDifficultyValues[5][j][k]);
+            }
+        }
+        //beatmapList.push(localValues[0][loadMapDataIndexer]);
+        difficultyList.push(localValues[1][loadMapDataIndexer]);
+        LoadedBeatmapIds.push(localValues[2][loadMapDataIndexer]);
+        LoadedDifficultyIds.push(localValues[3][loadMapDataIndexer]);
+        songNames.push(localValues[4][loadMapDataIndexer]);
+        difficultyNames.push(localValues[5][loadMapDataIndexer]);
+        BPMs.push(localValues[6][loadMapDataIndexer]);
+        DrainTimes.push(localValues[7][loadMapDataIndexer]);
+        ODs.push(localValues[8][loadMapDataIndexer]);
+        NoteCounts.push(localValues[9][loadMapDataIndexer]);
+        TypingSectionCounts.push(localValues[10][loadMapDataIndexer]);
+        isCache.push(false);
+        oldStarRanks.push(0);
+        newStarRanks.push(0);
+        oldPPRanks.push(0);
+        newPPRanks.push(0);
     }
-    //beatmapList.push(localValues[0][loadMapDataIndexer]);
-    difficultyList.push(localValues[1][loadMapDataIndexer]);
-    LoadedBeatmapIds.push(localValues[2][loadMapDataIndexer]);
-    LoadedDifficultyIds.push(localValues[3][loadMapDataIndexer]);
-    songNames.push(localValues[4][loadMapDataIndexer]);
-    difficultyNames.push(localValues[5][loadMapDataIndexer]);
-    BPMs.push(localValues[6][loadMapDataIndexer]);
-    DrainTimes.push(localValues[7][loadMapDataIndexer]);
-    ODs.push(localValues[8][loadMapDataIndexer]);
-    NoteCounts.push(localValues[9][loadMapDataIndexer]);
-    TypingSectionCounts.push(localValues[10][loadMapDataIndexer]);
-    isCache.push(false);
-    oldStarRanks.push(0);
-    newStarRanks.push(0);
-    oldPPRanks.push(0);
-    newPPRanks.push(0);
     loadMapDataIndexer++;
     if (loadMapDataIndexer < localValues[0].length)
         loadingProgress.innerHTML = "Progress: "+(loadMapDataIndexer+1)+"/"+localValues[0].length+" ("+(Math.round((loadMapDataIndexer+1)/localValues[0].length*10000)/100)+"%)";
@@ -587,15 +605,18 @@ function CreateRanks(tableValues) {
     return [localOldStarRanks, localNewStarRanks, localOldPPRanks, localNewPPRanks];
 }
 
-function CreateDefaultRowIds(rowidlength)
-{
-    let rowIds = [];
-    for (let i = 0; i < rowidlength; ++i)
-    {
-        rowIds.push(i);
-    }
-    return rowIds;
-}
+//function CacheMapData()
+//{
+//    if (LsCheckIfOverLimit(difficultyList))
+//    {
+//        console.log("oh no")
+//    }
+//    else
+//    {
+//        console.log("yay")
+//    }
+//}
+
 
 async function GetDataForMapLeaderboard(offset,limit)
 {

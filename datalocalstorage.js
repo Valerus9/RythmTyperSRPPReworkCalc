@@ -89,3 +89,11 @@ function LsSplice(key, inputIndex, inputAmount)
     LsSetValueAsArray(key, tempArray);
 }
 
+function LsCheckIfOverLimit(inputValue)
+{
+    let inputAmount = new TextEncoder().encode(JSON.stringify(inputValue)).length
+    inputAmount = inputAmount / 1024 / 1024
+    if (inputAmount > 4)
+        return true;
+    return false;
+}

@@ -20,6 +20,34 @@ document.getElementById("visualmodeswitch").addEventListener("click", async (eve
     }
     ApplyVisualMode();
 });
+LoadCachedRankedMapData()
+
+function LoadCachedRankedMapData()
+{
+    isCache = new Array(cachedLoadedDifficultyIds.length).fill(true);
+    difficultyList = new Array(cachedLoadedDifficultyIds.length).fill(-1);
+    LoadedBeatmapIds = cachedLoadedBeatmapIds;
+    LoadedDifficultyIds = cachedLoadedDifficultyIds;
+    songNames = cachedsongNames;
+    difficultyNames = cacheddifficultyNames;
+    BPMs = cachedBPMs;
+    DrainTimes = cachedDrainTimes;
+    NoteCounts = cachedNoteCounts;
+    TypingSectionCounts = cachedTypingSectionCounts;
+    Stars = cachedStars;
+    ODs = cachedODs;
+    PPs = cachedPPs;
+    StarDTNCs = cachedStarDTNCs;
+    PPDTNCs = cachedPPDTNCs;
+    StarHTDCs = cachedStarHTDCs;
+    PPHTDCs = cachedPPHTDCs;
+}
+
+LoadCachedPlayerLeaderboadData()
+function LoadCachedPlayerLeaderboadData()
+{
+    playerLeaderboardData = cachedplayerLeaderboardData
+}
 
 ApplyVisualMode();
 
@@ -94,5 +122,5 @@ function RefreshSelectedButton() {
 
 //localStorage.clear();
 LoadMapDifLeaderboard();
-GetDataForMapLeaderboard(0,50);
+//GetDataForMapLeaderboard(0,25);
 
