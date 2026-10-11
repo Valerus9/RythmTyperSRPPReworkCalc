@@ -62,6 +62,7 @@ function calculate(scoreData) {
   //Sort all notes/typingSections by startTime for calculating speed more easily
   const notes = filteredNotes.sort((a, b) => a.startTime - b.startTime);
   const typingSections = filteredTypingSections.sort((a, b) => a.startTime - b.startTime);
+  const overallDifficulty = scoreData.overallDifficulty;
 
 
   const OBJECTTIMEDIFFERENCE = 500;
@@ -335,8 +336,7 @@ function calculate(scoreData) {
       noteDifficulties[keyboardSortedIds[i][j]] *= applyNerfToDistance;
     }
   }
-
-  const overallDifficulty = scoreData.overallDifficulty;
+  
   let odnerf = 1 / (Math.pow(Math.max(9 - overallDifficulty, 0), 1.5) / 100 + 1);
   let odbonus = Math.pow(Math.max(overallDifficulty - 6, 0), 2) / 100 + 1;
   odbonus = odbonus * odnerf;
