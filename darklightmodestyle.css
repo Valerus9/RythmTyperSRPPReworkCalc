@@ -7,6 +7,11 @@ html.lightmode th
     color: white;
     background-color: green;
 }
+html.lightmode th.tablebutton
+{
+    color: white;
+    background-color: rgb(0, 100, 0);
+}
 html.lightmode th:hover
 {
     color: rgb(225,225,225);
@@ -138,6 +143,11 @@ html.darkmode th
 {
     color: black;
     background-color: rgb(0,100,0);
+}
+html.darkmode th.tablebutton
+{
+    color: black;
+    background-color: rgb(0, 128, 0);
 }
 html.darkmode th:hover
 {

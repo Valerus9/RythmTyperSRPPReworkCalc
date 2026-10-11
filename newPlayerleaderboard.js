@@ -355,6 +355,15 @@ function ConvertPlayerData(topPlayerDatas)
             }
             convertedPlayerData.PPs[j] = sumPP;
         }
-        playerLeaderboardData.push(convertedPlayerData)
+        let containsUserId = playerLeaderboardData.map((x) => x.userId == convertedPlayerData.userId)
+        if (containsUserId.includes(true))
+        {
+            playerLeaderboardData[containsUserId.indexOf(true)] = convertedPlayerData
+        }
+        else
+        {
+            playerLeaderboardData.push(convertedPlayerData)
+        }
+        
     }
 }

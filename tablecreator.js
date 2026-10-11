@@ -61,7 +61,7 @@ function CreateTable(tableName, tableid, tableColumnNames, tableColumnIds, table
     }
     if (tableHidden[tableGlobalArrayId])
     {
-        document.getElementById(tableid).innerHTML = "<tr><th  id=\""+ tableid+"hideshowtable\" colspan=\""+(tableColumnValues.length)+"\">Show "+tableName+"</th></tr>";
+        document.getElementById(tableid).innerHTML = "<tr><th  id=\""+ tableid+"hideshowtable\" class=tablebutton colspan=\""+(tableColumnValues.length)+"\">Show "+tableName+"</th></tr>";
         document.getElementById(tableid+"hideshowtable").addEventListener("click", async (event) => {
             tableHidden[createdTableIds.indexOf(tableid)] = !tableHidden[createdTableIds.indexOf(tableid)];
             CreateTable(tableName, tableid, tableColumnNames, tableColumnIds, tableColumnWidths, tableRowIds, tableColumnValues, tableColumnCompare, tableColumnTypes, tableLimit);
@@ -125,11 +125,11 @@ function CreateTable(tableName, tableid, tableColumnNames, tableColumnIds, table
     {
         if (tableSubtablesHidden[tableGlobalArrayId])
         {
-            tableText += "<tr><th id=\""+ tableid+"enabledisablesubtables\" colspan=\""+(tableColumnValues.length-subtableColumns.length)+"\">Enable subtables</th></tr>";
+            tableText += "<tr><th id=\""+ tableid+"enabledisablesubtables\" class=tablebutton colspan=\""+(tableColumnValues.length-subtableColumns.length)+"\">Enable subtables</th></tr>";
         }
         else
         {
-            tableText += "<tr><th id=\""+ tableid+"enabledisablesubtables\" colspan=\""+(tableColumnValues.length-subtableColumns.length)+"\">Disable subtables</th></tr>";
+            tableText += "<tr><th id=\""+ tableid+"enabledisablesubtables\" class=tablebutton colspan=\""+(tableColumnValues.length-subtableColumns.length)+"\">Disable subtables</th></tr>";
         }
     }
     
@@ -167,7 +167,7 @@ function CreateTable(tableName, tableid, tableColumnNames, tableColumnIds, table
         {
             subtablesShowHiddenText = "Hide"
         }
-        tableText += "<tr><th id=\""+ tableid+"hideshowsubtables\" colspan=\""+(tableColumnValues.length-subtableColumns.length)+"\">"+subtablesShowHiddenText+" subtables</th></tr>";
+        tableText += "<tr><th id=\""+ tableid+"hideshowsubtables\" class=tablebutton colspan=\""+(tableColumnValues.length-subtableColumns.length)+"\">"+subtablesShowHiddenText+" subtables</th></tr>";
         
     }
         
@@ -175,14 +175,14 @@ function CreateTable(tableName, tableid, tableColumnNames, tableColumnIds, table
     {
         if (tableOffsets[tableGlobalArrayId] + tableLimits[tableGlobalArrayId] < tableColumnValues[0].length)
         {
-            tableText += "<tr><th id=\""+tableid+"nextpagetop\" colspan=\""+(tableColumnValues.length-subtableColumns.length)+"\">Next page</th></tr>"
+            tableText += "<tr><th id=\""+tableid+"nextpagetop\" class=tablebutton colspan=\""+(tableColumnValues.length-subtableColumns.length)+"\">Next page</th></tr>"
         }
         if (tableOffsets[tableGlobalArrayId] - tableLimits[tableGlobalArrayId] >= 0)
         {
-            tableText += "<tr><th id=\""+tableid+"previouspagetop\" colspan=\""+(tableColumnValues.length-subtableColumns.length)+"\">Previous page</th></tr>"
+            tableText += "<tr><th id=\""+tableid+"previouspagetop\" class=tablebutton colspan=\""+(tableColumnValues.length-subtableColumns.length)+"\">Previous page</th></tr>"
         }
     }
-    tableText += "<tr><th id=\""+ tableid+"hideshowtable\"  colspan=\""+(tableColumnValues.length-subtableColumns.length)+"\">Hide "+tableName+"</th></tr>";
+    tableText += "<tr><th id=\""+ tableid+"hideshowtable\" class=tablebutton colspan=\""+(tableColumnValues.length-subtableColumns.length)+"\">Hide "+tableName+"</th></tr>";
     if (tableColumnValues[0].length > 0)
     {
         tableText += "<tr style=\"height:75px\">";
@@ -367,11 +367,11 @@ function CreateTable(tableName, tableid, tableColumnNames, tableColumnIds, table
     {
         if (tableOffsets[tableGlobalArrayId] + tableLimits[tableGlobalArrayId] < tableColumnValues[0].length)
         {
-            tableText += "<tr><th id=\""+tableid+"nextpagebottom\" colspan=\""+(tableColumnValues.length-subtableColumns.length)+"\">Next page</th></tr>"
+            tableText += "<tr><th id=\""+tableid+"nextpagebottom\" class=tablebutton colspan=\""+(tableColumnValues.length-subtableColumns.length)+"\">Next page</th></tr>"
         }
         if (tableOffsets[tableGlobalArrayId] - tableLimits[tableGlobalArrayId] >= 0)
         {
-            tableText += "<tr><th id=\""+tableid+"previouspagebottom\" colspan=\""+(tableColumnValues.length-subtableColumns.length)+"\">Previous page</th></tr>"
+            tableText += "<tr><th id=\""+tableid+"previouspagebottom\" class=tablebutton colspan=\""+(tableColumnValues.length-subtableColumns.length)+"\">Previous page</th></tr>"
         }
     }
 
