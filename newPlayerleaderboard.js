@@ -49,6 +49,7 @@ function LoadPlayerLeaderBoard() {
         + "<select id=\"ppcalcselectsecond\">"
         + "</select>"
         + "</div>"
+        + "<p>User id:</p>"
         + "<input type=\"text\" id=\"userid\" name=\"userid\">"
         + "<input type=\"button\" id=\"loaduser\" disabled value=\"Add user to leaderboard\">"
         + "<p id=\"loadingprogress\"></p>"
