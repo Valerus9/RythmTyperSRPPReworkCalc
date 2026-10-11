@@ -333,7 +333,7 @@ function calculate(scoreData) {
 
   const overallDifficulty = scoreData.overallDifficulty;
   let odnerf = 1 / (Math.pow(Math.max(9 - overallDifficulty, 0), 1.5) / 100 + 1);
-  let odbonus = Math.pow(Math.max(overallDifficulty - 7, 0), 1.1) / 100 + 1;
+  let odbonus = Math.pow(Math.max(overallDifficulty - 6, 0), 2) / 100 + 1;
   odbonus = odbonus * odnerf;
   if (odbonus > 1)
     odbonus = Math.pow(odbonus, 1.1);
@@ -396,7 +396,7 @@ function calculate(scoreData) {
       maxmisspenalty += 1 / (64 * (i + 0.1)) + 0.001
     }
     misspenalty = 1 - misspenalty / maxmisspenalty;
-    let objectCountMissNerf = 1 / (judgmentSum + 1 / 0.02) + 0.98
+    let objectCountMissNerf = 30 / (judgmentSum + 1 / 0.02) + 0.5
     return difficultyDensity * Math.pow(acc, 5) * Math.pow(misspenalty, objectCountMissNerf);
   }
 
