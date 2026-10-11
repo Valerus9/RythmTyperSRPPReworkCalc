@@ -116,7 +116,7 @@ let ingamehotfix = {
         //Sort all notes/typingSections by startTime for calculating speed more easily
         const notes = filteredNotes.sort((a, b) => a.startTime - b.startTime);
         const typingSections = filteredTypingSections.sort((a, b) => a.startTime - b.startTime);
-
+        const overallDifficulty = scoreData.overallDifficulty;
 
         const OBJECTTIMEDIFFERENCE = 500;
         const REWARDTIMEDIFFERENCE = OBJECTTIMEDIFFERENCE / 2;
@@ -129,19 +129,19 @@ let ingamehotfix = {
         const getStartTime = x => x.startTime;
         const getEndTime = x => x.endTime || x.startTime;
 
-        //Getting the min and max time for drainTime 
-        //since we have already sorted both notes and
-        //typingSections we can just check the first
-        //of both to get the min time
-        let minTime = typingSections.length > 0 ? 
-        notes.length > 0 ? getStartTime(typingSections[0]) > getStartTime(notes[0]) ? getStartTime(notes[0]) : getStartTime(typingSections[0]) : getStartTime(typingSections[0]) :
-        notes.length > 0 ? getStartTime(notes[0]) : 0
-        //The same trick cannot be used for max so
-        //Instead we use .reduce() and Math.max for it
-        let maxTime = Math.max(notes.reduce((a, b) => Math.max(Object.keys(a).includes("startTime") ? getEndTime(a) : a, Object.keys(b).includes("startTime") ? getEndTime(b) : b), -Infinity), typingSections.length > 0 ? typingSections.reduce((a, b) => Math.max(Object.keys(a).includes("startTime") ? getEndTime(a) : a, Object.keys(b).includes("startTime") ? getEndTime(b) : b), -Infinity) : -Infinity);
-        let typingSectionDifficulties = new Array(typingSections.length).fill(100);
+        let sum = 0;
+        for (let i = 1; i < notes.length; ++i)
+        {
+            sum += Math.max(Math.min(getStartTime(notes[i])-getStartTime(notes[i-1]),1500),0)
+        }
+        for (let i = 0; i < typingSections.length; ++i)
+        {
+            sum += typingSections[i].endTime - typingSections[i].startTime;
+        }
 
-        const drainTime = Math.max(maxTime - minTime, 1000);
+        const drainTime = Math.max(sum, 1000);
+
+        let typingSectionDifficulties = new Array(typingSections.length).fill(100);
 
         const noteFewNerfLimit = 100;
         const noteLotBuffLimit = 1000;
@@ -174,6 +174,8 @@ let ingamehotfix = {
             }
         }
 
+        const PERFECTHITWINOWMS = 80 - 6 * overallDifficulty
+
         //Create chords
         let chords = [];
         //We are going to notes.length - 1 because
@@ -190,16 +192,18 @@ let ingamehotfix = {
                 continue;
             let currentNoteTime = getStartTime(notes[i]);
             let addedCurrentNote = false;
+            let usedLetters = [];
             for (let j = i + 1; j < notes.length; ++j) {
                 //Same applies here as to the if statement
                 //that contains the same conditions
-                if (alreadyUsedForChord[j] || notes[j].key == " ")
+                if (alreadyUsedForChord[j] || notes[j].key == " " || usedLetters.includes(notes[j].key))
                     continue;
                 let selectedNoteTime = getStartTime(notes[j]);
-                //The +12ms is for chords that are have notes
+                let alreadyUsedLetters = [notes[j].key];
+                //The +Perfect hitwindow / 2 ms is for chords that are have notes
                 //which are offset by some ms to not be classified
-                //as chords and therefore gain some advantage
-                if (selectedNoteTime < currentNoteTime + 12) {
+                //as chords and therefore gain some advantage                
+                if (selectedNoteTime < currentNoteTime + PERFECTHITWINOWMS / 2) {
                     if (!addedCurrentNote) {
                         alreadyUsedForChord[i] = true;
                         chords.push([]);
@@ -211,6 +215,7 @@ let ingamehotfix = {
                 }
                 else
                     break;
+                    
             }
         }
 
@@ -396,8 +401,6 @@ let ingamehotfix = {
                 noteMultiplierValues[3][keyboardSortedIds[i][j]] = applyNerfToDistance;
             }
         }
-
-        const overallDifficulty = scoreData.overallDifficulty;
         let odnerf = 1 / (Math.pow(Math.max(9 - overallDifficulty, 0), 1.5) / 100 + 1);
         let odbonus = Math.pow(Math.max(overallDifficulty - 6, 0), 2) / 100 + 1;
         odbonus = odbonus * odnerf;

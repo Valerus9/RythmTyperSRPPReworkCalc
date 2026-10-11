@@ -1,3 +1,20 @@
+/*
+LoadedBeatmapIds
+LoadedDifficultyIds
+songNames
+difficultyNames
+BPMs
+DrainTimes
+NoteCounts
+TypingSectionCounts
+Stars
+ODs
+PPs
+StarDTNCs
+PPDTNCs
+StarHTDCs
+PPHTDCs
+*/
 let cachedLoadedBeatmapIds = [
     "a6aqnf6bx5oh",
     "a6aqnf6bx5oh",

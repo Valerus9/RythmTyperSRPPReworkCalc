@@ -208,13 +208,13 @@ function AddPlayerToLeaderboard(userId)
     })
 }
 
-function CreatePlayerLeaderboardData()
-{
-    GetPlayersFromLeaderboard(50,0, "totalPP").then(topPlayerData => {
-        GetNecesseryResourcesForPlayers(topPlayerData)
-    });
-    return [];
-}
+//function CreatePlayerLeaderboardData(amount)
+//{
+//    GetPlayersFromLeaderboard(amount,0, "totalPP").then(topPlayerData => {
+//        GetNecesseryResourcesForPlayers(topPlayerData)
+//    });
+//    return [];
+//}
 
 function GetNecesseryResourcesForPlayers(topPlayerData)
 {
