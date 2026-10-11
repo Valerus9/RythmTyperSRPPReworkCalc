@@ -192,14 +192,13 @@ let ingamehotfix = {
                 continue;
             let currentNoteTime = getStartTime(notes[i]);
             let addedCurrentNote = false;
-            let usedLetters = [];
+            let usedLetters = [notes[i].key];
             for (let j = i + 1; j < notes.length; ++j) {
                 //Same applies here as to the if statement
                 //that contains the same conditions
                 if (alreadyUsedForChord[j] || notes[j].key == " " || usedLetters.includes(notes[j].key))
                     continue;
                 let selectedNoteTime = getStartTime(notes[j]);
-                let alreadyUsedLetters = [notes[j].key];
                 //The +Perfect hitwindow / 2 ms is for chords that are have notes
                 //which are offset by some ms to not be classified
                 //as chords and therefore gain some advantage                
@@ -212,6 +211,7 @@ let ingamehotfix = {
                     }
                     chords[chords.length - 1].push(j);
                     alreadyUsedForChord[j] = true;
+                    usedLetters.push(notes[j].key)
                 }
                 else
                     break;
