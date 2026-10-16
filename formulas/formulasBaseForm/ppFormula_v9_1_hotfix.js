@@ -369,7 +369,7 @@ function calculate(scoreData) {
     let previousEndTime = getEndTime(notes[previousNoteIndex]);
     let selectedStartTime = getStartTime(notes[selectedNoteIndex]);
     if (selectedStartTime > previousEndTime)
-      timeDurationBonus = Math.max(OBJECTTIMEDIFFERENCE / (selectedStartTime - previousEndTime + REWARDTIMEDIFFERENCE), 1.3);
+      timeDurationBonus = Math.min(Math.max(OBJECTTIMEDIFFERENCE / (selectedStartTime - previousEndTime + REWARDTIMEDIFFERENCE), 1.3), 1.5);
     let heldNoteBonus = Math.pow(heldNoteCounts[selectedNoteIndex] + 1, 0.52 / Math.pow(chordBuffForNote[selectedNoteIndex], 2));
 
     if (timeDurationBonus > 2) {
