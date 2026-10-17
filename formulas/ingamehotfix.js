@@ -10,15 +10,15 @@ let ingamehotfix = {
             if (judgmentSum > 0)
             {
                 let misspenalty = 0
-                for (let i = 1; i < scoreData.judgmentCounts.miss; ++i) {
+                for (let i = 0; i < scoreData.judgmentCounts.miss; ++i) {
                     misspenalty += 1 / (64 * (i + 0.1)) + 0.001
                 }
                 let maxmisspenalty = 0
-                for (let i = 1; i < judgmentSum; ++i) {
+                for (let i = 0; i < judgmentSum; ++i) {
                     maxmisspenalty += 1 / (64 * (i + 0.1)) + 0.001
                 }
                 misspenalty = 1 - misspenalty / maxmisspenalty;
-                let objectCountMissNerf = 30 / (judgmentSum + 1 / 0.02) + 0.5
+                let objectCountMissNerf = 30 / (judgmentSum + 1 / 0.02) + 0.13
                 //console.log(Math.round(result*100)/100)
                 return result * Math.pow(acc, 5) * Math.pow(misspenalty, objectCountMissNerf);
             }

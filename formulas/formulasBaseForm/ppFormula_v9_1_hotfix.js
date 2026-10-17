@@ -401,7 +401,7 @@ function calculate(scoreData) {
       maxmisspenalty += 1 / (64 * (i + 0.1)) + 0.001
     }
     misspenalty = 1 - misspenalty / maxmisspenalty;
-    let objectCountMissNerf = 30 / (judgmentSum + 1 / 0.02) + 0.5
+    let objectCountMissNerf = 30 / (judgmentSum + 1 / 0.02) + 0.13
     return difficultyDensity * Math.pow(acc, 5) * Math.pow(misspenalty, objectCountMissNerf);
   }
 
