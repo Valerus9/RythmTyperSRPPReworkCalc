@@ -235,24 +235,27 @@ let ingamehotfix = {
             let lastMaxRowPos = -1;
             let lastMinRowPos = Infinity;
             let lastRowPos = -1;
+            let receivedVerticalBuff = false;
             for (let j = 0; j < columnPlacement.length; ++j) {
                 for (let k = 0; k < columnPlacement[j].length; ++k) {
                     if (columnPlacement[j][k] == -1)
                         continue;
-                    if (lastColumnPos != -1) {
+                    if (lastColumnPos != -1 && !receivedVerticalBuff) {
                         if (Math.abs(lastColumnPos - j) == 0) {
                             //This is the vertical chord buff
                             //DO NOT INCREASE THIS VALUE UNDER ANY CIRCUMSTANCE
                             //(OR EXPERIENCE VERTICAL CHORDS ROUND 2)
-                            chordDifficulty += 0.5;
+                            chordDifficulty += 0.125;
+                            receivedVerticalBuff = true;
                         }
                     }
-                    if (lastRowPos != -1) {
+                    if (lastRowPos != -1 && !receivedVerticalBuff) {
                         if (lastColumnPos - j == -1 && lastRowPos - k == 1) {
                             //This is the vertical chord buff
                             //DO NOT INCREASE THIS VALUE UNDER ANY CIRCUMSTANCE
                             //(OR EXPERIENCE VERTICAL CHORDS ROUND 2)
-                            chordDifficulty += 0.518;
+                            chordDifficulty += 0.126;
+                            receivedVerticalBuff = true;
                         }
                     }
                     if (lastMaxRowPos != -1) {
