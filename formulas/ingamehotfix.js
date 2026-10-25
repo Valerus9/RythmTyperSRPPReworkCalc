@@ -178,6 +178,7 @@ let ingamehotfix = {
 
         //Create chords
         let chords = [];
+        let chordId = new Array(notes.length).fill(-1);
         //We are going to notes.length - 1 because
         //after notes.length we don't have any more notes
         //that could be used to merged notes with the last
@@ -205,11 +206,12 @@ let ingamehotfix = {
                 if (selectedNoteTime < currentNoteTime + PERFECTHITWINOWMS / 2) {
                     if (!addedCurrentNote) {
                         alreadyUsedForChord[i] = true;
-                        chords.push([]);
+                        chords.push([i]);
                         addedCurrentNote = true;
-                        chords[chords.length - 1].push(i);
+                        chordId[i] = chords.length - 1;
                     }
                     chords[chords.length - 1].push(j);
+                    chordId[j] = chords.length - 1;
                     alreadyUsedForChord[j] = true;
                     usedLetters.push(notes[j].key)
                 }
@@ -412,6 +414,112 @@ let ingamehotfix = {
                 noteMultiplierValues[3][keyboardSortedIds[i][j]] = applyNerfToDistance;
             }
         }
+
+        //Calculating roll bonus
+        let lastIndex = [];
+        let rollIndexes = [];
+        let cornerCounter = [];
+        let rollDistance = [];
+        let lastCorner = [];
+        let includedInLongRolls = [];
+        for (let i = 1; i < notes.length; ++i) {
+            let selectedNoteIndex = i;
+            let previousNoteIndex = i - 1;
+            let distance = 0;
+            let previousEndTime = getEndTime(notes[previousNoteIndex]);
+            let selectedStartTime = getStartTime(notes[selectedNoteIndex]);
+            let previousX = getKeyboardColumn(notes[previousNoteIndex]);
+            let previousY = getKeyboardRow(notes[previousNoteIndex]);
+            let selectedX = getKeyboardColumn(notes[selectedNoteIndex]);
+            let selectedY = getKeyboardRow(notes[selectedNoteIndex]);
+            if (selectedStartTime > previousEndTime)
+            {
+                distance = Math.sqrt(Math.pow(selectedX-previousX,2) + Math.pow(selectedY-previousY,2))
+                if (distance == 1 && selectedStartTime - previousEndTime < PERFECTHITWINOWMS * 4)
+                {
+                    let currentRollIndex = lastIndex.indexOf(previousNoteIndex);
+                    if (currentRollIndex != -1)
+                    {
+                        rollIndexes[currentRollIndex].push(selectedNoteIndex);
+                        lastIndex[currentRollIndex] = selectedNoteIndex;
+                        if (Math.abs(selectedX-previousX) == 1 &&  lastCorner[currentRollIndex] != 1)
+                        {
+                            if (lastCorner[currentRollIndex] != 0)
+                                cornerCounter[currentRollIndex]++;
+                            lastCorner[currentRollIndex] = 1;
+                        }
+                        else if (Math.abs(selectedY-previousY) == 1 &&  lastCorner[currentRollIndex] != -1)
+                        {
+                            if (lastCorner[currentRollIndex] != 0)
+                                cornerCounter[currentRollIndex]++;
+                            lastCorner[currentRollIndex] = -1;
+                        }   
+                        if (!includedInLongRolls.includes(rollIndexes[currentRollIndex][0]))
+                        {
+                            includedInLongRolls.push(rollIndexes[currentRollIndex][0]);
+                            includedInLongRolls.push(rollIndexes[currentRollIndex][1]);
+                        }
+                        includedInLongRolls.push(selectedNoteIndex);
+                    }
+                    else
+                    {
+                        rollIndexes.push([previousNoteIndex, selectedNoteIndex]);
+                        lastIndex.push(selectedNoteIndex);
+                        rollDistance.push(selectedStartTime - previousEndTime)
+                        cornerCounter.push(0);
+                        lastCorner.push(0);
+                    }
+                }
+            }
+        }
+
+        for (let i = 0; i < rollIndexes.length; ++i)
+        {
+            let rollBuff = 1;
+            let durationNerf = Math.pow(Math.min((PERFECTHITWINOWMS * 2)/rollDistance[i], 1), 0.58)
+            if (rollIndexes[i].length >= 3)
+                rollBuff = (1 + ((rollIndexes[i].length - 3)/25)) * durationNerf;
+            else
+                rollBuff = 0.6
+            if (cornerCounter[i] > 0)
+                rollBuff *= (1 + cornerCounter[i] / 2.8) * durationNerf;
+            for (let j = 0; j < rollIndexes[i].length; ++j)
+            {                
+                noteDifficulties[rollIndexes[i][j]] *= rollBuff;
+            }
+        }
+
+        //calculating 2 note "rolls" nerf
+        for (let i = 0; i < notes.length - 1; ++i) {            
+            if (includedInLongRolls.includes(i))
+                continue;
+            let selectedNoteIndex = i + 1;
+            let previousNoteIndex = i;
+            while(selectedNoteIndex < notes.length && includedInLongRolls.includes(selectedNoteIndex))
+            {
+                selectedNoteIndex++;
+            }
+            if (selectedNoteIndex >= notes.length)
+                break;
+            let distance = 0;
+            let previousEndTime = getEndTime(notes[previousNoteIndex]);
+            let selectedStartTime = getStartTime(notes[selectedNoteIndex]);
+            let previousX = getKeyboardColumn(notes[previousNoteIndex]);
+            let previousY = getKeyboardRow(notes[previousNoteIndex]);
+            let selectedX = getKeyboardColumn(notes[selectedNoteIndex]);
+            let selectedY = getKeyboardRow(notes[selectedNoteIndex]);
+            if (selectedStartTime > previousEndTime)
+            {
+                distance = Math.sqrt(Math.pow(selectedX-previousX,2) + Math.pow(selectedY-previousY,2))
+                if (distance == 1 && selectedStartTime - previousEndTime < PERFECTHITWINOWMS * 4)
+                {
+                    let roll2nerf = 0.75
+                    noteDifficulties[selectedNoteIndex] *= roll2nerf;
+                    noteDifficulties[previousNoteIndex] *= roll2nerf;
+                }
+            }
+        }
+
         let odnerf = 1 / (Math.pow(Math.max(9 - overallDifficulty, 0), 1.5) / 100 + 1);
         let odbonus = Math.pow(Math.max(overallDifficulty - 6, 0), 2) / 100 + 1;
         odbonus = odbonus * odnerf;
